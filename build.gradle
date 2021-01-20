@@ -16,11 +16,15 @@ repositories {
 application {
     mainModule.set('sample')
     mainClass.set('com.icuxika.MainApp')
+    applicationDefaultJvmArgs = [
+            '--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix',
+    ]
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation('com.squareup.okhttp3:okhttp:4.9.0')
+    compile 'com.jfoenix:jfoenix:9.0.10'
 }
 
 javafx {
@@ -49,6 +53,7 @@ jlink {
 
         // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
         jvmArgs.add('-Dhttps.protocols=TLSv1.1,TLSv1.2')
+        jvmArgs.add('--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix')
 
         if (org.gradle.internal.os.OperatingSystem.current().windows) {
             installerOptions += ['--win-per-user-install', '--win-dir-chooser', '--win-menu', '--win-shortcut']

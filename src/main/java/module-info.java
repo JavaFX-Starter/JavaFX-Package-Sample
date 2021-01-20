@@ -7,5 +7,7 @@ module sample {
     requires javafx.graphics;
     requires javafx.web;
 
+    requires com.jfoenix;
+
     exports com.icuxika;
 }
