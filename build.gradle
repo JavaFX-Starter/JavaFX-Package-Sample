@@ -1,8 +1,8 @@
 plugins {
     id 'application'
     id 'java'
-    id 'org.openjfx.javafxplugin' version '0.0.9'
-    id 'org.beryx.jlink' version '2.20.0'
+//    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id 'org.beryx.jlink' version '2.23.3'
     id 'com.gluonhq.client-gradle-plugin' version '0.1.35'
 }
 
@@ -11,6 +11,16 @@ version '1.0.0'
 
 repositories {
     mavenCentral()
+    jcenter()
+}
+
+def platform
+if (org.gradle.internal.os.OperatingSystem.current().windows) {
+    platform = 'win'
+} else if (org.gradle.internal.os.OperatingSystem.current().linux) {
+    platform = 'linux'
+} else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+    platform = 'mac'
 }
 
 application {
@@ -18,19 +28,28 @@ application {
     mainClass.set('com.icuxika.MainApp')
     applicationDefaultJvmArgs = [
             '--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix',
+            '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED'
     ]
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation "org.openjfx:javafx-base:16:${platform}"
+    implementation "org.openjfx:javafx-controls:16:${platform}"
+    implementation "org.openjfx:javafx-graphics:16:${platform}"
+    implementation "org.openjfx:javafx-fxml:16:${platform}"
+    implementation "org.openjfx:javafx-swing:16:${platform}"
+    implementation "org.openjfx:javafx-media:16:${platform}"
+    implementation "org.openjfx:javafx-web:16:${platform}"
+
     implementation('com.squareup.okhttp3:okhttp:4.9.0')
-    compile 'com.jfoenix:jfoenix:9.0.10'
+    implementation('com.jfoenix:jfoenix:9.0.10')
+    testImplementation("junit:junit:4.12")
 }
 
-javafx {
-    version('15')
-    modules('javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing')
-}
+//javafx {
+//    version('16')
+//    modules('javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing')
+//}
 
 jlink {
     options.set(List.of('--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages'))
