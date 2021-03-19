@@ -79,3 +79,14 @@ jlink {
         }
     }
 }
+
+task printDependentJarsList {
+    // 打印出项目所依赖的jar包路径集合并使用 ; 拼接
+    // projectJarPath: 当前项目 gradle jar 制作出来的 jar
+    // dependentJarsPath: 项目依赖的第三方 jar 集合
+    // 使用：jpackage -p "${projectJarPath};${dependentJarsPath}"
+
+    println('----------')
+    println(configurations.getByName('runtimeClasspath').files.join(';'))
+    println('----------')
+}
