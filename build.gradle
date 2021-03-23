@@ -107,7 +107,7 @@ task printDependentJarsList {
 }
 
 task copyDependencies(type: Copy) {
-    from(configurations.runtimeClasspath)
+    from(configurations.getByName("runtimeClasspath"))
     into("$buildDir/modules")
 }
 
