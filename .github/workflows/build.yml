@@ -20,6 +20,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 16
+
+      - name: chmod gradlew
+        run: chmod +x ./gradlew
+
       - run: ./gradlew package2Installer
       - run: mkdir staging && cp build/package/installer/* staging
 
