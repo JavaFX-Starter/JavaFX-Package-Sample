@@ -16,7 +16,16 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 - 构建EXE镜像 -> ```gradlew package2Image```
 - 构建MSI安装包 -> ```gradlew package2Installer```
 
-### 构建（方式二，为方式一的手动版）
+### Badass JLink Plugin（方式二，只支持Gradle，当前插件制作出来的`MSI安装包`会比`方式一`和`方式三`大十几兆，但是`EXE镜像`会小不少）
+
+IDEA中请将`--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED`参数写在`VM options`中
+
+- 构建EXE镜像
+  -> ```gradlew jpackageImage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
+- 构建安装包（MSI、EXE）
+  -> ```gradlew jpackage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
+
+### 构建（方式三，为方式一的手动版）
 
 - maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）
 - gradle需指定`distributionUrl=https\://services.gradle.org/distributions-snapshots/gradle-7.0-20210315230049+0000-bin.zip`

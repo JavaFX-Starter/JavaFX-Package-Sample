@@ -2,7 +2,7 @@ plugins {
     id "application"
     id "java"
 //    id "org.openjfx.javafxplugin" version "0.0.9"
-    id "org.beryx.jlink" version "2.23.3"
+    id "org.beryx.jlink" version "2.23.4"
     id "com.gluonhq.client-gradle-plugin" version "0.1.35"
 }
 
@@ -11,7 +11,6 @@ version "1.0.0"
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 def platform
@@ -37,7 +36,7 @@ application {
             // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
             "-Dhttps.protocols=TLSv1.1,TLSv1.2",
             "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix",
-            "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
+//            "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
     ]
 }
 
@@ -60,7 +59,7 @@ dependencies {
 //    modules("javafx.controls", "javafx.fxml", "javafx.web", "javafx.swing")
 //}
 
-// 此插件目前并未支持Java16，暂时无法使用
+// 此插件目前执行需要加上`VM options`: ```--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
 jlink {
     options.set(List.of("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
 
@@ -78,9 +77,9 @@ jlink {
         installerName = applicationName
         appVersion = version.toString()
 
-        application.applicationDefaultJvmArgs.forEach(arg -> {
-            jvmArgs.add(arg)
-        })
+        application.applicationDefaultJvmArgs.forEach {
+            jvmArgs.add(it)
+        }
 
         if (org.gradle.internal.os.OperatingSystem.current().windows) {
             icon = "src/main/resources/application.ico"
@@ -91,6 +90,7 @@ jlink {
         }
     }
 }
+
 
 task printDependentJarsList {
     // 打印出项目所依赖的jar包路径集合并使用 ; 拼接
