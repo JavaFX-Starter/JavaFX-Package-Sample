@@ -140,7 +140,15 @@ task package2Installer(type: Exec) {
             "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
             "--icon", platform == "mac" ? "$projectDir/src/main/resources/application.icns" : "$projectDir/src/main/resources/application.ico",
             "--app-version", "$version",
-            "--win-dir-chooser", "--win-menu", "--win-shortcut",
-            "--win-menu-group", applicationName
+            platform == "win" ? "--win-dir-chooser" : "",
+            platform == "win" ? "--win-menu" : "",
+            platform == "win" ? "--win-shortcut" : "",
+            platform == "win" ? "--win-menu-group" : "",
+            platform == "win" ? applicationName : "",
+            platform == "linux" ? "--linux-deb-maintainer" : "",
+            platform == "linux" ? "icuxika@outlook.com" : "",
+            platform == "linux" ? "--linux-menu-group" : "",
+            platform == "linux" ? applicationName : "",
+            platform == "linux" ? "--linux-shortcut" : "",
     )
 }

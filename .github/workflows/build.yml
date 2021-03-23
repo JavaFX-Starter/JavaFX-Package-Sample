@@ -9,7 +9,7 @@ jobs:
   build-app:
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-20.04, windows-latest ]
+        os: [ ubuntu-20.04 ]
     name: Build the application
     runs-on: ${{ matrix.os }}
     steps:
