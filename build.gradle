@@ -91,6 +91,9 @@ jlink {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 
 task printDependentJarsList {
     // 打印出项目所依赖的jar包路径集合并使用 ; 拼接

@@ -3,11 +3,12 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 
 ### 当前为Java16版本，Java15版本请转到[主分支](https://github.com/icuxika/JavaFX-Package-Sample/tree/master)
 
-### 准备工作（PowerShell中设置的临时环境变量对mvn无效，在cmd中设置的有效）
+### 准备工作
 
-- ```set JAVA_HOME="C:\CommandLineTools\Java\jdk-16"```
-- ```mvn package```
-- ```gradlew assemble```
+- 命令行环境：```set JAVA_HOME="C:\CommandLineTools\Java\jdk-16"```，PowerShell中设置的临时环境变量对mvn无效，在cmd中设置的有效
+- IDEA：
+    - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java16
+    - Edit Configurations：JVM options -> （方式二需要在此添加参数）
 
 ### Gradle Task（方式一，Maven不熟悉）
 
@@ -25,13 +26,10 @@ IDEA中请将`--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED
 - 构建安装包（MSI、EXE）
   -> ```gradlew jpackage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
 
-### 构建（方式三，为方式一的手动版）
+### 手动构建（方式三，为方式一的手动版）
 
-- maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）
-- gradle需指定`distributionUrl=https\://services.gradle.org/distributions-snapshots/gradle-7.0-20210315230049+0000-bin.zip`
-  。
-- `badass-jlink-plugin`尚未适配java16，所以下面纯手动，没有插件的支持，就需要将所用到的jar包全都加入到参数中去，同时暂不确定如果使用了未模块化的jar包是否还有效。
 - 下面的命令都是基于`gradle assemble(jar)`构建出的jar包路径（build目录）来执行，如果使用`mvn package`需要自行替换对应的jar包路径（target目录）。
+- maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）
 - 下述命令切换到其他平台应该通用（未测试）。
 
 #### 执行（以下命令中`-p`参数的值，可以使用```gradle printDependentJarsList```的结果来替换）
