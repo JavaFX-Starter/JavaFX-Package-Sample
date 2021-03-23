@@ -1,13 +1,13 @@
 plugins {
-    id 'application'
-    id 'java'
-//    id 'org.openjfx.javafxplugin' version '0.0.9'
-    id 'org.beryx.jlink' version '2.23.3'
-    id 'com.gluonhq.client-gradle-plugin' version '0.1.35'
+    id "application"
+    id "java"
+//    id "org.openjfx.javafxplugin" version "0.0.9"
+    id "org.beryx.jlink" version "2.23.3"
+    id "com.gluonhq.client-gradle-plugin" version "0.1.35"
 }
 
-group 'com.icuxika'
-version '1.0.0'
+group "com.icuxika"
+version "1.0.0"
 
 repositories {
     mavenCentral()
@@ -16,19 +16,28 @@ repositories {
 
 def platform
 if (org.gradle.internal.os.OperatingSystem.current().windows) {
-    platform = 'win'
+    platform = "win"
 } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
-    platform = 'linux'
+    platform = "linux"
 } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
-    platform = 'mac'
+    platform = "mac"
 }
 
+def applicationName = "JavaFXSample"
+
 application {
-    mainModule.set('sample')
-    mainClass.set('com.icuxika.MainApp')
+    mainModule.set("sample")
+    mainClass.set("com.icuxika.MainApp")
     applicationDefaultJvmArgs = [
-            '--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED'
+            // Java16的ZGC似乎有大幅度优化
+            "-XX:+UseZGC",
+            // 当遇到空指针异常时显示更详细的信息
+            "-XX:+ShowCodeDetailsInExceptionMessages",
+            "-Dsun.java2d.opengl=true",
+            // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
+            "-Dhttps.protocols=TLSv1.1,TLSv1.2",
+            "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix",
+            "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
     ]
 }
 
@@ -41,41 +50,44 @@ dependencies {
     implementation "org.openjfx:javafx-media:16:${platform}"
     implementation "org.openjfx:javafx-web:16:${platform}"
 
-    implementation('com.squareup.okhttp3:okhttp:4.9.0')
-    implementation('com.jfoenix:jfoenix:9.0.10')
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.jfoenix:jfoenix:9.0.10")
     testImplementation("junit:junit:4.12")
 }
 
 //javafx {
-//    version('16')
-//    modules('javafx.controls', 'javafx.fxml', 'javafx.web', 'javafx.swing')
+//    version("16")
+//    modules("javafx.controls", "javafx.fxml", "javafx.web", "javafx.swing")
 //}
 
+// 此插件目前并未支持Java16，暂时无法使用
 jlink {
-    options.set(List.of('--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages'))
+    options.set(List.of("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
 
     launcher {
-        name = 'JavaFXSample'
-        imageName.set('JavaFXSample')
+        name = applicationName
+        imageName.set(applicationName)
     }
 
-    imageZip.set(project.file('${project.buildDir}/image-zip/JavaFXSample.zip'))
+    imageZip.set(project.file("${project.buildDir}/image-zip/JavaFXSample.zip"))
 
     jpackage {
-        outputDir = 'build-package'
-        imageName = 'JavaFXSample'
+        outputDir = "build-package"
+        imageName = applicationName
         skipInstaller = false
-        installerName = 'installer'
+        installerName = applicationName
         appVersion = version.toString()
 
-        imageOptions = List.of('--icon', 'src/main/resources/application.ico')
-
-        // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
-        jvmArgs.add('-Dhttps.protocols=TLSv1.1,TLSv1.2')
-        jvmArgs.add('--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix')
+        application.applicationDefaultJvmArgs.forEach(arg -> {
+            jvmArgs.add(arg)
+        })
 
         if (org.gradle.internal.os.OperatingSystem.current().windows) {
-            installerOptions += ['--win-per-user-install', '--win-dir-chooser', '--win-menu', '--win-shortcut']
+            icon = "src/main/resources/application.ico"
+            installerOptions += ["--win-per-user-install", "--win-dir-chooser", "--win-menu", "--win-shortcut"]
+        }
+        if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+            icon = "src/main/resources/application.icns"
         }
     }
 }
@@ -86,7 +98,46 @@ task printDependentJarsList {
     // dependentJarsPath: 项目依赖的第三方 jar 集合
     // 使用：jpackage -p "${projectJarPath};${dependentJarsPath}"
 
-    println('----------')
-    println(configurations.getByName('runtimeClasspath').files.join(';'))
-    println('----------')
+    println("----------")
+    println(configurations.getByName("runtimeClasspath").files.join(";"))
+    println("----------")
+}
+
+task copyDependencies(type: Copy) {
+    from(configurations.runtimeClasspath)
+    into("$buildDir/modules")
+}
+
+// 打包 -> EXE镜像（build/package/image）
+task package2Image(type: Exec) {
+    dependsOn("build", copyDependencies)
+    commandLine("jpackage")
+    args(
+            "-n", applicationName,
+            "-t", "app-image",
+            "--java-options", application.applicationDefaultJvmArgs.join(" "),
+            "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
+            "-d", "$buildDir/package/image",
+            "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
+            "--icon", platform == "mac" ? "$projectDir/src/main/resources/application.icns" : "$projectDir/src/main/resources/application.ico",
+            "--app-version", "$version"
+    )
+}
+
+// 打包 -> MSI安装包（build/package/installer）
+task package2Installer(type: Exec) {
+    dependsOn("build", copyDependencies)
+    commandLine("jpackage")
+    args(
+            "-n", applicationName,
+            "-t", "msi",
+            "--java-options", application.applicationDefaultJvmArgs.join(" "),
+            "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
+            "-d", "$buildDir/package/installer",
+            "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
+            "--icon", platform == "mac" ? "$projectDir/src/main/resources/application.icns" : "$projectDir/src/main/resources/application.ico",
+            "--app-version", "$version",
+            "--win-dir-chooser", "--win-menu", "--win-shortcut",
+            "--win-menu-group", applicationName
+    )
 }
