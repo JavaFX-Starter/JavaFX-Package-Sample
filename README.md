@@ -10,7 +10,7 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
     - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java16
     - Edit Configurations：JVM options -> （方式二需要在此添加参数）
 
-### Gradle Task（方式一，Maven不熟悉）
+### Gradle Task（方式一）
 
 使用gradle自定义任务拼接命令进行打包（不要变动项目的gradle版本设置，同时请确认gradle运行在java16环境下）
 
@@ -26,7 +26,14 @@ IDEA中请将`--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED
 - 构建安装包（MSI、EXE）
   -> ```gradlew jpackage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
 
-### 手动构建（方式三，为方式一的手动版）
+### Maven Exec（方式三，Maven不熟悉）
+
+本方式目前的配置只够建出了镜像，如果要构建出安装包需要自行调整和补充插件`org.codehaus.mojo:exec-maven-plugin`的配置项，包括`--icon`参数在`macOS`平台上需要改成`icns`文件的路径
+
+- 构建`jar`包（本步骤会自动拷贝项目所需第三方依赖到`target/alternateLocation`目录下） -> ```mvn package```
+- 构建`jpackage`命令执行打包 -> ```mvn exec:exec```
+
+### 手动构建（方式四，为方式一的手动版）
 
 - 下面的命令都是基于`gradle assemble(jar)`构建出的jar包路径（build目录）来执行，如果使用`mvn package`需要自行替换对应的jar包路径（target目录）。
 - maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）

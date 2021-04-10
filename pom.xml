@@ -6,7 +6,7 @@
 
     <groupId>com.icuxika</groupId>
     <artifactId>JavaFX-Package-Sample</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,6 +49,66 @@
                 <version>3.8.1</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>jpackage</executable>
+                    <workingDirectory>${project.basedir}</workingDirectory>
+                    <arguments>
+                        <argument>-n</argument>
+                        <argument>JavaFXSample</argument>
+                        <argument>-t</argument>
+                        <argument>app-image</argument>
+                        <argument>--java-options</argument>
+                        <argument>
+                            --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
+                        </argument>
+                        <argument>-p</argument>
+                        <argument>
+                            ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
+                        </argument>
+                        <argument>-d</argument>
+                        <argument>${project.build.directory}/mvnPackage</argument>
+                        <argument>-m</argument>
+                        <argument>sample/com.icuxika.MainApp</argument>
+                        <argument>--icon</argument>
+                        <argument>
+                            ${project.basedir}/src/main/resources/application.ico
+                        </argument>
+                        <argument>--app-version</argument>
+                        <argument>1.0.0</argument>
+                    </arguments>
                 </configuration>
             </plugin>
             <plugin>
