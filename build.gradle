@@ -83,10 +83,14 @@ jlink {
 
         if (org.gradle.internal.os.OperatingSystem.current().windows) {
             icon = "src/main/resources/application.ico"
-            installerOptions += ["--win-per-user-install", "--win-dir-chooser", "--win-menu", "--win-shortcut"]
+            installerOptions += ["--win-dir-chooser", "--win-menu", "--win-shortcut", "--win-menu-group", applicationName]
         }
         if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
             icon = "src/main/resources/application.icns"
+        }
+        if (org.gradle.internal.os.OperatingSystem.current().linux) {
+            icon = "src/main/resources/application.png"
+            installerOptions += ["--linux-deb-maintainer", "icuxika@outlook.com", "--linux-menu-group", applicationName, "--linux-shortcut"]
         }
     }
 }
@@ -114,6 +118,16 @@ task copyDependencies(type: Copy) {
 // 打包 -> EXE镜像（build/package/image）
 task package2Image(type: Exec) {
     dependsOn("build", copyDependencies)
+
+    def iconPath = "$projectDir/src/main/resources/application.ico"
+    if (org.gradle.internal.os.OperatingSystem.current().windows) {
+        iconPath = "$projectDir/src/main/resources/application.ico"
+    } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+        iconPath = "$projectDir/src/main/resources/application.icns"
+    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
+        iconPath = "$projectDir/src/main/resources/application.png"
+    }
+
     commandLine("jpackage")
     args(
             "-n", applicationName,
@@ -122,7 +136,7 @@ task package2Image(type: Exec) {
             "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
             "-d", "$buildDir/package/image",
             "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
-            "--icon", platform == "mac" ? "$projectDir/src/main/resources/application.icns" : "$projectDir/src/main/resources/application.ico",
+            "--icon", "${iconPath}",
             "--app-version", "$version"
     )
 }
@@ -130,25 +144,53 @@ task package2Image(type: Exec) {
 // 打包 -> MSI安装包（build/package/installer）
 task package2Installer(type: Exec) {
     dependsOn("build", copyDependencies)
-    commandLine("jpackage")
-    args(
+
+    def installerType = "msi"
+    def iconPath = "$projectDir/src/main/resources/application.ico"
+    if (org.gradle.internal.os.OperatingSystem.current().windows) {
+        installerType = "msi"
+        iconPath = "$projectDir/src/main/resources/application.ico"
+    } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+        installerType = "dmg"
+        iconPath = "$projectDir/src/main/resources/application.icns"
+    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
+        installerType = "deb"
+        iconPath = "$projectDir/src/main/resources/application.png"
+    }
+
+    def argsList = [
             "-n", applicationName,
-            "-t", "msi",
+            "-t", "${installerType}",
             "--java-options", application.applicationDefaultJvmArgs.join(" "),
             "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
             "-d", "$buildDir/package/installer",
             "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
-            "--icon", platform == "mac" ? "$projectDir/src/main/resources/application.icns" : "$projectDir/src/main/resources/application.ico",
-            "--app-version", "$version",
-            platform == "win" ? "--win-dir-chooser" : "",
-            platform == "win" ? "--win-menu" : "",
-            platform == "win" ? "--win-shortcut" : "",
-            platform == "win" ? "--win-menu-group" : "",
-            platform == "win" ? applicationName : "",
-            platform == "linux" ? "--linux-deb-maintainer" : "",
-            platform == "linux" ? "icuxika@outlook.com" : "",
-            platform == "linux" ? "--linux-menu-group" : "",
-            platform == "linux" ? applicationName : "",
-            platform == "linux" ? "--linux-shortcut" : "",
-    )
+            "--icon", "${iconPath}",
+            "--app-version", "$version"
+    ]
+
+    def winInstallerOptionList = [
+            "--win-dir-chooser",
+            "--win-menu",
+            "--win-shortcut",
+            "--win-menu-group",
+            "${applicationName}"
+    ]
+
+    def linuxInstallerOptionList = [
+            "--linux-deb-maintainer",
+            "icuxika@outlook.com",
+            "--linux-menu-group",
+            "${applicationName}",
+            "--linux-shortcut"
+    ]
+
+    if (org.gradle.internal.os.OperatingSystem.current().windows) {
+        argsList.addAll(winInstallerOptionList)
+    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
+        argsList.addAll(linuxInstallerOptionList)
+    }
+
+    commandLine("jpackage")
+    args(argsList)
 }
