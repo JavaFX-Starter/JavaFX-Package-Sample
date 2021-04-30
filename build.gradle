@@ -2,7 +2,7 @@ plugins {
     id "application"
     id "java"
 //    id "org.openjfx.javafxplugin" version "0.0.9"
-    id "org.beryx.jlink" version "2.23.4"
+    id "org.beryx.jlink" version "2.23.7"
     id "com.gluonhq.client-gradle-plugin" version "0.1.35"
 }
 

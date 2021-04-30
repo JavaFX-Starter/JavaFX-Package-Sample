@@ -3,6 +3,8 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 
 ### 当前为Java16版本，Java15版本请转到[主分支](https://github.com/icuxika/JavaFX-Package-Sample/tree/master)
 
+### 若你实在没有办法处理非模块化的第三方依赖及分类包相关的模块化问题，可以参考[KtFX-Lets-Plot](https://github.com/icuxika/KtFX-Lets-Plot) 的`non-modular`分支实现，使用了[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/) 插件来对非模块化项目进行构建，`仅支持Gradle`，体积会大不少
+
 ### 准备工作
 
 - 命令行环境：```set JAVA_HOME="C:\CommandLineTools\Java\jdk-16"```，PowerShell中设置的临时环境变量对mvn无效，在cmd中设置的有效
@@ -19,12 +21,8 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 
 ### Badass JLink Plugin（方式二，只支持Gradle，当前插件制作出来的`MSI安装包`会比`方式一`和`方式三`大十几兆，但是`EXE镜像`会小不少）
 
-IDEA中请将`--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED`参数写在`VM options`中
-
-- 构建EXE镜像
-  -> ```gradlew jpackageImage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
-- 构建安装包（MSI、EXE）
-  -> ```gradlew jpackage -Dorg.gradle.jvmargs=--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
+- 构建EXE镜像 -> ```gradlew jpackageImage```
+- 构建安装包（MSI、EXE） -> ```gradlew jpackage```
 
 ### Maven Exec（方式三，Maven不熟悉）
 
