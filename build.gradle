@@ -1,7 +1,6 @@
 plugins {
     id "application"
     id "java"
-//    id "org.openjfx.javafxplugin" version "0.0.9"
     id "org.beryx.jlink" version "2.23.7"
     id "com.gluonhq.client-gradle-plugin" version "0.1.35"
 }
@@ -41,25 +40,19 @@ application {
 }
 
 dependencies {
-    implementation "org.openjfx:javafx-base:16:${platform}"
-    implementation "org.openjfx:javafx-controls:16:${platform}"
-    implementation "org.openjfx:javafx-graphics:16:${platform}"
-    implementation "org.openjfx:javafx-fxml:16:${platform}"
-    implementation "org.openjfx:javafx-swing:16:${platform}"
-    implementation "org.openjfx:javafx-media:16:${platform}"
-    implementation "org.openjfx:javafx-web:16:${platform}"
+    implementation "org.openjfx:javafx-base:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-controls:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-graphics:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-fxml:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-swing:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-media:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-web:17.0.0.1:${platform}"
 
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.jfoenix:jfoenix:9.0.10")
     testImplementation("junit:junit:4.12")
 }
 
-//javafx {
-//    version("16")
-//    modules("javafx.controls", "javafx.fxml", "javafx.web", "javafx.swing")
-//}
-
-// 此插件目前执行需要加上`VM options`: ```--add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED```
 jlink {
     options.set(List.of("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
 

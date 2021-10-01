@@ -1,9 +1,14 @@
 JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 ------------------------------------------------------------
 
-### 当前为Java16版本，Java15版本请转到[主分支](https://github.com/icuxika/JavaFX-Package-Sample/tree/master)
+### 当前为Java17版本，Java15版本请转到[主分支](https://github.com/icuxika/JavaFX-Package-Sample/tree/master)
 
-### 若你实在没有办法处理非模块化的第三方依赖及分裂包相关的模块化问题，可以参考[KtFX-Lets-Plot](https://github.com/icuxika/KtFX-Lets-Plot/tree/non-modular) 的`non-modular`分支实现，使用了[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/) 插件来对非模块化项目进行构建，`仅支持Gradle`，体积会大不少
+### 若你实在没有办法处理非模块化的第三方依赖及分裂包相关的模块化问题，可以参考使用[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/)
+
+插件来对非模块化项目进行构建
+
+- [IMFrameworkFX](https://github.com/icuxika/IMFrameworkFX) （Java）
+- [KtFX-Lets-Plot](https://github.com/icuxika/KtFX-Lets-Plot/tree/non-modular) 的`non-modular`分支实现 （Kotlin）
 
 ### 准备工作
 
