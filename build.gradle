@@ -12,6 +12,7 @@ repositories {
     mavenCentral()
 }
 
+// 获取当前系统平台
 def platform
 if (org.gradle.internal.os.OperatingSystem.current().windows) {
     platform = "win"
@@ -20,6 +21,9 @@ if (org.gradle.internal.os.OperatingSystem.current().windows) {
 } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
     platform = "mac"
 }
+
+// JavaFX 版本定义
+def javaFXVersion = "17.0.0.1"
 
 def applicationName = "JavaFXSample"
 
@@ -40,17 +44,15 @@ application {
 }
 
 dependencies {
-    implementation "org.openjfx:javafx-base:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-controls:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-graphics:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-fxml:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-swing:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-media:17.0.0.1:${platform}"
-    implementation "org.openjfx:javafx-web:17.0.0.1:${platform}"
+    implementation "org.openjfx:javafx-base:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-controls:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-graphics:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-fxml:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-swing:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-media:${javaFXVersion}:${platform}"
+    implementation "org.openjfx:javafx-web:${javaFXVersion}:${platform}"
 
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.jfoenix:jfoenix:9.0.10")
-    testImplementation("junit:junit:4.12")
 }
 
 jlink {
