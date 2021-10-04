@@ -3,6 +3,7 @@ plugins {
     id "java"
     id "org.beryx.jlink" version "2.23.7"
     id "com.gluonhq.client-gradle-plugin" version "0.1.35"
+    id "org.jetbrains.kotlin.jvm" version "1.5.31"
 }
 
 group "com.icuxika"
@@ -11,6 +12,8 @@ version "1.0.0"
 repositories {
     mavenCentral()
 }
+
+compileKotlin.destinationDirectory = compileJava.destinationDirectory
 
 // 获取当前系统平台
 def platform
@@ -38,6 +41,7 @@ application {
             "-Dsun.java2d.opengl=true",
             // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
             "-Dhttps.protocols=TLSv1.1,TLSv1.2",
+            "--add-exports=javafx.controls/com.sun.javafx.scene.control=com.jfoenix",
             "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix",
 //            "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
     ]

@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Tab;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -20,13 +21,15 @@ public class MainApp extends Application {
         // cannot access class com.sun.javafx.scene.control.behavior.TabPaneBehavior (in module javafx.controls) because module javafx.controls does not export com.sun.javafx.scene.control.behavior to module com.jfoenix
         JFXTabPane jfxTabPane = new JFXTabPane();
 
-        StringProperty buttonNameProperty = new SimpleStringProperty("Hello, world");
+        StringProperty buttonNameProperty = new SimpleStringProperty(InfoKt.name());
         JFXButton button = new JFXButton();
         button.textProperty().bind(buttonNameProperty);
         button.setButtonType(JFXButton.ButtonType.RAISED);
         button.setTextFill(Color.WHITE);
         button.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
-
+        Tab tab = new Tab(InfoKt.name());
+        tab.setContent(button);
+        jfxTabPane.getTabs().add(tab);
         primaryStage.setScene(new Scene(jfxTabPane, 600, 400));
         primaryStage.show();
     }

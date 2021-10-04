@@ -1,5 +1,6 @@
 module sample {
 
+    requires kotlin.stdlib;
     requires javafx.base;
     requires javafx.controls;
     requires javafx.fxml;
