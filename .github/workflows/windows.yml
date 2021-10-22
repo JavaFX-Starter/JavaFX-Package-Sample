@@ -28,7 +28,7 @@ jobs:
         shell: pwsh
 
       - name: copy
-        run: New-Item -Name "staging" -ItemType "directory"; Copy-Item ".\build\build-package\JavaFXSample-1.0.0.msi" -Destination "staging"
+        run: New-Item -Name "staging" -ItemType "directory"; Copy-Item ".\build\build-package\*.msi" -Destination "staging"
         shell: pwsh
 
       - name: get current time
