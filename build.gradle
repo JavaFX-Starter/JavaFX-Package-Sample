@@ -2,7 +2,8 @@ plugins {
     id "application"
     id "java"
     id "org.beryx.jlink" version "2.23.7"
-    id "com.gluonhq.client-gradle-plugin" version "0.1.35"
+    id "org.openjfx.javafxplugin" version "0.0.10"
+    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.7"
 }
 
 group "com.icuxika"
@@ -43,16 +44,28 @@ application {
     ]
 }
 
+javafx {
+    version = "17"
+    modules = ["javafx.controls", "javafx.graphics", "javafx.fxml", "javafx.swing", "javafx.media", "javafx.web"]
+}
+
 dependencies {
-    implementation "org.openjfx:javafx-base:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-controls:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-graphics:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-fxml:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-swing:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-media:${javaFXVersion}:${platform}"
-    implementation "org.openjfx:javafx-web:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-base:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-controls:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-graphics:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-fxml:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-swing:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-media:${javaFXVersion}:${platform}"
+//    implementation "org.openjfx:javafx-web:${javaFXVersion}:${platform}"
 
     implementation("com.jfoenix:jfoenix:9.0.10")
+}
+
+mainClassName = "com.icuxika.MainApp"
+gluonfx {
+    compilerArgs = [
+            "--allow-incomplete-classpath"
+    ]
 }
 
 jlink {

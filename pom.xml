@@ -51,11 +51,6 @@
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-media</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.jfoenix</groupId>
             <artifactId>jfoenix</artifactId>
             <version>9.0.10</version>
@@ -97,39 +92,74 @@
                 <version>3.0.0</version>
                 <executions>
                     <execution>
+                        <id>image</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>jpackage</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-n</argument>
+                                <argument>JavaFXSample</argument>
+                                <argument>-t</argument>
+                                <argument>app-image</argument>
+                                <argument>--java-options</argument>
+                                <argument>
+                                    --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
+                                </argument>
+                                <argument>-p</argument>
+                                <argument>
+                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                </argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/mvnPackage</argument>
+                                <argument>-m</argument>
+                                <argument>sample/com.icuxika.MainApp</argument>
+                                <argument>--icon</argument>
+                                <argument>
+                                    ${project.basedir}/src/main/resources/application.icns
+                                </argument>
+                                <argument>--app-version</argument>
+                                <argument>1.0.0</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>installer</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jpackage</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-n</argument>
+                                <argument>JavaFXSample</argument>
+                                <argument>-t</argument>
+                                <argument>dmg</argument>
+                                <argument>--java-options</argument>
+                                <argument>
+                                    --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
+                                </argument>
+                                <argument>-p</argument>
+                                <argument>
+                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                </argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/mvnInstaller</argument>
+                                <argument>-m</argument>
+                                <argument>sample/com.icuxika.MainApp</argument>
+                                <argument>--icon</argument>
+                                <argument>
+                                    ${project.basedir}/src/main/resources/application.icns
+                                </argument>
+                                <argument>--app-version</argument>
+                                <argument>1.0.0</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>jpackage</executable>
-                    <workingDirectory>${project.basedir}</workingDirectory>
-                    <arguments>
-                        <argument>-n</argument>
-                        <argument>JavaFXSample</argument>
-                        <argument>-t</argument>
-                        <argument>app-image</argument>
-                        <argument>--java-options</argument>
-                        <argument>
-                            --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
-                        </argument>
-                        <argument>-p</argument>
-                        <argument>
-                            ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
-                        </argument>
-                        <argument>-d</argument>
-                        <argument>${project.build.directory}/mvnPackage</argument>
-                        <argument>-m</argument>
-                        <argument>sample/com.icuxika.MainApp</argument>
-                        <argument>--icon</argument>
-                        <argument>
-                            ${project.basedir}/src/main/resources/application.ico
-                        </argument>
-                        <argument>--app-version</argument>
-                        <argument>1.0.0</argument>
-                    </arguments>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -148,6 +178,19 @@
                         <option>--add-exports</option>
                         <option>javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix</option>
                     </options>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.7</version>
+                <configuration>
+                    <mainClass>com.icuxika.MainApp</mainClass>
+                    <nativeImageArgs>
+                        <nativeImageArg>
+                            --allow-incomplete-classpath
+                        </nativeImageArg>
+                    </nativeImageArgs>
                 </configuration>
             </plugin>
         </plugins>
