@@ -25,7 +25,7 @@ jobs:
       - name: chmod gradlew
         run: chmod +x ./gradlew
 
-      - run: ./gradlew jpackageImage
+      - run: ./gradlew jpackage
       - run: mkdir staging && rm -rf build/build-package/JavaFXSample && cp build/build-package/* staging
 
       - name: get current time
