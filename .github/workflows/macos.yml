@@ -1,0 +1,42 @@
+name: Build installer for supported os
+on:
+  push:
+    branches:
+      - java17
+
+
+jobs:
+  build-app:
+    strategy:
+      matrix:
+        os: [ macos-10.15 ]
+    name: Build the application
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: chmod gradlew
+        run: chmod +x ./gradlew
+
+      - run: ./gradlew jpackage
+      - run: mkdir staging && rm -rf build/build-package/JavaFXSample.app && cp build/build-package/*.dmg staging
+
+      - name: get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD-HH
+          utcOffset: "+08:00"
+
+      - name: upload build result
+        uses: actions/upload-artifact@v2
+        with:
+          name: JavaFXSample-${{ steps.current-time.outputs.formattedTime }}-${{ matrix.os }}
+          path: staging
