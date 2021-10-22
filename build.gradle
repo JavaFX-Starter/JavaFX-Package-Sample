@@ -98,6 +98,7 @@ jlink {
         }
         if (org.gradle.internal.os.OperatingSystem.current().linux) {
             icon = "src/main/resources/application.png"
+            installerType = "deb"
             installerOptions += ["--linux-deb-maintainer", "icuxika@outlook.com", "--linux-menu-group", applicationName, "--linux-shortcut"]
         }
     }
