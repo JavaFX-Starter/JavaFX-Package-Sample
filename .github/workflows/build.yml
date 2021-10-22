@@ -25,8 +25,8 @@ jobs:
       - name: chmod gradlew
         run: chmod +x ./gradlew
 
-      - run: ./gradlew package2Installer
-      - run: mkdir staging && cp build/package/installer/* staging
+      - run: ./gradlew jpackageImage
+      - run: mkdir staging && cp /build/build-package/* staging
 
       - name: get current time
         uses: 1466587594/get-current-time@v2
