@@ -15,29 +15,39 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 - 命令行环境：```set JAVA_HOME="C:\CommandLineTools\Java\jdk-17"```，PowerShell中设置的临时环境变量对mvn无效，在cmd中设置的有效
 - IDEA：
   - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java17
-  - Edit Configurations：JVM options -> （方式二需要在此添加参数）
+- Windows：需要安装 [WIX TOOLSET](https://wixtoolset.org/) ，并将其bin目录添加到环境变量中
+- 其他平台缺失的包一般可以根据提示通过包管理器直接安装
 
-### Gradle Task（方式一）
+### 方式一（Gradle Task）
+
+> 当前配置下，此方式（包括Gradle方式的手动版）存在问题，原因是，使用`com.gluonhq.gluonfx-gradle-plugin`插件需要依赖`org.openjfx.javafxplugin`插件，这种情况会产生两个依赖，
+> 如`javafx-base`与`javafx:base:mac`，然后Java默认的模块化系统读取的时候就会从两个包中发现两个一样的模块从而产生错误。解决方式：一、方式二不受此问题影响；二：不需要使用GraalVm的情况下，注释掉
+> `com.gluonhq.gluonfx-gradle-plugin`与`org.openjfx.javafxplugin`插件，然后注释掉对应的`javafx`依赖配置块与`gluonfx`配置块，最后手动在`dependencies`中设置`JavaFX`的依赖。
 
 使用gradle自定义任务拼接命令进行打包（不要变动项目的gradle版本设置，同时请确认gradle运行在java17环境下）
 
 - 构建镜像 -> ```gradlew package2Image```
 - 构建安装包 -> ```gradlew package2Installer```
 
-### Badass JLink Plugin（方式二，只支持Gradle，当前插件制作出来的`MSI安装包`会比`方式一`和`方式三`大十几兆，但是`EXE镜像`会小不少）
+### 方式二（Badass JLink Plugin，只支持Gradle）
 
 - 构建镜像 -> ```gradlew jpackageImage```
 - 构建安装包 -> ```gradlew jpackage```
 
-### Maven Exec（方式三，Maven）
+### 方式三（Maven Exec）
 
-本方式目前的配置只够建出了镜像，如果要构建出安装包需要自行调整和补充插件`org.codehaus.mojo:exec-maven-plugin`的配置项，包括`--icon`参数在`macOS`平台上需要改成`icns`文件的路径
+> 平台图标文件类型
+> - `Windows`: ico
+> - `macOS`: icns
+> - `Linux`: png
+>
+> `resources`目录下已经存在了各个图标文件，需要配置`org.codehaus.mojo:exec-maven-plugin`插件在不同平台下`--icon`参数的值，如：`${project.basedir}/src/main/resources/application.icns`
 
 - 构建`jar`包（本步骤会自动拷贝项目所需第三方依赖到`target/alternateLocation`目录下） -> ```mvn package```
 - 构建镜像 -> ```mvn exec:exec@image```
 - 构建安装包 -> ```mvn exec:exec@installer```
 
-### 手动构建（方式四，为方式一的手动版）
+### 方式四（手动构建，为方式一的手动版）
 
 - 下面的命令都是基于`gradle assemble(jar)`构建出的jar包路径（build目录）来执行，如果使用`mvn package`需要自行替换对应的jar包路径（target目录）。
 - maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）
@@ -75,7 +85,7 @@ C:\CommandLineTools\Java\jdk-17\bin\jpackage.exe --type app-image -n JavaFXSampl
 C:\CommandLineTools\Java\jdk-17\bin\jpackage.exe -n JavaFXSample --app-image ./target/build-package/JavaFXSample --app-version 1.0.0 --dest ./target/build-link-package --temp ./target/build-link-package/temp --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
 ```
 
-### GraalVM（方式五）
+### 方式五（GraalVM）
 
 > - [下载](https://www.graalvm.org/downloads/)
 > - 配置环境变量 `export GRAALVM_HOME=/Users/icuxika/CommandLineTools/graalvm-ee-java17-21.3.0/Contents/Home`
