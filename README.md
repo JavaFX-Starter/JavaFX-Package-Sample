@@ -1,20 +1,26 @@
-JavaFX 打包示例（Windows下的演示，其他平台自行替换）
+JavaFX 打包示例（还没完全测试）
 ------------------------------------------------------------
 
-### 当前为Java17版本，Java15版本请转到[主分支](https://github.com/icuxika/JavaFX-Package-Sample/tree/master)
+### 当前为Java18版本，其他版本请切换分之查看
 
-### 若你实在没有办法处理非模块化的第三方依赖及分裂包相关的模块化问题，可以参考使用[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/)
+### 一些变动
+- 移除了`JFoenix`（已不再更新，在新版本jdk中，许多类已不兼容模块化相关变更），使用[MaterialFX](https://github.com/palexdev/MaterialFX) 作为示例使用的控件库
+- 因为移除了`JFoenix`，所以项目也移除了有关`--add-exports`或是`--add-opens`的配置，如果后续使用第三方库或者`jdk`本身内部库的时候，遇到了相关错误，可以查看17及之前的版本的配置是怎么配置的
+- 添加了有关`i18n`的配置，支持各控件`StringProperty`进行属性绑定使用，并通过`AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE);` 来进行语言动态切换
+- 有关客户端其他常用封装，可以参考[IMFrameworkFX](https://github.com/icuxika/IMFrameworkFX)
+  - 如何封装一个Http请求工具类，可以查看`com.icuxika.api.API`类，支持对类似`Spring Boot`后端返回的`json`数据自动泛型转换对应实体类，并且提供了文件下载的进度显示，以及请求上传的进度显示的支持
+  - 通过注解来使用`FXML`，并支持一个属性变更动态切换不同主题`css`样式文件，可以查看`com.icuxika.AppView`类
 
-插件来对非模块化项目进行构建
+### 若你实在没有办法处理非模块化的第三方依赖及分裂包相关的模块化问题，可以参考使用[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/) 插件来对非模块化项目进行构建
 
 - [IMFrameworkFX](https://github.com/icuxika/IMFrameworkFX) （Java）
 - [KtFX-Lets-Plot](https://github.com/icuxika/KtFX-Lets-Plot/tree/non-modular) 的`non-modular`分支实现 （Kotlin）
 
 ### 准备工作
 
-- 命令行环境：```set JAVA_HOME="C:\CommandLineTools\Java\jdk-17"```，PowerShell中设置的临时环境变量对mvn无效，在cmd中设置的有效
+- 命令行环境：```set JAVA_HOME="jdk18主目录"```，PowerShell中设置的临时环境变量对mvn无效（不是很确定，但你要考虑这一因素），在cmd中设置的有效
 - IDEA：
-  - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java17
+  - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java18
 - Windows：需要安装 [WIX TOOLSET](https://wixtoolset.org/) ，并将其bin目录添加到环境变量中
 - 其他平台缺失的包一般可以根据提示通过包管理器直接安装
 
@@ -24,7 +30,7 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 > 如`javafx-base`与`javafx:base:mac`，然后Java默认的模块化系统读取的时候就会从两个包中发现两个一样的模块从而产生错误。解决方式：一、方式二不受此问题影响；二：不需要使用GraalVm的情况下，注释掉
 > `com.gluonhq.gluonfx-gradle-plugin`与`org.openjfx.javafxplugin`插件，然后注释掉对应的`javafx`依赖配置块与`gluonfx`配置块，最后手动在`dependencies`中设置`JavaFX`的依赖。
 
-使用gradle自定义任务拼接命令进行打包（不要变动项目的gradle版本设置，同时请确认gradle运行在java17环境下）
+使用gradle自定义任务拼接命令进行打包（不要变动项目的gradle版本设置，同时请确认gradle运行在java18环境下）
 
 - 构建镜像 -> ```gradlew package2Image```
 - 构建安装包 -> ```gradlew package2Installer```
@@ -43,11 +49,13 @@ JavaFX 打包示例（Windows下的演示，其他平台自行替换）
 >
 > `resources`目录下已经存在了各个图标文件，需要配置`org.codehaus.mojo:exec-maven-plugin`插件在不同平台下`--icon`参数的值，如：`${project.basedir}/src/main/resources/application.icns`
 
+- 重新构建请先执行`mvn clean`
 - 构建`jar`包（本步骤会自动拷贝项目所需第三方依赖到`target/alternateLocation`目录下） -> ```mvn package```
 - 构建镜像 -> ```mvn exec:exec@image```
 - 构建安装包 -> ```mvn exec:exec@installer```
 
 ### 方式四（手动构建，为方式一的手动版）
+> `当前版本待测试`
 
 - 下面的命令都是基于`gradle assemble(jar)`构建出的jar包路径（build目录）来执行，如果使用`mvn package`需要自行替换对应的jar包路径（target目录）。
 - maven版本的相关插件正常使用（`mvn javafx:run`、`mvn javafx:jlink`）
@@ -86,22 +94,25 @@ C:\CommandLineTools\Java\jdk-17\bin\jpackage.exe -n JavaFXSample --app-image ./t
 ```
 
 ### 方式五（GraalVM）
+> `Windows版本待测试`
+#### 说明
+- [下载](https://www.graalvm.org/downloads/)
+- 配置环境变量 `export GRAALVM_HOME=export GRAALVM_HOME=/Users/icuxika/CommandLineTools/graalvm-ce-java17-22.0.0.2/Contents/Home`
+- （`22.0.0.2` 没有此操作也未影响后面的步骤）执行 `$GRAALVM_HOME/bin/gu --jvm install native-image`
+- `GraalVM Community 22.0`目前并不支持在`java18`的环境下进行运行，因此`<maven.compiler.release>17</maven.compiler.release>`项目依旧需要使用`java17`，如果你不使用`GraalVM`，则可以更改为`18`
+- 初次执行，会有`Downloading JavaFX static libs...`的过程，此下载可能需要翻墙
+- 除了`GRAALVM_HOME`的配置，你应当确保`JAVA_HOME`也正确配置
+- 建议在命令行操作，方便测试不同环境变量下的效果
 
-> - [下载](https://www.graalvm.org/downloads/)
-> - 配置环境变量 `export GRAALVM_HOME=/Users/icuxika/CommandLineTools/graalvm-ee-java17-21.3.0/Contents/Home`
-> - 执行 `$GRAALVM_HOME/bin/gu --jvm install native-image`
-
+##### 构建
 - ```mvn gluonfx:build```
 - ```gradle nativeBuild```
 
-> 当前构建即将完成时，会遇到`ld: library not found for -lsunec`错误，可以通过提示的错误日志位置，从日志中提取出对应的`gcc`命令，从中删除`-lsunec`部分并手动执行。
->
-> 然后使用`mvn gluonfx:run`或`gradle nativeRun`来执行
->
-> `target/gluonfx/x86_64-darwin/gvm/log` 或 `target/gluonfx/x86_64-darwin/gvm/log` 目录下的某个日志文件中
->
-> 对应部分日志示例如下
+##### 运行
+- ```mvn gluonfx:run```
+- ```gradle nativeRun```
 
-```shell
-PB Command for link: gcc /Users/icuxika/IdeaProjects/JavaFX-Package-Sample/target/gluonfx/x86_64-darwin/gvm/JavaFX-Package-Sample/AppDelegate.o /Users/icuxika/IdeaProjects/JavaFX-Package-Sample/target/gluonfx/x86_64-darwin/gvm/JavaFX-Package-Sample/launcher.o /Users/icuxika/IdeaProjects/JavaFX-Package-Sample/target/gluonfx/x86_64-darwin/gvm/tmp/SVM-1734905334702/com.icuxika.mainapp.o -ljava -lnio -lzip -lnet -lprefs -lj2pkcs11 -lfdlibm -lsunec -lextnet -ljvm -llibchelper -ldarwin -lpthread -lz -ldl -lstdc++ -mmacosx-version-min=10.12 -lobjc -lWebCore -lXMLJava -lJavaScriptCore -lbmalloc -licui18n -lSqliteJava -lXSLTJava -lPAL -lWebCoreTestSupport -lWTF -licuuc -licudata -Wl,-framework,Foundation -Wl,-framework,AppKit -Wl,-framework,ApplicationServices -Wl,-framework,OpenGL -Wl,-framework,QuartzCore -Wl,-framework,Security -Wl,-framework,Accelerate -Wl,-force_load,/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib/libglass.a -Wl,-force_load,/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib/libjavafx_font.a -Wl,-force_load,/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib/libjavafx_iio.a -Wl,-force_load,/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib/libprism_es2.a -Wl,-force_load,/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib/libjfxwebkit.a -o /Users/icuxika/IdeaProjects/JavaFX-Package-Sample/target/gluonfx/x86_64-darwin/JavaFX-Package-Sample -L/Users/icuxika/.gluon/substrate/javafxStaticSdk/18-ea+2/darwin-x86_64/sdk/lib -L/Users/icuxika/CommandLineTools/graalvm-ee-java17-21.3.0/Contents/Home/lib/svm/clibraries/darwin-amd64 -L/Users/icuxika/CommandLineTools/graalvm-ee-java17-21.3.0/Contents/Home/lib/static/darwin-amd64
-```
+##### 小问题
+> macOS上`mvn gluonfx:run`或`gradle nativeRun`不会报告任何错误，但直接双击生成的程序运行时，关联的控制台窗口会报告
+> ```java.lang.NoSuchMethodError: com.sun.glass.ui.mac.MacAccessible.accessibilityAttributeNames```，但不会影响程序的运行
+

@@ -1,33 +1,51 @@
 package com.icuxika;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTabPane;
+import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.enums.ButtonType;
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import java.util.Locale;
 
 public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // cannot access class com.sun.javafx.scene.control.behavior.TabPaneBehavior (in module javafx.controls) because module javafx.controls does not export com.sun.javafx.scene.control.behavior to module com.jfoenix
-        JFXTabPane jfxTabPane = new JFXTabPane();
+        AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE);
 
-        StringProperty buttonNameProperty = new SimpleStringProperty("Hello, world");
-        JFXButton button = new JFXButton();
-        button.textProperty().bind(buttonNameProperty);
-        button.setButtonType(JFXButton.ButtonType.RAISED);
-        button.setTextFill(Color.WHITE);
-        button.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
+        Label label = new Label();
+        label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
-        primaryStage.setScene(new Scene(jfxTabPane, 600, 400));
+        MFXButton zhButton = new MFXButton("中文");
+        zhButton.setPrefSize(120, 40);
+        zhButton.setButtonType(ButtonType.FLAT);
+        zhButton.setTextFill(Color.WHITE);
+        zhButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
+        zhButton.setOnAction(event -> AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE));
+
+        MFXButton enButton = new MFXButton("英文");
+        enButton.setPrefSize(120, 40);
+        enButton.setButtonType(ButtonType.FLAT);
+        enButton.setTextFill(Color.WHITE);
+        enButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
+        enButton.setOnAction(event -> AppResource.setLanguage(Locale.ENGLISH));
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+        vBox.setSpacing(10);
+        vBox.getChildren().addAll(label, zhButton, enButton);
+
+        primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
+        primaryStage.setScene(new Scene(vBox, 600, 400));
         primaryStage.show();
     }
 

@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
-        <javafx.version>17.0.0.1</javafx.version>
+        <maven.compiler.release>18</maven.compiler.release>
+        <javafx.version>18</javafx.version>
     </properties>
 
     <dependencies>
@@ -51,9 +51,9 @@
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.jfoenix</groupId>
-            <artifactId>jfoenix</artifactId>
-            <version>9.0.10</version>
+            <groupId>io.github.palexdev</groupId>
+            <artifactId>materialfx</artifactId>
+            <version>11.13.5</version>
         </dependency>
     </dependencies>
     <build>
@@ -104,10 +104,6 @@
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
                                 <argument>app-image</argument>
-                                <argument>--java-options</argument>
-                                <argument>
-                                    --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
-                                </argument>
                                 <argument>-p</argument>
                                 <argument>
                                     ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
@@ -138,10 +134,6 @@
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
                                 <argument>dmg</argument>
-                                <argument>--java-options</argument>
-                                <argument>
-                                    --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix
-                                </argument>
                                 <argument>-p</argument>
                                 <argument>
                                     ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
@@ -164,7 +156,7 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.5</version>
+                <version>0.0.8</version>
                 <configuration>
                     <stripDebug>true</stripDebug>
                     <compress>2</compress>
@@ -174,23 +166,19 @@
                     <jlinkImageName>build-link</jlinkImageName>
                     <jlinkZipName>sample-zip</jlinkZipName>
                     <mainClass>sample/com.icuxika.MainApp</mainClass>
-                    <options>
-                        <option>--add-exports</option>
-                        <option>javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix</option>
-                    </options>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.7</version>
+                <version>1.0.13</version>
                 <configuration>
                     <mainClass>com.icuxika.MainApp</mainClass>
-                    <nativeImageArgs>
-                        <nativeImageArg>
-                            --allow-incomplete-classpath
-                        </nativeImageArg>
-                    </nativeImageArgs>
+                    <bundlesList>
+                        <list>com.icuxika.i18n.LanguageResource</list>
+                        <list>com.icuxika.i18n.LanguageResource_en</list>
+                        <list>com.icuxika.i18n.LanguageResource_zh_CN</list>
+                    </bundlesList>
                 </configuration>
             </plugin>
         </plugins>

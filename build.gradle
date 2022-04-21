@@ -1,9 +1,9 @@
 plugins {
     id "application"
     id "java"
-    id "org.beryx.jlink" version "2.24.4"
-    id "org.openjfx.javafxplugin" version "0.0.10"
-    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.7"
+    id "org.beryx.jlink" version "2.25.0"
+    id "org.openjfx.javafxplugin" version "0.0.12"
+    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.13"
 }
 
 group "com.icuxika"
@@ -24,7 +24,7 @@ if (org.gradle.internal.os.OperatingSystem.current().windows) {
 }
 
 // JavaFX 版本定义
-def javaFXVersion = "17.0.0.1"
+def javaFXVersion = "18"
 
 application {
     applicationName = "JavaFXSample"
@@ -37,14 +37,12 @@ application {
             "-XX:+ShowCodeDetailsInExceptionMessages",
             "-Dsun.java2d.opengl=true",
             // 不添加此参数，打包成exe后，https协议的网络图片资源无法加载
-            "-Dhttps.protocols=TLSv1.1,TLSv1.2",
-            "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix",
-//            "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
+            "-Dhttps.protocols=TLSv1.1,TLSv1.2"
     ]
 }
 
 javafx {
-    version = "17"
+    version = "18"
     modules = ["javafx.controls", "javafx.graphics", "javafx.fxml", "javafx.swing", "javafx.media", "javafx.web"]
 }
 
@@ -57,13 +55,15 @@ dependencies {
 //    implementation "org.openjfx:javafx-media:${javaFXVersion}:${platform}"
 //    implementation "org.openjfx:javafx-web:${javaFXVersion}:${platform}"
 
-    implementation("com.jfoenix:jfoenix:9.0.10")
+    implementation("io.github.palexdev:materialfx:11.13.5")
 }
 
 mainClassName = "com.icuxika.MainApp"
 gluonfx {
-    compilerArgs = [
-            "--allow-incomplete-classpath"
+    bundlesList = [
+            "com.icuxika.i18n.LanguageResource",
+            "com.icuxika.i18n.LanguageResource_en",
+            "com.icuxika.i18n.LanguageResource_zh_CN"
     ]
 }
 
