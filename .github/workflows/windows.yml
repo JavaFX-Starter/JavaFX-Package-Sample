@@ -2,7 +2,7 @@ name: Build installer for Windows
 on:
   push:
     branches:
-      - java18
+      - java19
 
 jobs:
   build-app:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: 18
+          java-version: 19
 
       - run: $Env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
 

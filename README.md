@@ -1,7 +1,7 @@
-JavaFX 打包示例（还没完全测试）
+JavaFX 打包示例（GraalVM 还没测试）
 ------------------------------------------------------------
 
-### 当前为Java18版本，其他版本请切换分之查看
+### 当前为Java19版本，其他版本请切换分之查看
 
 ### 一些变动
 - 移除了`JFoenix`（已不再更新，在新版本jdk中，许多类已不兼容模块化相关变更），使用[MaterialFX](https://github.com/palexdev/MaterialFX) 作为示例使用的控件库
@@ -18,9 +18,9 @@ JavaFX 打包示例（还没完全测试）
 
 ### 准备工作
 
-- 命令行环境：```set JAVA_HOME="jdk18主目录"```，PowerShell中设置的临时环境变量对mvn无效（不是很确定，但你要考虑这一因素），在cmd中设置的有效
+- 命令行环境：```set JAVA_HOME="jdk19主目录"```，PowerShell中设置的临时环境变量对mvn无效（不是很确定，但你要考虑这一因素），在cmd中设置的有效
 - IDEA：
-  - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java18
+  - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定Gradle JVM为Java19
 - Windows：需要安装 [WIX TOOLSET](https://wixtoolset.org/) ，并将其bin目录添加到环境变量中
 - 其他平台缺失的包一般可以根据提示通过包管理器直接安装
 

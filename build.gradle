@@ -2,8 +2,8 @@ plugins {
     id "application"
     id "java"
     id "org.beryx.jlink" version "2.25.0"
-    id "org.openjfx.javafxplugin" version "0.0.12"
-    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.13"
+    id "org.openjfx.javafxplugin" version "0.0.13"
+    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.16"
 }
 
 group "com.icuxika"
@@ -24,7 +24,7 @@ if (org.gradle.internal.os.OperatingSystem.current().windows) {
 }
 
 // JavaFX 版本定义
-def javaFXVersion = "18"
+def javaFXVersion = "19"
 
 application {
     applicationName = "JavaFXSample"
@@ -42,7 +42,7 @@ application {
 }
 
 javafx {
-    version = "18"
+    version = "19"
     modules = ["javafx.controls", "javafx.graphics", "javafx.fxml", "javafx.swing", "javafx.media", "javafx.web"]
 }
 
