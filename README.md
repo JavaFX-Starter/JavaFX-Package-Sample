@@ -54,7 +54,7 @@ JavaFX 打包示例（GraalVM 还没测试）
 - 构建镜像 -> ```mvn exec:exec@image```
 - 构建安装包 -> ```mvn exec:exec@installer```
 
-### 方式四（手动构建，为方式一的手动版）
+### 方式四（手动构建，为方式一的手动版）（待更新，请先查看<a href="Windows下手动构建的演示.md">Windows下手动构建的演示</a>）
 > `当前版本待测试`
 
 - 下面的命令都是基于`gradle assemble(jar)`构建出的jar包路径（build目录）来执行，如果使用`mvn package`需要自行替换对应的jar包路径（target目录）。
