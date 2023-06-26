@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>19</maven.compiler.release>
-        <javafx.version>19</javafx.version>
+        <maven.compiler.release>20</maven.compiler.release>
+        <javafx.version>20</javafx.version>
     </properties>
 
     <dependencies>
@@ -171,7 +171,7 @@
             <plugin>
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.16</version>
+                <version>1.0.19</version>
                 <configuration>
                     <mainClass>com.icuxika.MainApp</mainClass>
                     <bundlesList>

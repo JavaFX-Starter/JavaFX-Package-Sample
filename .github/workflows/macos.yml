@@ -2,7 +2,7 @@ name: Build installer for macOS
 on:
   push:
     branches:
-      - java19
+      - java20
 
 jobs:
   build-app:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: 19
+          java-version: 20
 
       - name: chmod gradlew
         run: chmod +x ./gradlew
