@@ -63,7 +63,7 @@ mvn exec:exec@installer
 ```
 
 ### `gluon`
-> `GluonFX plugin for Maven`和`GluonFX plugin for Gradle`依赖的`Gluon Substrate`目前存在一个bug，暂时无法在`GraalVM 21`上运行，不过你可以
+> `GluonFX plugin for Maven`和`GluonFX plugin for Gradle`依赖的`Gluon Substrate`目前存在一个bug，暂时无法在`GraalVM 21`上运行，不过你可以先试试命令能不能正确运行，顺便让他完成`JavaFX static libs`的下载
 - 下载[Oracle GraalVM](https://www.graalvm.org/downloads/)
 - 请运行在由`Visual Studio`提供的命令行环境中，`Windows 终端`可以直接在标签页中打开`Developer PowerShell for VS 2022`，其他用户可以在开始菜单的`Visual Studio 2022`文件夹中找到
 - gluon 不关注 `module-info.java` 文件的存在与否
