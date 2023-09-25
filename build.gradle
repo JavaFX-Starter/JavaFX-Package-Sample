@@ -2,8 +2,8 @@ plugins {
     id "application"
     id "java"
     id "org.beryx.jlink" version "2.26.0"
-    id "org.openjfx.javafxplugin" version "0.0.14"
-    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.19"
+    id "org.openjfx.javafxplugin" version "0.1.0"
+    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.21"
 }
 
 group "com.icuxika"
@@ -13,25 +13,12 @@ repositories {
     mavenCentral()
 }
 
-// 获取当前系统平台
-def platform
-if (org.gradle.internal.os.OperatingSystem.current().windows) {
-    platform = "win"
-} else if (org.gradle.internal.os.OperatingSystem.current().linux) {
-    platform = "linux"
-} else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
-    platform = "mac"
-}
-
-// JavaFX 版本定义
-def javaFXVersion = "20"
-
 application {
     applicationName = "JavaFXSample"
     mainModule.set("sample")
     mainClass.set("com.icuxika.MainApp")
     applicationDefaultJvmArgs = [
-            // Java16的ZGC似乎有大幅度优化
+            // ZGC
             "-XX:+UseZGC",
             // 当遇到空指针异常时显示更详细的信息
             "-XX:+ShowCodeDetailsInExceptionMessages",
@@ -42,40 +29,23 @@ application {
 }
 
 javafx {
-    version = "20"
+    version = "21"
     modules = ["javafx.controls", "javafx.graphics", "javafx.fxml", "javafx.swing", "javafx.media", "javafx.web"]
 }
 
 dependencies {
-//    implementation "org.openjfx:javafx-base:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-controls:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-graphics:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-fxml:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-swing:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-media:${javaFXVersion}:${platform}"
-//    implementation "org.openjfx:javafx-web:${javaFXVersion}:${platform}"
-
-    implementation("io.github.palexdev:materialfx:11.13.5")
-}
-
-mainClassName = "com.icuxika.MainApp"
-gluonfx {
-    bundlesList = [
-            "com.icuxika.i18n.LanguageResource",
-            "com.icuxika.i18n.LanguageResource_en",
-            "com.icuxika.i18n.LanguageResource_zh_CN"
-    ]
+    implementation("io.github.palexdev:materialfx:11.16.1")
 }
 
 jlink {
-    options.set(List.of("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    options.set(List.of("--strip-debug", "--compress", "zip-9", "--no-header-files", "--no-man-pages"))
 
     launcher {
         name = application.applicationName
         imageName.set(application.applicationName)
     }
 
-    imageZip.set(project.file("${project.buildDir}/image-zip/JavaFXSample.zip"))
+    imageZip.set(project.file("${project.getLayout().getBuildDirectory()}/image-zip/JavaFXSample.zip"))
 
     jpackage {
         outputDir = "build-package"
@@ -99,102 +69,25 @@ jlink {
     }
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
+// https://github.com/gluonhq/substrate/issues/1232
+// 修改icon 不要改变文件名称 src\windows\assets\icon.ico
+mainClassName = "com.icuxika.MainApp"
+gluonfx {
+    bundlesList = [
+            "com.icuxika.i18n.LanguageResource",
+            "com.icuxika.i18n.LanguageResource_en",
+            "com.icuxika.i18n.LanguageResource_zh_CN"
+    ]
+}
+
 task printDependentJarsList {
-    // 打印出项目所依赖的jar包路径集合并使用 ; 拼接
-    // projectJarPath: 当前项目 gradle jar 制作出来的 jar
-    // dependentJarsPath: 项目依赖的第三方 jar 集合
-    // 使用：jpackage -p "${projectJarPath};${dependentJarsPath}"
-
-    println("----------")
-    println(configurations.getByName("runtimeClasspath").files.join(";"))
-    println("----------")
-}
-
-task copyDependencies(type: Copy) {
-    from(configurations.getByName("runtimeClasspath"))
-    into("$buildDir/modules")
-}
-
-// 打包 -> EXE镜像（build/package/image）
-task package2Image(type: Exec) {
-    dependsOn("build", copyDependencies)
-
-    def iconPath = "$projectDir/src/main/resources/application.ico"
-    if (org.gradle.internal.os.OperatingSystem.current().windows) {
-        iconPath = "$projectDir/src/main/resources/application.ico"
-    } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
-        iconPath = "$projectDir/src/main/resources/application.icns"
-    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
-        iconPath = "$projectDir/src/main/resources/application.png"
+    doLast {
+        println("------------------------------------------------------------")
+        println(configurations.getByName("runtimeClasspath").asPath)
+        println("------------------------------------------------------------")
     }
-
-    commandLine("jpackage")
-    args(
-            "-n", application.applicationName,
-            "-t", "app-image",
-            "--java-options", application.applicationDefaultJvmArgs.join(" "),
-            "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
-            "-d", "$buildDir/package/image",
-            "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
-            "--icon", "${iconPath}",
-            "--app-version", "$version"
-    )
-}
-
-// 打包 -> MSI安装包（build/package/installer）
-task package2Installer(type: Exec) {
-    dependsOn("build", copyDependencies)
-
-    def installerType = "msi"
-    def iconPath = "$projectDir/src/main/resources/application.ico"
-    if (org.gradle.internal.os.OperatingSystem.current().windows) {
-        installerType = "msi"
-        iconPath = "$projectDir/src/main/resources/application.ico"
-    } else if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
-        installerType = "dmg"
-        iconPath = "$projectDir/src/main/resources/application.icns"
-    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
-        installerType = "deb"
-        iconPath = "$projectDir/src/main/resources/application.png"
-    }
-
-    def argsList = [
-            "-n", application.applicationName,
-            "-t", "${installerType}",
-            "--java-options", application.applicationDefaultJvmArgs.join(" "),
-            "-p", "$buildDir/modules" + File.pathSeparator + "$buildDir/libs",
-            "-d", "$buildDir/package/installer",
-            "-m", "${application.mainModule.get()}/${application.mainClass.get()}",
-            "--icon", "${iconPath}",
-            "--app-version", "$version"
-    ]
-
-    def winInstallerOptionList = [
-            "--win-dir-chooser",
-            "--win-menu",
-            "--win-shortcut",
-            "--win-menu-group",
-            "${application.applicationName}"
-    ]
-
-    def linuxInstallerOptionList = [
-            "--linux-deb-maintainer",
-            "icuxika@outlook.com",
-            "--linux-menu-group",
-            "${application.applicationName}",
-            "--linux-shortcut"
-    ]
-
-    if (org.gradle.internal.os.OperatingSystem.current().windows) {
-        argsList.addAll(winInstallerOptionList)
-    } else if (org.gradle.internal.os.OperatingSystem.current().linux) {
-        argsList.addAll(linuxInstallerOptionList)
-    }
-
-    commandLine("jpackage")
-    args(argsList)
 }

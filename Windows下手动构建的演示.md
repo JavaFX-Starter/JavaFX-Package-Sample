@@ -1,16 +1,18 @@
-使用`jpackage`命令在Windows平台手动构建可执行程序和安装程序（基于gradle路径）
+使用`jpackage`命令在Windows平台手动构建可执行程序和安装程序（基于gradle构建路径）
 ==========
 ### 命令执行环境
-```
-cmd
-```
-> 位于项目根目录
-
 ### 环境变量（已配置可跳过）
+`cmd`
 ```
-set JAVA_HOME=C:\CommandLineTools\Java\jdk-19
+set JAVA_HOME=$env:JAVA_HOME = "C:\CommandLineTools\Java\jdk-19
 ```
 > 可接着输入`set JAVA_HOME`来验证是否配置成功
+
+`PowerShell`
+```
+$env:JAVA_HOME = "C:\CommandLineTools\Java\jdk-19\
+```
+> 可接着输入`$env:JAVA_HOME`来验证是否配置成功
 
 ### 清理旧的构建（建议每一次重新构建时执行清理）
 ```

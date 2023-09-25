@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: 20
+          java-version: 21
 
       - run: $Env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
 

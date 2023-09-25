@@ -2,7 +2,7 @@ name: Build installer for Linux
 on:
   push:
     branches:
-      - java20
+      - java21
 
 jobs:
   build-app:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: 20
+          java-version: 21
 
       - name: chmod gradlew
         run: chmod +x ./gradlew
