@@ -1,5 +1,8 @@
-JavaFX 打包示例
+JavaFX 打包示例（完结篇）
 ------------------------------------------------------------
+
+## 几乎不会再更新了
+本项目所展示的打包方式从jdk15到现在的jdk21一直都没有特别大的变化，到现在为止，一些jdk本身的小bug带来的小问题也都不再有了或者是已经有解决方法了，没有涉及到的参数就需要你们自己根据需求慢慢尝试了。
 
 ## 说明
 - 当前为Java21版本，其他版本请切换分之查看
@@ -7,6 +10,8 @@ JavaFX 打包示例
 - 若你实在没有办法处理非模块化的第三方依赖及分裂包相关的模块化问题，可以参考使用[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/) 插件来对非模块化项目进行构建
   - [IMFrameworkFX](https://github.com/icuxika/IMFrameworkFX) （Java）
   - [KtFX-Lets-Plot](https://github.com/icuxika/KtFX-Lets-Plot/tree/non-modular) 的`non-modular`分支实现 （Kotlin）
+- 刚开始接触的朋友建议跟着`Windows下手动构建的演示`的步骤亲自在命令行跑一遍，这样再使用不管是maven还是gradle提供的插件都会更加清楚配置
+- `Windows下遇到编码问题可以看看`展示了在`PowerShell`遇到乱码的形式，`IDEA`中gradle报错乱码可以尝试在`帮助 | 编辑自定义虚拟机选项`添加一行`-Dfile.encoding=UTF-8`
 
 ## 环境设置
 #### `jpackage` 构建出安装包依赖的程序（如果只需要构建出可执行程序就可以跳过此配置）
@@ -58,9 +63,10 @@ mvn exec:exec@installer
 ```
 
 ### `gluon`
-> `GluonFX plugin for Maven`和`GluonFX plugin for Gradle`依赖的`Gluon Substrate`存在一个bug，暂时无法在`GraalVM 21`上运行，不过你可以
+> `GluonFX plugin for Maven`和`GluonFX plugin for Gradle`依赖的`Gluon Substrate`目前存在一个bug，暂时无法在`GraalVM 21`上运行，不过你可以
 - 下载[Oracle GraalVM](https://www.graalvm.org/downloads/)
 - 请运行在由`Visual Studio`提供的命令行环境中，`Windows 终端`可以直接在标签页中打开`Developer PowerShell for VS 2022`，其他用户可以在开始菜单的`Visual Studio 2022`文件夹中找到
+- gluon 不关注 `module-info.java` 文件的存在与否
 ##### gradle
 ###### 构建与运行
 ```shell

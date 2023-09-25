@@ -45,7 +45,7 @@ jlink {
         imageName.set(application.applicationName)
     }
 
-    imageZip.set(project.file("${project.getLayout().getBuildDirectory()}/image-zip/JavaFXSample.zip"))
+    imageZip.set(project.file("${project.getLayout().getBuildDirectory().get()}/image-zip/JavaFXSample.zip"))
 
     jpackage {
         outputDir = "build-package"
@@ -89,5 +89,15 @@ task printDependentJarsList {
         println("------------------------------------------------------------")
         println(configurations.getByName("runtimeClasspath").asPath)
         println("------------------------------------------------------------")
+    }
+}
+
+// 拷贝项目依赖的jar包到指定目录
+task copyDependencies() {
+    doLast {
+        copy {
+            from(configurations.getByName("runtimeClasspath"))
+            into("${project.getLayout().getBuildDirectory().get()}/modules")
+        }
     }
 }

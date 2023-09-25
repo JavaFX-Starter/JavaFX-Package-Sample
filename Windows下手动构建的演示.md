@@ -1,99 +1,114 @@
-使用`jpackage`命令在Windows平台手动构建可执行程序和安装程序（基于gradle构建路径）
+使用`jpackage`命令在Windows平台手动构建可执行程序和安装程序
 ==========
-### 命令执行环境
-### 环境变量（已配置可跳过）
-`cmd`
-```
-set JAVA_HOME=$env:JAVA_HOME = "C:\CommandLineTools\Java\jdk-19
-```
-> 可接着输入`set JAVA_HOME`来验证是否配置成功
 
-`PowerShell`
+## 生成项目`jar`包（无法简单的通过`java -jar`执行）
+`gradle` -> `.\build\libs\JavaFX-Package-Sample-1.0.0.jar`
 ```
-$env:JAVA_HOME = "C:\CommandLineTools\Java\jdk-19\
+.\gradlew.bat clean
+.\gradlew.bat assemble
 ```
-> 可接着输入`$env:JAVA_HOME`来验证是否配置成功
+`maven` -> `.\target\JavaFX-Package-Sample-1.0.0.jar`
+```
+mvn clean
+mvn package
+```
+> `mvn package`执行时会将项目依赖的jar包拷贝到`.\target\alternateLocation\`
 
-### 清理旧的构建（建议每一次重新构建时执行清理）
-```
-gradlew.bat clean
-```
+## 通过`java`命令来运行应用程序
+`gradle`
 
-### 生成项目`jar`包（无法简单的通过`java -jar`执行）
+先执行`.\gradlew.bat copyDependencies`将项目依赖的jar包拷贝到`.\build\modules\`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\java.exe -p ".\build\libs\;.\build\modules\" -m "sample/com.icuxika.MainApp"
 ```
-gradlew.bat assemble
-```
-通过`dir build\libs`可以查看生成的文件信息
-```
-2023/02/06  15:31    <DIR>          .
-2023/02/06  15:31    <DIR>          ..
-2023/02/06  15:31           128,263 JavaFX-Package-Sample-1.0.0.jar
-               1 个文件        128,263 字节
-               2 个目录 66,132,144,128 可用字节
+`maven`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\java.exe -p ".\target\JavaFX-Package-Sample-1.0.0.jar;.\target\alternateLocation\" -m "sample/com.icuxika.MainApp"
 ```
 
-### 通过`java`命令来运行应用程序
-> 对于一个模块化项目，首先需要指定模块路径（-p | --module-path），对于本项目可以通过`gradlew.bat printDependentJarsList`打印出项目用到的依赖并以`;`（不同平台使用的拼接字符不一致）拼接，结果如下
+## 通过`jdeps`命令可以显示项目依赖的模块
+`gradle`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jdeps.exe --print-module-deps --ignore-missing-deps --module-path .\build\modules\ .\build\libs\JavaFX-Package-Sample-1.0.0.jar
 ```
-----------
-C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-fxml\19\abc5441a6421ceac26bb512e96351bf641ee6004\javafx-fxml-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-web\19\6be4c7f0560267f658bd34e910dcacc231ac7681\javafx-web-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-controls\19\1227311caf209b428591fb7d2cca27e25f06f0b4\javafx-controls-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-controls\19\9f8d4f41bff27d8ac956b21e5223eaaebb7d9413\javafx-controls-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-media\19\50bd7cd35678978ec898cf5f9fcca631a106d29d\javafx-media-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-media\19\937b4f7b378451165c076ab2f51310a19e5a618\javafx-media-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-swing\19\562878eb4e5c1d5acebf1e40953c6557196e10ff\javafx-swing-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-graphics\19\8e98e30310844cd501f4e03fa3415f6d897c7215\javafx-graphics-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-graphics\19\44dbcee46b9e902629bb4e0f409b3d6e10ac8e8b\javafx-graphics-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-base\19\430bec8a362edb04667972905a7cb34cb165d6d\javafx-base-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-base\19\80d1a58c5345af9151f1b4b01f8eb92f86fe49ae\javafx-base-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\io.github.palexdev\materialfx\11.13.5\ecdf6b1455a22c8d2f0494df0a53f1923debdf9d\materialfx-11.13.5.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\io.github.palexdev\virtualizedfx\11.2.6\aa94a9c3305fc0cb3b0465e37c367877658db4a5\virtualizedfx-11.2.6.jar
-----------
+> 输出：MaterialFX,java.base
+ 
+`maven`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jdeps.exe --print-module-deps --ignore-missing-deps --module-path .\target\alternateLocation\ .\target\JavaFX-Package-Sample-1.0.0.jar
 ```
-> 然后指定模块及主类限定全路径（-m | --module），对于本项目是`sample/com.icuxika.MainApp`
+> 输出：MaterialFX,java.base
 
-> 因此实际命令为（`注意实际的-p参数值在最前面拼接了对应项目本身的jar包`）
-```
-C:\CommandLineTools\Java\jdk-19\bin\java.exe -p ".\build\libs\JavaFX-Package-Sample-1.0.0.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-fxml\19\abc5441a6421ceac26bb512e96351bf641ee6004\javafx-fxml-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-web\19\6be4c7f0560267f658bd34e910dcacc231ac7681\javafx-web-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-controls\19\1227311caf209b428591fb7d2cca27e25f06f0b4\javafx-controls-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-controls\19\9f8d4f41bff27d8ac956b21e5223eaaebb7d9413\javafx-controls-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-media\19\50bd7cd35678978ec898cf5f9fcca631a106d29d\javafx-media-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-media\19\937b4f7b378451165c076ab2f51310a19e5a618\javafx-media-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-swing\19\562878eb4e5c1d5acebf1e40953c6557196e10ff\javafx-swing-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-graphics\19\8e98e30310844cd501f4e03fa3415f6d897c7215\javafx-graphics-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-graphics\19\44dbcee46b9e902629bb4e0f409b3d6e10ac8e8b\javafx-graphics-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-base\19\430bec8a362edb04667972905a7cb34cb165d6d\javafx-base-19-win.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\org.openjfx\javafx-base\19\80d1a58c5345af9151f1b4b01f8eb92f86fe49ae\javafx-base-19.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\io.github.palexdev\materialfx\11.13.5\ecdf6b1455a22c8d2f0494df0a53f1923debdf9d\materialfx-11.13.5.jar;C:\Users\icuxika\.gradle\caches\modules-2\files-2.1\io.github.palexdev\virtualizedfx\11.2.6\aa94a9c3305fc0cb3b0465e37c367877658db4a5\virtualizedfx-11.2.6.jar" -m "sample/com.icuxika.MainApp"
-```
-### `-p`内容过长，后面以`$ModulePath`表示，执行时需要手动替换
-
-### 构建可执行程序（类似绿色解压版，无安装工具）
-```
-C:\CommandLineTools\Java\jdk-19\bin\jpackage.exe --type app-image -n JavaFXSample -p "$ModulePath" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest ./build/build-direct-app-package
-```
-
-### 构建安装程序
-> 需要安装`WiX Toolset 3.0`以上的版本，并将其`bin`目录配置到环境变量中
-> 与`构建可执行程序`步骤的主要区别是未设置`--type`参数，设置了`--resource-dir`参数和`--win-dir-chooser`等平台相关的选项
-
-#### 基于`构建可执行程序`构建出的可执行程序目录来构建
-```
-C:\CommandLineTools\Java\jdk-19\bin\jpackage.exe --type msi --resource-dir .\command\resourceDir\zh_CN.wxl -n JavaFXSample --app-image ./build/build-direct-app-package/JavaFXSample --app-version 1.0.0 --dest ./build/build-direct-package --temp ./build/build-direct-package/temp --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
-```
-> 注意`--app-image`的内容来源于`构建可执行程序`的`--dest`内容
-
-#### 重头构建
-```
-C:\CommandLineTools\Java\jdk-19\bin\jpackage.exe --type msi --resource-dir .\command\resourceDir\zh_CN.wxl -n JavaFXSample -p "$ModulePath" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest ./build/build-direct-package --temp ./build/build-direct-package/temp --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
-```
-#### 补充说明，Windows下除了`msi`格式还可以生成`exe`格式的安装程序，添加`--resource-dir`的原因是为了避免`311错误`，此错误最早在`Java14就存在`，在后面几个版本曾修复过，平时一般使用`gradle`插件的方式来进行打包，所以未能发现
-##### 演示311错误以及一些奇怪的解决方法
-1. 执行以下命令
-```
-gradlew.bat clean
-gradlew.bat assemble
-C:\CommandLineTools\Java\jdk-19\bin\jpackage.exe --type msi -n JavaFXSample -p "$ModulePath" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest ./build/build-direct-package --temp ./build/build-direct-package/temp --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
-```
-2. 命令结果
-```
-java.io.IOException: Command [light.exe, -nologo, -spdb, -ext, WixUtilExtension, -out, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\JavaFXSample-1.0.0.msi, -ext, WixUIExtension, -b, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config, -sice:ICE27, -loc, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config\MsiInstallerStrings_en.wxl, -cultures:en-us, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\main.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\bundle.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\ui.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\InstallDirNotEmptyDlg.wixobj] in C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\images\win-msi.image\JavaFXSample exited with 311 code
+## 通过`jlink`构建出`.bat`形式的可执行程序
+`gradle` -> `.\build\jlink-build-dir\bin\JavaFX-Package-Sample.bat`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jlink.exe --module-path ".\build\libs\;.\build\modules\" --add-modules java.base,sample --launcher JavaFX-Package-Sample=sample/com.icuxika.MainApp --compress=zip-9 --no-header-files --no-man-pages --strip-debug --output .\build\jlink-build-dir
 ```
 
-3. 奇怪的解决方式
-- 根据`2. 命令结果`来手动构建命令
-    - 执行出错的命令为`[light.exe, -nologo, -spdb, -ext, WixUtilExtension, -out, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\JavaFXSample-1.0.0.msi, -ext, WixUIExtension, -b, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config, -sice:ICE27, -loc, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config\MsiInstallerStrings_en.wxl, -cultures:en-us, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\main.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\bundle.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\ui.wixobj, C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\InstallDirNotEmptyDlg.wixobj]`
-    - 去掉`[`,`]`,`,`，得到`light.exe -nologo -spdb -ext WixUtilExtension -out C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\JavaFXSample-1.0.0.msi -ext WixUIExtension -b C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config -sice:ICE27 -loc C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config\MsiInstallerStrings_en.wxl -cultures:en-us C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\main.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\bundle.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\ui.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\InstallDirNotEmptyDlg.wixobj`
-    - 修改`-loc`和`-cultures`指向中文配置文件得到
+`maven` -> `.\target\jlink-build-dir\bin\JavaFX-Package-Sample.bat`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jlink.exe --module-path ".\target\JavaFX-Package-Sample-1.0.0.jar;.\target\alternateLocation\" --add-modules java.base,sample --launcher JavaFX-Package-Sample=sample/com.icuxika.MainApp --compress=zip-9 --no-header-files --no-man-pages --strip-debug --output .\target\jlink-build-dir
 ```
-light.exe -nologo -spdb -ext WixUtilExtension -out C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\JavaFXSample-1.0.0.msi -ext WixUIExtension -b C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config -sice:ICE27 -loc C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\config\MsiInstallerStrings_zh_CN.wxl -cultures:zh-CN C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\main.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\bundle.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\ui.wixobj C:\Users\icuxika\IdeaProjects\JavaFX-Package-Sample\.\build\build-direct-package\temp\wixobj\InstallDirNotEmptyDlg.wixobj
-```
-> 执行可以获取到正确中文版本的安装包
 
-- 指定`--vendor`参数
-```
-gradlew.bat clean
-gradlew.bat assemble
-C:\CommandLineTools\Java\jdk-19\bin\jpackage.exe --type msi -n JavaFXSample --vendor icuxika -p "$ModulePath" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest ./build/build-direct-package --temp ./build/build-direct-package/temp --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
-```
-> 虽然没有报错，但是安装包是英语版本
+> 通过`jlink`构建出的文件夹`jlink-build-dir`已经可以压缩一下发到其他电脑上运行了，`.bat`脚本也有许多方式能够直接转为`.exe`，目前`jlink-build-dir`目录的大小为`89.7 MB`
 
+## jpackage 使用一：以`jlink`命令构建出的目录`jlink-build-dir`为基础
+`gradle` -> `.\build\jpackage-build-dir\JavaFXSample\JavaFXSample.exe`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type app-image -n JavaFXSample -m "sample/com.icuxika.MainApp" --runtime-image .\build\jlink-build-dir\ --icon .\src\main\resources\application.ico --app-version 1.0.0 --dest .\build\jpackage-build-dir\
+```
+`maven` -> `.\target\jpackage-build-dir\JavaFXSample\JavaFXSample.exe`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type app-image -n JavaFXSample -m "sample/com.icuxika.MainApp" --runtime-image .\target\jlink-build-dir\ --icon .\src\main\resources\application.ico --app-version 1.0.0 --dest .\target\jpackage-build-dir\
+```
+
+> 目前`jpackage-build-dir`大小为`90.1 MB`
+
+## jpackage 使用二：不以`jlink`构建结果为基础
+`gradle` -> `.\build\jpackage-direct-build-dir\JavaFXSample\JavaFXSample.exe`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type app-image -n JavaFXSample --module-path ".\build\libs\;.\build\modules\" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest .\build\jpackage-direct-build-dir
+```
+`maven` -> `.\target\jpackage-direct-build-dir\JavaFXSample\JavaFXSample.exe`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type app-image -n JavaFXSample --module-path ".\target\JavaFX-Package-Sample-1.0.0.jar;.\target\alternateLocation\" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest .\target\jpackage-direct-build-dir
+```
+
+> 目前`jpackage-direct-build-dir`大小为`182 MB`
+
+## 以下命令是构建Windows上`msi`格式的安装程序，需要配置[WiX Toolset v3.11.2](https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm)的`bin`目录到环境变量`PATH`中
+
+## jpackage 使用三：以`jpackage 使用二`的构建目录`jpackage-direct-build-dir`为基础
+`gradle` -> `.\build\jpackage-installer-dir\JavaFXSample-1.0.msi`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type msi -n JavaFXSample --app-image .\build\jpackage-direct-build-dir\JavaFXSample\ --dest .\build\jpackage-installer-dir --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
+```
+`maven` -> `.\target\jpackage-installer-dir\JavaFXSample-1.0.msi`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type msi -n JavaFXSample --app-image .\target\jpackage-direct-build-dir\JavaFXSample\ --dest .\target\jpackage-installer-dir --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
+```
+
+> 目前`JavaFXSample-1.0.msi`的大小为`65.9 MB`
+
+> 在jdk19、jdk20等版本有时候构建会遇到构建出的安装包是英文版本或者`exited with 311 code`的错误，请切换到`java20`分支此文件查看相应的解决方法，当前jdk21没有遇到这些问题
+
+## jpackage 使用四：不以`jpackage 使用二`的构建结果为基础
+`gradle` -> `.\build\jpackage-direct-installer-dir\JavaFXSample-1.0.0.msi`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type msi -n JavaFXSample --module-path ".\build\libs\;.\build\modules\" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest .\build\jpackage-direct-installer-dir\ --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
+```
+`maven` -> `.\target\jpackage-direct-installer-dir\JavaFXSample-1.0.0.msi`
+```shell
+C:\CommandLineTools\Java\jdk-21\bin\jpackage.exe --type msi -n JavaFXSample --module-path ".\target\JavaFX-Package-Sample-1.0.0.jar;.\target\alternateLocation\" -m "sample/com.icuxika.MainApp" --icon ./src/main/resources/application.ico --app-version 1.0.0 --dest .\target\jpackage-direct-installer-dir\ --win-dir-chooser --win-menu --win-menu-group JavaFXSample --win-shortcut
+```
+
+> 目前`JavaFXSample-1.0.msi`的大小为`65.9 MB`
+
+
+## 最后
+`jlink`和`jpackage`两条命令最主要的使用方式和关键的参数都已经在上面了，不过本项目只演示了作为一个模块化项目时应用的方式，但是`jpackage`是支持为一个非模块化的可以通过`java -jar`运行的`jar`包生成对应的exe的。
+Java模块化尤其是这种纯命令行的方式难以处理很多情况比如非模块化的依赖，甚至同时支持模块化导入和兼容非模块化的依赖有时也会遇到问题，我已经有好长时间没写过`javafx`相关的代码，`jpackage`除了几个玩具项目几乎也没怎么用到过，以这点经验来说，还是找一个合适的插件为好，更简单的方式是在grdle中使用[The Badass Runtime Plugin](https://badass-runtime-plugin.beryx.org/releases/latest/)这个插件来对非模块化项目打包，这样的话项目中不用维护一个`module-info.java`文件，也不用考虑在引入新的依赖各种模块的冲突问题了
+
+使用 mvn，配置一下阿里仓库的镜像就几乎不会有网络问题了，但是更好用的maven插件你可能需要多上上`Google`才能发现
+
+使用 gradle，最大的问题就是你需要学会翻墙，并在IDEA中配置代理，命令行中 gradlew.bat 命令结尾添加`-D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890`
