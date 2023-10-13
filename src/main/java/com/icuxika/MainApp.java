@@ -1,5 +1,6 @@
 package com.icuxika;
 
+import com.google.common.collect.ImmutableList;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.enums.ButtonType;
 import javafx.application.Application;
@@ -47,6 +48,9 @@ public class MainApp extends Application {
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 600, 400));
         primaryStage.show();
+
+        ImmutableList<String> list = ImmutableList.of("123");
+        System.out.println(list.get(0));
     }
 
     public static void main(String[] args) {

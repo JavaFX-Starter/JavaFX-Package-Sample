@@ -55,6 +55,11 @@
             <artifactId>materialfx</artifactId>
             <version>11.16.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.1.3-jre</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -87,10 +92,59 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.icuxika.Launcher</mainClass>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                    <excludes>
+                        <exclude>module-info.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
+                    <execution>
+                        <id>non-modular-image</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jpackage</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-n</argument>
+                                <argument>JavaFXSample</argument>
+                                <argument>-t</argument>
+                                <argument>app-image</argument>
+                                <argument>-i</argument>
+                                <argument>
+                                    ${project.build.directory}/alternateLocation
+                                </argument>
+                                <argument>--main-class</argument>
+                                <argument>com.icuxika.Launcher</argument>
+                                <argument>--main-jar</argument>
+                                <argument>${project.artifactId}-${project.version}.jar</argument>
+                                <argument>--dest</argument>
+                                <argument>${project.build.directory}/buildImage</argument>
+                                <argument>--win-console</argument>
+                                <argument>--icon</argument>
+                                <argument>
+                                    ${project.basedir}/src/main/resources/application.ico
+                                </argument>
+                                <argument>--app-version</argument>
+                                <argument>1.0.0</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>image</id>
                         <goals>
