@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 21-ea
+          java-version: 21
 
       - name: chmod gradlew
         run: chmod +x ./gradlew

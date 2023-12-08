@@ -8,7 +8,7 @@ jobs:
   build-app:
     strategy:
       matrix:
-        os: [ macos-10.15 ]
+        os: [ macos-12 ]
     name: Build the application
     runs-on: ${{ matrix.os }}
     steps:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 21-ea
+          java-version: 21
 
       - name: chmod gradlew
         run: chmod +x ./gradlew
