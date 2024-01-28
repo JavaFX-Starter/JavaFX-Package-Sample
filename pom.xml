@@ -175,9 +175,9 @@
                 <configuration>
                     <mainClass>com.icuxika.MainApp</mainClass>
                     <bundlesList>
-                        <list>com.icuxika.i18n.LanguageResource</list>
-                        <list>com.icuxika.i18n.LanguageResource_en</list>
-                        <list>com.icuxika.i18n.LanguageResource_zh_CN</list>
+                        <list>LanguageResource</list>
+                        <list>LanguageResource_en</list>
+                        <list>LanguageResource_zh_CN</list>
                     </bundlesList>
                 </configuration>
             </plugin>

@@ -13,6 +13,9 @@ JavaFX 打包示例（完结篇）
 ```
 因此，通过`maven-shade-plugin`,`maven-assembly-plugin`构建出的单一可执行jar包（即第三方依赖包也已经通过某种方式集成到了同一个jar包中）也可以利用这种方式，而如果你使用`maven-jar-plugin`，那么还需要同时告诉`jpackage`第三方依赖的`jar`包位置
 
+## [HelloWorld](https://github.com/icuxika/HelloWorld)
+这个项目演示了如何完全使用命令行来编译一个Java项目并创建可执行的jar包和可运行exe文件，项目存在包结构并引入第三方依赖，根据不同步骤可以了解`maven`和`gradle`构建项目的一些基本底层逻辑
+
 ## 说明
 - 当前为Java21版本，其他版本请切换分之查看
 - 由于本项目中gradle配置使用的插件功能更完整，所以推荐使用gradle来构建本项目，如果只能选择maven的话，由于`Maven plugin for JavaFX`已经许久没有更新，`JDK21`中`jlink`的参数`--compress`新的值也不支持，建议去寻找第三方维护的插件来使用，当然你的项目足够简单的话，`pom.xml`自定义的构建命令也许能够完全支持你的项目
@@ -30,10 +33,12 @@ JavaFX 打包示例（完结篇）
 - 项目结构 SDK 选择 JDK21
 - Gradle：Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> 指定 Gradle JVM 为项目 SDK
 #### 使用命令行（此处演示使用Windows的PowerShell，macOS和Linux假设你熟悉在命令行中设置临时环境变量）
-> // `$env:xxx = "yyyy"`是设置一个临时环境变量，重启终端或者开启一些新的PowerShell标签页会失效
+> `$env:xxx = "yyyy"`是设置一个临时环境变量，重启终端或者开启一些新的PowerShell标签页会失效
 - 设置`JAVA_HOME`环境变量 `$env:JAVA_HOME = "C:\CommandLineTools\Java\jdk-21\"`
   - > 使用 `gradlew`或者`mvn`的时候，只需要存在`JAVA_HOME`这个环境变量就可以，不需要`java`等命令配置在环境变量PATH中
 - 设置`GRAALVM_HOME`环境变量 `$env:GRAALVM_HOME = "C:\CommandLineTools\Java\graalvm-jdk-21+35.1"`
+- 设置`JAVA_TOOL_OPTIONS`环境变量可以为`gradle`设置代理`$env:JAVA_TOOL_OPTIONS = "-DsocksProxyHost=localhost -DsocksProxyPort=7890"`
+- 若要进行`GraalVM`构建，需要使用`Maven 3.8.8`
 #### 对cmd的补充
 使用`set JAVA_HOME=C:\CommandLineTools\Java\jdk-21`方式来设定临时环境变量
 
@@ -71,11 +76,24 @@ mvn package
 mvn exec:exec@installer
 ```
 
-### `gluon`
-> `GluonFX plugin for Maven`和`GluonFX plugin for Gradle`依赖的`Gluon Substrate`目前存在一个bug，暂时无法在`GraalVM 21`上运行，不过你可以先试试命令能不能正确运行，顺便让他完成`JavaFX static libs`的下载
+### `Oracle GraalVM`
 - 下载[Oracle GraalVM](https://www.graalvm.org/downloads/)
 - 请运行在由`Visual Studio`提供的命令行环境中，`Windows 终端`可以直接在标签页中打开`Developer PowerShell for VS 2022`，其他用户可以在开始菜单的`Visual Studio 2022`文件夹中找到
-- gluon 不关注 `module-info.java` 文件的存在与否
+- 不关注 `module-info.java` 文件的存在与否
+
+#### JAVA_HOME和GRAALVM_HOME可以设置为相同值
+```shell
+> $env:JAVA_HOME
+C:\CommandLineTools\Java\graalvm-jdk-21.0.2+13.1\
+> $env:GRAALVM_HOME
+C:\CommandLineTools\Java\graalvm-jdk-21.0.2+13.1\
+```
+#### 此项目使用的 Oracle GraalVM 版本
+```shell
+java 21.0.2 2024-01-16 LTS
+Java(TM) SE Runtime Environment Oracle GraalVM 21.0.2+13.1 (build 21.0.2+13-LTS-jvmci-23.1-b30)
+Java HotSpot(TM) 64-Bit Server VM Oracle GraalVM 21.0.2+13.1 (build 21.0.2+13-LTS-jvmci-23.1-b30, mixed mode, sharing)
+```
 ##### gradle
 ###### 构建与运行
 ```shell
@@ -91,7 +109,10 @@ systemProp.http.proxyPort=7890
 systemProp.https.proxyHost=127.0.0.1
 systemProp.https.proxyPort=7890
 ```
-重新执行相关命令，可能会因为之前的下载缓存导致重新执行命令失败，这时可以去删除此文件夹`C:\Users\你的用户名\.gluon\substrate`再重新运行，`JavaFX static libs`下载成功后可以注释掉相关代理配置以防其他平台梯子配置不同
+重新执行相关命令，可能会因为之前的下载缓存导致重新执行命令失败，这时可以去删除此文件夹`C:\Users\你的用户名\.gluon\substrate`再重新运行，`JavaFX static libs`下载成功后可以注释掉相关代理配置以防其他平台梯子配置不同，如果不想改配置文件，也可以通过下述命令的方式来使用代理
+```
+gradlew.bat nativeBuild -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
+```
 ##### maven
 ###### 构建与运行
 ```shell
@@ -100,9 +121,8 @@ mvn gluonfx:run
 ```
 
 ###### `Downloading JavaFX static libs...`网络问题
-> gradle 也可以在不配置`gradle.properties`的情况下通过`.\gradlew.bat nativeBuild -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890`来设置相关属性
 ```shell
-mvn gluonfx:build -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=7890
+mvn gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
 ```
 
 ## 补充

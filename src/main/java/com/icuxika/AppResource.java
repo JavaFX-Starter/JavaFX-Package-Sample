@@ -1,6 +1,5 @@
 package com.icuxika;
 
-import com.icuxika.i18n.LanguageResource;
 import com.icuxika.i18n.ObservableResourceBundleFactory;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -17,7 +16,7 @@ public class AppResource {
     /**
      * 默认语言文件 Base Name
      */
-    private static final String LANGUAGE_RESOURCE_NAME = LanguageResource.class.getTypeName();
+    private static final String LANGUAGE_RESOURCE_NAME = "LanguageResource";
 
     /**
      * 语言资源工厂

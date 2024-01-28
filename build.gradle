@@ -3,7 +3,7 @@ plugins {
     id "java"
     id "org.beryx.jlink" version "2.26.0"
     id "org.openjfx.javafxplugin" version "0.1.0"
-    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.21"
+    id "com.gluonhq.gluonfx-gradle-plugin" version "1.0.22"
 }
 
 group "com.icuxika"
@@ -78,9 +78,9 @@ tasks.withType(JavaCompile).configureEach {
 mainClassName = "com.icuxika.MainApp"
 gluonfx {
     bundlesList = [
-            "com.icuxika.i18n.LanguageResource",
-            "com.icuxika.i18n.LanguageResource_en",
-            "com.icuxika.i18n.LanguageResource_zh_CN"
+            "LanguageResource",
+            "LanguageResource_en",
+            "LanguageResource_zh_CN"
     ]
 }
 
