@@ -73,78 +73,35 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
                 <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                     <archive>
                         <manifest>
                             <mainClass>com.icuxika.Launcher</mainClass>
-                            <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
-                    <excludes>
-                        <exclude>module-info.class</exclude>
-                    </excludes>
+                    <outputDirectory>${project.build.directory}/jars</outputDirectory>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
-                    <execution>
-                        <id>non-modular-image</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jpackage</executable>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <arguments>
-                                <argument>-n</argument>
-                                <argument>JavaFXSample</argument>
-                                <argument>-t</argument>
-                                <argument>app-image</argument>
-                                <argument>-i</argument>
-                                <argument>
-                                    ${project.build.directory}/alternateLocation
-                                </argument>
-                                <argument>--main-class</argument>
-                                <argument>com.icuxika.Launcher</argument>
-                                <argument>--main-jar</argument>
-                                <argument>${project.artifactId}-${project.version}.jar</argument>
-                                <argument>--dest</argument>
-                                <argument>${project.build.directory}/buildImage</argument>
-                                <argument>--win-console</argument>
-                                <argument>--icon</argument>
-                                <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
-                                </argument>
-                                <argument>--app-version</argument>
-                                <argument>1.0.0</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>image</id>
                         <goals>
@@ -158,44 +115,17 @@
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
                                 <argument>app-image</argument>
-                                <argument>-p</argument>
+                                <argument>-i</argument>
                                 <argument>
-                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                    ${project.build.directory}/jars
                                 </argument>
-                                <argument>-d</argument>
-                                <argument>${project.build.directory}/mvnPackage</argument>
-                                <argument>-m</argument>
-                                <argument>sample/com.icuxika.MainApp</argument>
-                                <argument>--icon</argument>
-                                <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
-                                </argument>
-                                <argument>--app-version</argument>
-                                <argument>1.0.0</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>installer</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jpackage</executable>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <arguments>
-                                <argument>-n</argument>
-                                <argument>JavaFXSample</argument>
-                                <argument>-t</argument>
-                                <argument>dmg</argument>
-                                <argument>-p</argument>
-                                <argument>
-                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
-                                </argument>
-                                <argument>-d</argument>
-                                <argument>${project.build.directory}/mvnInstaller</argument>
-                                <argument>-m</argument>
-                                <argument>sample/com.icuxika.MainApp</argument>
+                                <argument>--main-class</argument>
+                                <argument>com.icuxika.Launcher</argument>
+                                <argument>--main-jar</argument>
+                                <argument>${project.artifactId}-${project.version}-jar-with-dependencies.jar</argument>
+                                <argument>--dest</argument>
+                                <argument>${project.build.directory}/buildImage</argument>
+                                <argument>--win-console</argument>
                                 <argument>--icon</argument>
                                 <argument>
                                     ${project.basedir}/src/main/resources/application.ico
@@ -207,21 +137,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <configuration>
-                    <stripDebug>true</stripDebug>
-                    <compress>2</compress>
-                    <noHeaderFiles>true</noHeaderFiles>
-                    <noManPages>true</noManPages>
-                    <launcher>JavaFXSample</launcher>
-                    <jlinkImageName>build-link</jlinkImageName>
-                    <jlinkZipName>sample-zip</jlinkZipName>
-                    <mainClass>sample/com.icuxika.MainApp</mainClass>
-                </configuration>
-            </plugin>
+
             <plugin>
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
