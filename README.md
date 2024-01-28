@@ -4,6 +4,15 @@ JavaFX 打包示例（完结篇）
 ## 几乎不会再更新了
 本项目所展示的打包方式从jdk15到现在的jdk21一直都没有特别大的变化，到现在为止，一些jdk本身的小bug带来的小问题也都不再有了或者是已经有解决方法了，没有涉及到的参数就需要你们自己根据需求慢慢尝试了。
 
+## !!! Maven 非模块化
+非模块化的项目（即不存在文件`module-info.java`），请直接切换到[java21-non-modular](https://github.com/JavaFX-Starter/JavaFX-Package-Sample/tree/java21-non-modular)，`jpackage`支持以一个可执行jar包作为输入通过非模块化构建，可以在`jpackage.exe --help`中看到
+```shell
+对于非模块化应用程序：
+            jpackage --type app-image -i inputDir -n name \
+                --main-class className --main-jar myJar.jar
+```
+因此，通过`maven-shade-plugin`,`maven-assembly-plugin`构建出的单一可执行jar包（即第三方依赖包也已经通过某种方式集成到了同一个jar包中）也可以利用这种方式，而如果你使用`maven-jar-plugin`，那么还需要同时告诉`jpackage`第三方依赖的`jar`包位置
+
 ## 说明
 - 当前为Java21版本，其他版本请切换分之查看
 - 由于本项目中gradle配置使用的插件功能更完整，所以推荐使用gradle来构建本项目，如果只能选择maven的话，由于`Maven plugin for JavaFX`已经许久没有更新，`JDK21`中`jlink`的参数`--compress`新的值也不支持，建议去寻找第三方维护的插件来使用，当然你的项目足够简单的话，`pom.xml`自定义的构建命令也许能够完全支持你的项目
