@@ -116,13 +116,17 @@ gradlew.bat nativeBuild -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
 ##### maven
 ###### 构建与运行
 ```shell
-mvn gluonfx:build
-mvn gluonfx:run
+mvn -Pwin gluonfx:build
+mvn -Pwin gluonfx:run
+
+mvn -Pmac gluonfx:build
+mvn -Pmac gluonfx:run
 ```
 
 ###### `Downloading JavaFX static libs...`网络问题
 ```shell
-mvn gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
+mvn -Pwin gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
+mvn -Pmac gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
 ```
 
 ## 补充

@@ -168,19 +168,54 @@
                     <mainClass>sample/com.icuxika.MainApp</mainClass>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.gluonhq</groupId>
-                <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.22</version>
-                <configuration>
-                    <mainClass>com.icuxika.MainApp</mainClass>
-                    <bundlesList>
-                        <list>LanguageResource</list>
-                        <list>LanguageResource_en</list>
-                        <list>LanguageResource_zh_CN</list>
-                    </bundlesList>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>win</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.gluonhq</groupId>
+                        <artifactId>gluonfx-maven-plugin</artifactId>
+                        <version>1.0.22</version>
+                        <configuration>
+                            <mainClass>com.icuxika.MainApp</mainClass>
+                            <bundlesList>
+                                <list>LanguageResource</list>
+                                <list>LanguageResource_en</list>
+                                <list>LanguageResource_zh_CN</list>
+                            </bundlesList>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.gluonhq</groupId>
+                        <artifactId>gluonfx-maven-plugin</artifactId>
+                        <version>1.0.22</version>
+                        <configuration>
+                            <mainClass>com.icuxika.MainApp</mainClass>
+                            <bundlesList>
+                                <list>LanguageResource</list>
+                                <list>LanguageResource_en</list>
+                                <list>LanguageResource_zh_CN</list>
+                            </bundlesList>
+                            <nativeImageArgs>
+                                <nativeImageArg>
+                                    -Dsvm.platform=org.graalvm.nativeimage.Platform$MACOS_AMD64
+                                </nativeImageArg>
+                            </nativeImageArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

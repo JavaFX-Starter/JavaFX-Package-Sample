@@ -82,6 +82,9 @@ gluonfx {
             "LanguageResource_en",
             "LanguageResource_zh_CN"
     ]
+    if (org.gradle.internal.os.OperatingSystem.current().macOsX) {
+        compilerArgs = ["-Dsvm.platform=org.graalvm.nativeimage.Platform\$MACOS_AMD64"]
+    }
 }
 
 task printDependentJarsList {
