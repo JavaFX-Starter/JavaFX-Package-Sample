@@ -13,10 +13,14 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
 public class MainApp extends Application {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -47,6 +51,12 @@ public class MainApp extends Application {
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 600, 400));
         primaryStage.show();
+
+        LOGGER.trace("[trace]日志控制台输出");
+        LOGGER.debug("[debug]日志控制台输出");
+        LOGGER.info("[info]日志记录到logs/application.log中");
+        LOGGER.warn("[warn]日志记录到logs/application.log中");
+        LOGGER.error("[error]日志记录到logs/application.log中");
     }
 
     public static void main(String[] args) {

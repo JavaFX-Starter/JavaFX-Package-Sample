@@ -129,5 +129,8 @@ mvn -Pwin gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
 mvn -Pmac gluonfx:build -D"https.proxyHost"=127.0.0.1 -D"https.proxyPort"=7890
 ```
 
+## 日志
+添加了支持GraalVM的Logback作为日志框架，在你自己的项目，如果是第一次添加以及后续修改了Logback配置文件的时候，在执行GraalVM构建之前，先用`mvn -Pwin gluonfx:runagent`或`.\gradlew.bat nativeRunAgent`来为`native-image`生成一些必要的文件，它会自动保存到`src/main/resources/META-INF/native-image`，然后在执行GraalVM构建，否则生成的程序执行时不会生成日志文件，正常情况下，会在程序执行目录创建`logs`目录及日志文件
+
 ## 补充
 有时候`mvn gluonfx:build`或者`.\gradlew.bat jpackageImage`发生了错误后，执行`.\gradlew.bat clean`提示文件被占用，这时候可以打开`任务管理器-性能-资源监视器-CPU`，在`关联的句柄`处输入`gluon`、`jpackage`等关键词来检索出卡住的相关进程并干掉他

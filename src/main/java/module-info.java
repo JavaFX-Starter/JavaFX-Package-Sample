@@ -8,6 +8,7 @@ module sample {
     requires javafx.web;
 
     requires MaterialFX;
+    requires org.slf4j;
 
     exports com.icuxika;
 }

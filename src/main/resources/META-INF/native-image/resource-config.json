@@ -1,0 +1,152 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
+  }, {
+    "pattern":"\\Qlogback-test.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback-test.xml\\E"
+  }, {
+    "pattern":"\\Qlogback.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback.xml\\E"
+  }, {
+    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/ubidi.icu\\E"
+  }, {
+    "pattern":"javafx.controls:\\Qcom/sun/javafx/scene/control/skin/modena/modena.bss\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-console-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-console-l1-2-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-datetime-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-debug-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-errorhandling-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-file-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-file-l1-2-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-file-l2-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-handle-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-heap-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-interlocked-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-libraryloader-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-localization-l1-2-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-memory-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-namedpipe-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-processenvironment-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-processthreads-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-processthreads-l1-1-1.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-profile-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-rtlsupport-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-string-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-synch-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-synch-l1-2-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-sysinfo-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-timezone-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-core-util-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-conio-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-convert-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-environment-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-filesystem-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-heap-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-locale-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-math-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-multibyte-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-private-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-process-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-runtime-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-stdio-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-string-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-time-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qapi-ms-win-crt-utility-l1-1-0.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/glass/utils/NativeLibLoader.class\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/FillCircle_Color.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/FillPgram_Color.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/Solid_Color.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/Solid_TextureFirstPassLCD.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/Solid_TextureRGB.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/Solid_TextureSecondPassLCD.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qcom/sun/prism/d3d/hlsl/Texture_Color.obj\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qglass.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qjavafx_font.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qmsvcp140.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qmsvcp140_1.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qmsvcp140_2.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qprism_d3d.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qucrtbase.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qvcruntime140.dll\\E"
+  }, {
+    "pattern":"javafx.graphics:\\Qvcruntime140_1.dll\\E"
+  }]},
+  "bundles":[{
+    "name":"LanguageResource",
+    "locales":["", "en", "zh-CN"]
+  }, {
+    "name":"com.sun.javafx.tk.quantum.QuantumMessagesBundle",
+    "locales":["", "zh-CN"]
+  }, {
+    "name":"com/sun/glass/ui/win/themes",
+    "locales":["", "zh-CN"]
+  }]
+}

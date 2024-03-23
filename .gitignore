@@ -4,4 +4,4 @@ out/
 target/
 *.iml
 /.gradle/
-
+/logs
