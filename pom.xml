@@ -76,6 +76,8 @@
             <properties>
                 <application.package.type>msi</application.package.type>
                 <application.icon>${project.basedir}/src/main/resources/application.ico</application.icon>
+                <application.package.stdout.encoding>-J-Dsun.stdout.encoding=UTF-8</application.package.stdout.encoding>
+                <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
                 <application.package.options/>
                 <application.package.options1>--win-dir-chooser</application.package.options1>
                 <application.package.options2>--win-menu</application.package.options2>
@@ -181,6 +183,8 @@
                             <executable>jpackage</executable>
                             <workingDirectory>${project.basedir}</workingDirectory>
                             <arguments>
+                                <argument>${application.package.stdout.encoding}</argument>
+                                <argument>${application.package.stderr.encoding}</argument>
                                 <argument>-n</argument>
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
@@ -209,6 +213,8 @@
                             <executable>jpackage</executable>
                             <workingDirectory>${project.basedir}</workingDirectory>
                             <arguments>
+                                <argument>${application.package.stdout.encoding}</argument>
+                                <argument>${application.package.stderr.encoding}</argument>
                                 <argument>-n</argument>
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
