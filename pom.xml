@@ -112,6 +112,8 @@
             <properties>
                 <application.package.type>dmg</application.package.type>
                 <application.icon>${project.basedir}/src/main/resources/application.icns</application.icon>
+                <application.package.stdout.encoding>-J-Dsun.stdout.encoding=UTF-8</application.package.stdout.encoding>
+                <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
                 <application.package.options/>
             </properties>
             <build>
