@@ -66,6 +66,77 @@
             <version>1.5.3</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>win</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <application.package.type>msi</application.package.type>
+                <application.icon>${project.basedir}/src/main/resources/application.ico</application.icon>
+                <application.package.options/>
+                <application.package.options1>--win-dir-chooser</application.package.options1>
+                <application.package.options2>--win-menu</application.package.options2>
+                <application.package.options3>--win-menu-group</application.package.options3>
+                <application.package.options4>JavaFXSample</application.package.options4>
+                <application.package.options5>--win-per-user-install</application.package.options5>
+                <application.package.options6>--win-shortcut</application.package.options6>
+                <application.package.options7>--win-shortcut-prompt</application.package.options7>
+                <application.package.options8>--win-upgrade-uuid</application.package.options8>
+                <application.package.options9>fd5b16cf-e0a9-4ef4-abc8-73d396fecf6d</application.package.options9>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.gluonhq</groupId>
+                        <artifactId>gluonfx-maven-plugin</artifactId>
+                        <version>1.0.22</version>
+                        <configuration>
+                            <mainClass>com.icuxika.MainApp</mainClass>
+                            <bundlesList>
+                                <list>LanguageResource</list>
+                                <list>LanguageResource_en</list>
+                                <list>LanguageResource_zh_CN</list>
+                            </bundlesList>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <properties>
+                <application.package.type>dmg</application.package.type>
+                <application.icon>${project.basedir}/src/main/resources/application.icns</application.icon>
+                <application.package.options/>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.gluonhq</groupId>
+                        <artifactId>gluonfx-maven-plugin</artifactId>
+                        <version>1.0.22</version>
+                        <configuration>
+                            <mainClass>com.icuxika.MainApp</mainClass>
+                            <bundlesList>
+                                <list>LanguageResource</list>
+                                <list>LanguageResource_en</list>
+                                <list>LanguageResource_zh_CN</list>
+                            </bundlesList>
+                            <nativeImageArgs>
+                                <nativeImageArg>
+                                    -Dsvm.platform=org.graalvm.nativeimage.Platform$MACOS_AMD64
+                                </nativeImageArg>
+                            </nativeImageArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -123,9 +194,7 @@
                                 <argument>-m</argument>
                                 <argument>sample/com.icuxika.MainApp</argument>
                                 <argument>--icon</argument>
-                                <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
-                                </argument>
+                                <argument>${application.icon}</argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
                             </arguments>
@@ -143,7 +212,7 @@
                                 <argument>-n</argument>
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
-                                <argument>dmg</argument>
+                                <argument>${application.package.type}</argument>
                                 <argument>-p</argument>
                                 <argument>
                                     ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
@@ -153,11 +222,19 @@
                                 <argument>-m</argument>
                                 <argument>sample/com.icuxika.MainApp</argument>
                                 <argument>--icon</argument>
-                                <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
-                                </argument>
+                                <argument>${application.icon}</argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
+                                <argument><![CDATA[${application.package.options}]]></argument>
+                                <argument>${application.package.options1}</argument>
+                                <argument>${application.package.options2}</argument>
+                                <argument>${application.package.options3}</argument>
+                                <argument>${application.package.options4}</argument>
+                                <argument>${application.package.options5}</argument>
+                                <argument>${application.package.options6}</argument>
+                                <argument>${application.package.options7}</argument>
+                                <argument>${application.package.options8}</argument>
+                                <argument>${application.package.options9}</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -184,52 +261,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>win</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.gluonhq</groupId>
-                        <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
-                        <configuration>
-                            <mainClass>com.icuxika.MainApp</mainClass>
-                            <bundlesList>
-                                <list>LanguageResource</list>
-                                <list>LanguageResource_en</list>
-                                <list>LanguageResource_zh_CN</list>
-                            </bundlesList>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>mac</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.gluonhq</groupId>
-                        <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
-                        <configuration>
-                            <mainClass>com.icuxika.MainApp</mainClass>
-                            <bundlesList>
-                                <list>LanguageResource</list>
-                                <list>LanguageResource_en</list>
-                                <list>LanguageResource_zh_CN</list>
-                            </bundlesList>
-                            <nativeImageArgs>
-                                <nativeImageArg>
-                                    -Dsvm.platform=org.graalvm.nativeimage.Platform$MACOS_AMD64
-                                </nativeImageArg>
-                            </nativeImageArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
