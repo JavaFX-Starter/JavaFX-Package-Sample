@@ -34,14 +34,14 @@ public class MainApp extends Application {
         zhButton.setButtonType(ButtonType.FLAT);
         zhButton.setTextFill(Color.WHITE);
         zhButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
-        zhButton.setOnAction(event -> AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE));
+        zhButton.setOnAction(_ -> AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE));
 
         MFXButton enButton = new MFXButton("英文");
         enButton.setPrefSize(120, 40);
         enButton.setButtonType(ButtonType.FLAT);
         enButton.setTextFill(Color.WHITE);
         enButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
-        enButton.setOnAction(event -> AppResource.setLanguage(Locale.ENGLISH));
+        enButton.setOnAction(_ -> AppResource.setLanguage(Locale.ENGLISH));
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -51,6 +51,12 @@ public class MainApp extends Application {
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 600, 400));
         primaryStage.show();
+
+        // 挂载全局键盘事件监听钩子
+        GlobalKeyboardListener globalKeyboardListener = new GlobalKeyboardListener(primaryStage);
+        globalKeyboardListener.hook();
+        // 窗口关闭时，卸载全局键盘事件监听钩子
+        primaryStage.setOnCloseRequest(_ -> globalKeyboardListener.stop());
 
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");

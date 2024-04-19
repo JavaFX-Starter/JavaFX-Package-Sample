@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>21</maven.compiler.release>
-        <javafx.version>21</javafx.version>
+        <maven.compiler.release>22</maven.compiler.release>
+        <javafx.version>22</javafx.version>
     </properties>
 
     <dependencies>
@@ -176,6 +176,10 @@
                     <jlinkImageName>build-link</jlinkImageName>
                     <jlinkZipName>sample-zip</jlinkZipName>
                     <mainClass>sample/com.icuxika.MainApp</mainClass>
+                    <options>
+                        <option>--enable-native-access=sample</option>
+                        <option>-Dsun.stdout.encoding=UTF-8</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>
