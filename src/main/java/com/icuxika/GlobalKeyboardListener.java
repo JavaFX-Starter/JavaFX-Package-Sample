@@ -36,9 +36,6 @@ public class GlobalKeyboardListener {
                         if (wParam == WM_KEYDOWN()) {
                             System.out.println("按下->" + vkCode);
                             handleKeyDown(vkCode);
-                            if (vkCode == 81) {
-                                PostQuitMessage(0);
-                            }
                         } else if (wParam == WM_KEYUP()) {
                             System.out.println("松开->" + vkCode);
                             handleKeyUp(vkCode);
