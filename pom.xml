@@ -53,7 +53,7 @@
         <dependency>
             <groupId>io.github.palexdev</groupId>
             <artifactId>materialfx</artifactId>
-            <version>11.16.1</version>
+            <version>11.17.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

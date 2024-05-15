@@ -2,27 +2,27 @@ package com.icuxika;
 
 import com.icuxika.jextract.win32.HOOKPROC;
 import com.icuxika.jextract.win32.KBDLLHOOKSTRUCT;
-import javafx.application.Platform;
-import javafx.stage.Stage;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.icuxika.jextract.win32.ffm_h.*;
 
 public class GlobalKeyboardListener {
 
-    private final Stage stage;
-    private int currentThreadId;
+    public static ConcurrentHashMap<String, GlobalKeyEvent> globalKeyEventMap = new ConcurrentHashMap<>();
 
-    private MemorySegment hook = MemorySegment.NULL;
-    private boolean ctrlPressed = false; // 162
-    private boolean altPressed = false; // 164
-    private boolean zPressed = false; // 90
-
-    public GlobalKeyboardListener(Stage stage) {
-        this.stage = stage;
+    public static void registerGlobalKeyEvent(GlobalKeyEvent globalKeyEvent) {
+        globalKeyEventMap.put(globalKeyEvent.getId(), globalKeyEvent);
     }
+
+    public static void unregisterGlobalKeyEvent(String id) {
+        globalKeyEventMap.remove(id);
+    }
+
+    private int currentThreadId;
+    private MemorySegment hook = MemorySegment.NULL;
 
     public void hook() {
         new Thread(() -> {
@@ -68,29 +68,10 @@ public class GlobalKeyboardListener {
     }
 
     private void handleKeyDown(int vkCode) {
-        if (vkCode == 162) {
-            ctrlPressed = true;
-        } else if (vkCode == 164) {
-            altPressed = true;
-        } else if (vkCode == 90) {
-            zPressed = true;
-        }
-        if (ctrlPressed && altPressed && zPressed) {
-            System.out.println("Ctrl + Alt + Z");
-            Platform.runLater(() -> {
-                stage.setIconified(!stage.isIconified());
-                stage.toFront();
-            });
-        }
+        globalKeyEventMap.values().forEach(globalKeyEvent -> globalKeyEvent.update(vkCode, true));
     }
 
     private void handleKeyUp(int vkCode) {
-        if (vkCode == 162) {
-            ctrlPressed = false;
-        } else if (vkCode == 164) {
-            altPressed = false;
-        } else if (vkCode == 90) {
-            zPressed = false;
-        }
+        globalKeyEventMap.values().forEach(globalKeyEvent -> globalKeyEvent.update(vkCode, false));
     }
 }
