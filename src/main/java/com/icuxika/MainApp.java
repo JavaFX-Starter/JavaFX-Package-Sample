@@ -14,6 +14,8 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Locale;
 
@@ -40,10 +42,12 @@ public class MainApp extends Application {
         enButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
         enButton.setOnAction(event -> AppResource.setLanguage(Locale.ENGLISH));
 
+        FontIcon fontIcon = new FontIcon(FontAwesomeRegular.FOLDER);
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
-        vBox.getChildren().addAll(label, zhButton, enButton);
+        vBox.getChildren().addAll(label, zhButton, enButton, fontIcon);
 
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 600, 400));
