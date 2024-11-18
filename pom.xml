@@ -12,6 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <javafx.version>21</javafx.version>
+        <mainClass>com.icuxika.Launcher</mainClass>
     </properties>
 
     <dependencies>
@@ -90,7 +91,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.icuxika.Launcher</mainClass>
+                                    <mainClass>${mainClass}</mainClass>
                                 </transformer>
                             </transformers>
                             <outputDirectory>${project.build.directory}/jars</outputDirectory>
@@ -128,7 +129,7 @@
                                             ${project.build.directory}/jars
                                         </argument>
                                         <argument>--main-class</argument>
-                                        <argument>com.icuxika.Launcher</argument>
+                                        <argument>${mainClass}</argument>
                                         <argument>--main-jar</argument>
                                         <argument>${project.artifactId}-${project.version}-shade.jar</argument>
                                         <argument>--dest</argument>
@@ -161,7 +162,7 @@
                             </descriptors>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.icuxika.Launcher</mainClass>
+                                    <mainClass>${mainClass}</mainClass>
                                 </manifest>
                             </archive>
                             <outputDirectory>${project.build.directory}/jars</outputDirectory>
@@ -199,7 +200,7 @@
                                             ${project.build.directory}/jars
                                         </argument>
                                         <argument>--main-class</argument>
-                                        <argument>com.icuxika.Launcher</argument>
+                                        <argument>${mainClass}</argument>
                                         <argument>--main-jar</argument>
                                         <argument>${project.artifactId}-${project.version}-jar-with-dependencies.jar
                                         </argument>
@@ -230,6 +231,23 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>java</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>${mainClass}</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

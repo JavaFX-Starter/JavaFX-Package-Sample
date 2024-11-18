@@ -1,6 +1,12 @@
 JavaFX 非模块化打包示例（Maven）
 ------------------------------------------------------------
-## `maven-shade-plugin`
+## 编译执行
+```shell
+mvn compile
+mvn exec:java@java
+```
+## 打包
+### `maven-shade-plugin`
 ```shell
 mvn clean
 mvn -Pshade package
@@ -9,7 +15,7 @@ mvn -Pshade exec:exec@image
 .\target\buildImage\JavaFXSample\JavaFXSample.exe
 ```
 
-## `maven-assembly-plugin`
+### `maven-assembly-plugin`
 ```shell
 mvn clean
 mvn -Passembly package
