@@ -1,6 +1,7 @@
 package com.icuxika;
 
 import com.google.common.collect.ImmutableList;
+import com.icuxika.bittersweet.control.KButton;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.enums.ButtonType;
 import javafx.application.Application;
@@ -44,10 +45,19 @@ public class MainApp extends Application {
 
         FontIcon fontIcon = new FontIcon(FontAwesomeRegular.FOLDER);
 
+        KButton kButton = new KButton("动感光波", 128.0, 32.0);
+        kButton.setStyle("""
+                -fx-font-size: 2em;
+                -k-button-background: linear-gradient(from 0.0% 0.0% to 100.0% 0.0%, #2f8df3ff 0.0%, #00eeffff 100.0%);
+                """);
+        kButton.setTextFill(Color.WHITE);
+        kButton.setButtonBadgeVisible(true);
+        kButton.setButtonBadgeText("99");
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
-        vBox.getChildren().addAll(label, zhButton, enButton, fontIcon);
+        vBox.getChildren().addAll(label, zhButton, enButton, fontIcon, kButton);
 
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 600, 400));
