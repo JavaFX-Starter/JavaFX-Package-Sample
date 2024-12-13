@@ -53,7 +53,7 @@ public class MainApp extends Application {
         MFXButton zhButton = createButton("中文");
         zhButton.setOnAction(_ -> AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE));
 
-        MFXButton enButton = createButton("英文");
+        MFXButton enButton = createButton("English");
         enButton.setOnAction(_ -> AppResource.setLanguage(Locale.ENGLISH));
 
         MFXToggleButton mfxToggleButton = new MFXToggleButton();
@@ -66,12 +66,14 @@ public class MainApp extends Application {
         }));
 
         MFXButton addKeyEventButton = createButton("添加全局键盘事件");
+        addKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("add-global-key-event-listening"));
         addKeyEventButton.setOnAction(_ -> {
             GlobalKeyboardListener.registerGlobalKeyEvent(globalKeyEvent);
             mfxToggleButton.setSelected(true);
         });
 
         MFXButton removeKeyEventButton = createButton("移除全局键盘事件");
+        removeKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("remove-global-key-event-listening"));
         removeKeyEventButton.setOnAction(_ -> {
             GlobalKeyboardListener.unregisterGlobalKeyEvent(globalKeyEvent.getId());
             mfxToggleButton.setSelected(false);
@@ -92,6 +94,7 @@ public class MainApp extends Application {
         windowNameLabel.textProperty().bind(new SimpleStringProperty("Win32 lpWindowName: ").concat(windowNameProperty));
 
         MFXButton setTransparencyButton = createButton("设置窗口半透明");
+        setTransparencyButton.textProperty().bind(AppResource.getLanguageBinding("set-window-transparency"));
         setTransparencyButton.setBackground(new Background(
                 new BackgroundFill(
                         new LinearGradient(
@@ -101,7 +104,9 @@ public class MainApp extends Application {
                         ), CornerRadii.EMPTY, Insets.EMPTY
                 )));
         setTransparencyButton.setOnAction(_ -> nativeFXWindow.setWindowTransparency());
+
         MFXButton unsetTransparencyButton = createButton("设置窗口不透明");
+        unsetTransparencyButton.textProperty().bind(AppResource.getLanguageBinding("unset-window-transparency"));
         unsetTransparencyButton.setBackground(new Background(
                 new BackgroundFill(
                         new LinearGradient(
@@ -145,7 +150,7 @@ public class MainApp extends Application {
 
     private MFXButton createButton(String text) {
         MFXButton mfxButton = new MFXButton(text);
-        mfxButton.setPrefSize(120, 40);
+        mfxButton.setPrefHeight(40);
         mfxButton.setButtonType(ButtonType.FLAT);
         mfxButton.setTextFill(Color.WHITE);
         mfxButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
