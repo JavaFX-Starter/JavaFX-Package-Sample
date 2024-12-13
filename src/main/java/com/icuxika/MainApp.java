@@ -11,6 +11,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -21,6 +22,9 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,20 +77,58 @@ public class MainApp extends Application {
             mfxToggleButton.setSelected(false);
         });
 
-        Label hWndLabel = new Label();
-        hWndLabel.setPrefSize(120, 40);
-        hWndLabel.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        hWndLabel.setTextFill(Color.WHITE);
-        hWndLabel.setAlignment(Pos.CENTER);
+        NativeFXWindowWrapper nativeFXWindow = new NativeFXWindowWrapper();
+
+        SimpleStringProperty hWndProperty = new SimpleStringProperty();
+        Label hWndLabel = createLabel();
+        hWndLabel.textProperty().bind(new SimpleStringProperty("Win32 hWnd: ").concat(hWndProperty));
+
+        SimpleStringProperty classNameProperty = new SimpleStringProperty();
+        Label classNameLabel = createLabel();
+        classNameLabel.textProperty().bind(new SimpleStringProperty("Win32 lpClassName: ").concat(classNameProperty));
+
+        SimpleStringProperty windowNameProperty = new SimpleStringProperty();
+        Label windowNameLabel = createLabel();
+        windowNameLabel.textProperty().bind(new SimpleStringProperty("Win32 lpWindowName: ").concat(windowNameProperty));
+
+        MFXButton setTransparencyButton = createButton("设置窗口半透明");
+        setTransparencyButton.setBackground(new Background(
+                new BackgroundFill(
+                        new LinearGradient(
+                                0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
+                                new Stop(0.0, new Color(0.83, 0.85, 0.87, 1.0)),
+                                new Stop(1.0, new Color(0.24, 0.33, 0.41, 1.0))
+                        ), CornerRadii.EMPTY, Insets.EMPTY
+                )));
+        setTransparencyButton.setOnAction(_ -> nativeFXWindow.setWindowTransparency());
+        MFXButton unsetTransparencyButton = createButton("设置窗口不透明");
+        unsetTransparencyButton.setBackground(new Background(
+                new BackgroundFill(
+                        new LinearGradient(
+                                0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
+                                new Stop(0.0, new Color(0.83, 0.85, 0.87, 1.0)),
+                                new Stop(1.0, new Color(0.24, 0.33, 0.41, 1.0))
+                        ), CornerRadii.EMPTY, Insets.EMPTY
+                )));
+        unsetTransparencyButton.setOnAction(_ -> nativeFXWindow.unsetWindowTransparency());
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
-        vBox.getChildren().addAll(label, zhButton, enButton, mfxToggleButton, addKeyEventButton, removeKeyEventButton, hWndLabel);
+        vBox.getChildren().addAll(
+                label, zhButton, enButton, mfxToggleButton, addKeyEventButton, removeKeyEventButton,
+                hWndLabel, classNameLabel, windowNameLabel,
+                setTransparencyButton, unsetTransparencyButton
+        );
 
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(new Scene(vBox, 400, 600));
         primaryStage.show();
+
+        nativeFXWindow.initialize(primaryStage);
+        hWndProperty.set(String.valueOf(nativeFXWindow.getHWnd()));
+        classNameProperty.set(nativeFXWindow.getClassName());
+        windowNameProperty.set(nativeFXWindow.getWindowText());
 
         // 挂载全局键盘事件监听钩子
         GlobalKeyboardListener globalKeyboardListener = new GlobalKeyboardListener();
@@ -99,11 +141,6 @@ public class MainApp extends Application {
         LOGGER.info("[info]日志记录到logs/application.log中");
         LOGGER.warn("[warn]日志记录到logs/application.log中");
         LOGGER.error("[error]日志记录到logs/application.log中");
-
-        NativeFXWindowWrapper nativeFXWindow = new NativeFXWindowWrapper(primaryStage);
-        hWndLabel.setText(String.valueOf(nativeFXWindow.getHWnd()));
-        LOGGER.info("window title: {}", nativeFXWindow.getWindowText());
-        LOGGER.info("window class: {}", nativeFXWindow.getClassName());
     }
 
     private MFXButton createButton(String text) {
@@ -113,6 +150,16 @@ public class MainApp extends Application {
         mfxButton.setTextFill(Color.WHITE);
         mfxButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
         return mfxButton;
+    }
+
+    private Label createLabel() {
+        Label label = new Label();
+        label.setPrefHeight(40);
+        label.setPadding(new Insets(0, 4, 0, 4));
+        label.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
+        label.setTextFill(Color.WHITE);
+        label.setAlignment(Pos.CENTER);
+        return label;
     }
 
     public static void main(String[] args) {

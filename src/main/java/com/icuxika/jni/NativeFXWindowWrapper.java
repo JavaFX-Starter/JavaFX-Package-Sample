@@ -12,16 +12,14 @@ public class NativeFXWindowWrapper {
 
     private static final String LIB_NAME = "NativeFXWindow.dll";
 
-    private final long hWnd;
+    private long hWnd;
 
-    public NativeFXWindowWrapper(Stage stage) {
-        hWnd = NativeFXWindow.getHWnd(stage);
+    public NativeFXWindowWrapper() {
     }
 
     static {
         try (InputStream inputStream = MainApp.class.getResourceAsStream("/native/lib/" + LIB_NAME)) {
             if (inputStream != null) {
-                System.out.println(inputStream.available());
                 Path tempFilePath = Files.createTempFile(LIB_NAME, "");
                 Files.copy(inputStream, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
                 System.load(tempFilePath.toString());
@@ -29,6 +27,13 @@ public class NativeFXWindowWrapper {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 需要在{@link Stage#show()}之后调用
+     */
+    public void initialize(Stage stage) {
+        hWnd = NativeFXWindow.getHWnd(stage);
     }
 
     public long getHWnd() {
@@ -41,5 +46,13 @@ public class NativeFXWindowWrapper {
 
     public String getClassName() {
         return NativeFXWindow.getClassName(hWnd);
+    }
+
+    public void setWindowTransparency() {
+        NativeFXWindow.setWindowTransparency(hWnd);
+    }
+
+    public void unsetWindowTransparency() {
+        NativeFXWindow.unsetWindowTransparency(hWnd);
     }
 }

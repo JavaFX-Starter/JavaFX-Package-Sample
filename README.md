@@ -22,7 +22,7 @@ mvn exec:exec@jni-generate
 .\BuildNative.ps1
 ```
 
-#### 控制台标准输出乱码
+## 控制台标准输出乱码
 ```
 java -D"sun.stdout.encoding"=UTF-8 -D"sun.stderr.encoding"=UTF-8 -jar .\target\jars\JavaFX-Package-Sample-1.0.0-shade.jar
 ```

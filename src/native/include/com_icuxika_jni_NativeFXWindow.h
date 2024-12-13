@@ -48,6 +48,24 @@ JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
 JNIEXPORT jboolean JNICALL
 Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(JNIEnv *, jclass, jint);
 
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    setWindowTransparency
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *, jclass,
+                                                          jlong);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    unsetWindowTransparency
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *, jclass,
+                                                            jlong);
+
 #ifdef __cplusplus
 }
 #endif

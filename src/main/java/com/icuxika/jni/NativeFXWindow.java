@@ -15,4 +15,7 @@ public class NativeFXWindow {
 
     public static native boolean unregisterHotKey(int id);
 
+    public static native void setWindowTransparency(long hWnd);
+
+    public static native void unsetWindowTransparency(long hWnd);
 }

@@ -74,6 +74,28 @@ JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(
   return JNI_FALSE;
 }
 
+JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *env,
+                                                          jclass clazz,
+                                                          jlong hWnd) {
+  SetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE,
+                GetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE) |
+                    WS_EX_LAYERED);
+  SetLayeredWindowAttributes(reinterpret_cast<HWND>(hWnd), 0, (255 * 70) / 100,
+                             LWA_ALPHA);
+}
+
+JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *env,
+                                                            jclass clazz,
+                                                            jlong hWnd) {
+  SetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE,
+                GetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE) &
+                    ~WS_EX_LAYERED);
+  RedrawWindow(reinterpret_cast<HWND>(hWnd), NULL, NULL,
+               RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+}
+
 #ifdef __cplusplus
 }
 #endif
