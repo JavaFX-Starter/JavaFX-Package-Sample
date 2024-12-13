@@ -1,5 +1,6 @@
 package com.icuxika;
 
+import com.icuxika.jni.NativeFXWindowWrapper;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXToggleButton;
 import io.github.palexdev.materialfx.enums.ButtonType;
@@ -72,13 +73,19 @@ public class MainApp extends Application {
             mfxToggleButton.setSelected(false);
         });
 
+        Label hWndLabel = new Label();
+        hWndLabel.setPrefSize(120, 40);
+        hWndLabel.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+        hWndLabel.setTextFill(Color.WHITE);
+        hWndLabel.setAlignment(Pos.CENTER);
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
-        vBox.getChildren().addAll(label, zhButton, enButton, mfxToggleButton, addKeyEventButton, removeKeyEventButton);
+        vBox.getChildren().addAll(label, zhButton, enButton, mfxToggleButton, addKeyEventButton, removeKeyEventButton, hWndLabel);
 
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
-        primaryStage.setScene(new Scene(vBox, 600, 400));
+        primaryStage.setScene(new Scene(vBox, 400, 600));
         primaryStage.show();
 
         // 挂载全局键盘事件监听钩子
@@ -92,6 +99,11 @@ public class MainApp extends Application {
         LOGGER.info("[info]日志记录到logs/application.log中");
         LOGGER.warn("[warn]日志记录到logs/application.log中");
         LOGGER.error("[error]日志记录到logs/application.log中");
+
+        NativeFXWindowWrapper nativeFXWindow = new NativeFXWindowWrapper(primaryStage);
+        hWndLabel.setText(String.valueOf(nativeFXWindow.getHWnd()));
+        LOGGER.info("window title: {}", nativeFXWindow.getWindowText());
+        LOGGER.info("window class: {}", nativeFXWindow.getClassName());
     }
 
     private MFXButton createButton(String text) {

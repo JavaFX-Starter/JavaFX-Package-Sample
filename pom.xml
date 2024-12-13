@@ -12,6 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>22</maven.compiler.release>
         <javafx.version>22</javafx.version>
+        <mainClass>com.icuxika.Launcher</mainClass>
     </properties>
 
     <dependencies>
@@ -89,23 +90,6 @@
                 <application.package.options8>--win-upgrade-uuid</application.package.options8>
                 <application.package.options9>fd5b16cf-e0a9-4ef4-abc8-73d396fecf6d</application.package.options9>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.gluonhq</groupId>
-                        <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
-                        <configuration>
-                            <mainClass>com.icuxika.MainApp</mainClass>
-                            <bundlesList>
-                                <list>LanguageResource</list>
-                                <list>LanguageResource_en</list>
-                                <list>LanguageResource_zh_CN</list>
-                            </bundlesList>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>mac</id>
@@ -116,28 +100,6 @@
                 <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
                 <application.package.options/>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.gluonhq</groupId>
-                        <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
-                        <configuration>
-                            <mainClass>com.icuxika.MainApp</mainClass>
-                            <bundlesList>
-                                <list>LanguageResource</list>
-                                <list>LanguageResource_en</list>
-                                <list>LanguageResource_zh_CN</list>
-                            </bundlesList>
-                            <nativeImageArgs>
-                                <nativeImageArg>
-                                    -Dsvm.platform=org.graalvm.nativeimage.Platform$MACOS_AMD64
-                                </nativeImageArg>
-                            </nativeImageArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 
@@ -153,20 +115,35 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <configuration>
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>${mainClass}</mainClass>
+                        </transformer>
+                    </transformers>
+                    <outputDirectory>${project.build.directory}/jars</outputDirectory>
+                    <finalName>${project.artifactId}-${project.version}-shade</finalName>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>copy-dependencies</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -176,6 +153,22 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
+                    <execution>
+                        <id>jni-generate</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>javac</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-h</argument>
+                                <argument>${project.basedir}/src/native/include</argument>
+                                <argument>${project.basedir}/src/main/java/com/icuxika/jni/NativeFXWindow.java
+                                </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>image</id>
                         <goals>
@@ -191,58 +184,20 @@
                                 <argument>JavaFXSample</argument>
                                 <argument>-t</argument>
                                 <argument>app-image</argument>
-                                <argument>-p</argument>
+                                <argument>-i</argument>
                                 <argument>
-                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                    ${project.build.directory}/jars
                                 </argument>
-                                <argument>-d</argument>
-                                <argument>${project.build.directory}/mvnPackage</argument>
-                                <argument>-m</argument>
-                                <argument>sample/com.icuxika.MainApp</argument>
+                                <argument>--main-class</argument>
+                                <argument>${mainClass}</argument>
+                                <argument>--main-jar</argument>
+                                <argument>${project.artifactId}-${project.version}-shade.jar</argument>
+                                <argument>--dest</argument>
+                                <argument>${project.build.directory}/buildImage</argument>
                                 <argument>--icon</argument>
                                 <argument>${application.icon}</argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>installer</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jpackage</executable>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <arguments>
-                                <argument>${application.package.stdout.encoding}</argument>
-                                <argument>${application.package.stderr.encoding}</argument>
-                                <argument>-n</argument>
-                                <argument>JavaFXSample</argument>
-                                <argument>-t</argument>
-                                <argument>${application.package.type}</argument>
-                                <argument>-p</argument>
-                                <argument>
-                                    ${project.build.directory}/alternateLocation${path.separator}${project.build.directory}/${project.artifactId}-${project.version}.jar
-                                </argument>
-                                <argument>-d</argument>
-                                <argument>${project.build.directory}/mvnInstaller</argument>
-                                <argument>-m</argument>
-                                <argument>sample/com.icuxika.MainApp</argument>
-                                <argument>--icon</argument>
-                                <argument>${application.icon}</argument>
-                                <argument>--app-version</argument>
-                                <argument>1.0.0</argument>
-                                <argument><![CDATA[${application.package.options}]]></argument>
-                                <argument>${application.package.options1}</argument>
-                                <argument>${application.package.options2}</argument>
-                                <argument>${application.package.options3}</argument>
-                                <argument>${application.package.options4}</argument>
-                                <argument>${application.package.options5}</argument>
-                                <argument>${application.package.options6}</argument>
-                                <argument>${application.package.options7}</argument>
-                                <argument>${application.package.options8}</argument>
-                                <argument>${application.package.options9}</argument>
                             </arguments>
                         </configuration>
                     </execution>

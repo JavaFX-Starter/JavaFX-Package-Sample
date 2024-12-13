@@ -43,12 +43,12 @@ public class GlobalKeyboardListener {
                     }
                     return CallNextHookEx(hook, code, wParam, lParam);
                 }, arena), MemorySegment.NULL, 0);
-                System.out.println("hook");
+                System.out.println("全局键盘事件钩子已安装");
+                //noinspection StatementWithEmptyBody
                 while (GetMessageW(arena.allocate(LPMSG), MemorySegment.NULL, 0, 0) != 0) {
-                    System.out.println(1);
                 }
                 UnhookWindowsHookEx(hook);
-                System.out.println("unhook");
+                System.out.println("全局键盘事件钩子已卸载");
             }
         }).start();
     }
@@ -57,6 +57,7 @@ public class GlobalKeyboardListener {
      * 向GetMessageW创建的消息队列发送结束信号，使while循环结束，然后执行卸载全局键盘事件监听钩子
      */
     public void stop() {
+        unhook();
         PostThreadMessageW(currentThreadId, WM_QUIT(), 0, 0);
     }
 
