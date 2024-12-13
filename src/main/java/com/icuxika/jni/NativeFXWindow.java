@@ -10,4 +10,9 @@ public class NativeFXWindow {
     public static native String getWindowText(long hWnd);
 
     public static native String getClassName(long hWnd);
+
+    public static native boolean registerHotKey(int id, int fsModifiers, int vk);
+
+    public static native boolean unregisterHotKey(int id);
+
 }

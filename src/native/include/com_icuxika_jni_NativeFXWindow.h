@@ -12,24 +12,41 @@ extern "C" {
  * Method:    getHWnd
  * Signature: (Ljava/lang/Object;)J
  */
-JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd
-  (JNIEnv *, jclass, jobject);
+JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd(JNIEnv *,
+                                                                    jclass,
+                                                                    jobject);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    getWindowText
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowText
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT jstring JNICALL
+Java_com_icuxika_jni_NativeFXWindow_getWindowText(JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    getClassName
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT jstring JNICALL
+Java_com_icuxika_jni_NativeFXWindow_getClassName(JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    registerHotKey
+ * Signature: (III)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
+    JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    unregisterHotKey
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(JNIEnv *, jclass, jint);
 
 #ifdef __cplusplus
 }

@@ -115,6 +115,15 @@ public class ffm_h {
     public static int WM_KEYUP() {
         return WM_KEYUP;
     }
+    private static final int WM_HOTKEY = (int)786L;
+    /**
+     * {@snippet lang=c :
+     * #define WM_HOTKEY 786
+     * }
+     */
+    public static int WM_HOTKEY() {
+        return WM_HOTKEY;
+    }
     /**
      * {@snippet lang=c :
      * typedef unsigned long DWORD

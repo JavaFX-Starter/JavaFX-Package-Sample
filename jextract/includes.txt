@@ -21,9 +21,12 @@
 --include-typedef LPWSTR
 --include-typedef WCHAR
 --include-struct tagKBDLLHOOKSTRUCT
+--include-struct tagMSG
+--include-struct tagPOINT
 --include-constant WH_KEYBOARD_LL
 --include-constant WH_MOUSE_LL
 --include-constant WM_KEYDOWN
 --include-constant WM_KEYUP
 --include-constant MAPVK_VK_TO_VSC
 --include-constant WM_QUIT
+--include-constant WM_HOTKEY

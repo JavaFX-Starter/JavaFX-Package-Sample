@@ -2,6 +2,7 @@
 #include "jni.h"
 #include "jni_md.h"
 #include <Windows.h>
+#include <cstddef>
 #include <string>
 
 #ifdef __cplusplus
@@ -55,6 +56,22 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName(
     return env->NewStringUTF(utf8Str.c_str());
   }
   return nullptr;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
+    JNIEnv *env, jclass clazz, jint id, jint fsModifiers, jint vk) {
+  if (RegisterHotKey(NULL, id, fsModifiers, vk)) {
+    return JNI_TRUE;
+  }
+  return JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(
+    JNIEnv *env, jclass clazz, jint id) {
+  if (UnregisterHotKey(NULL, id)) {
+    return JNI_TRUE;
+  }
+  return JNI_FALSE;
 }
 
 #ifdef __cplusplus
