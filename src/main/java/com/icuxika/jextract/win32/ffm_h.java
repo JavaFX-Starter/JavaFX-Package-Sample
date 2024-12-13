@@ -2,15 +2,13 @@
 
 package com.icuxika.jextract.win32;
 
-import java.lang.invoke.*;
 import java.lang.foreign.*;
-import java.nio.ByteOrder;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static java.lang.foreign.ValueLayout.*;
-import static java.lang.foreign.MemoryLayout.PathElement.*;
 
 public class ffm_h {
 
@@ -22,15 +20,15 @@ public class ffm_h {
     static final boolean TRACE_DOWNCALLS = Boolean.getBoolean("jextract.trace.downcalls");
 
     static void traceDowncall(String name, Object... args) {
-         String traceArgs = Arrays.stream(args)
-                       .map(Object::toString)
-                       .collect(Collectors.joining(", "));
-         System.out.printf("%s(%s)\n", name, traceArgs);
+        String traceArgs = Arrays.stream(args)
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        System.out.printf("%s(%s)\n", name, traceArgs);
     }
 
     static MemorySegment findOrThrow(String symbol) {
         return SYMBOL_LOOKUP.find(symbol)
-            .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
+                .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + symbol));
     }
 
     static MethodHandle upcallHandle(Class<?> fi, String name, FunctionDescriptor fdesc) {
@@ -70,123 +68,135 @@ public class ffm_h {
             .withTargetLayout(MemoryLayout.sequenceLayout(java.lang.Long.MAX_VALUE, JAVA_BYTE));
     public static final ValueLayout.OfInt C_LONG = ValueLayout.JAVA_INT;
     public static final ValueLayout.OfDouble C_LONG_DOUBLE = ValueLayout.JAVA_DOUBLE;
-    private static final int WH_KEYBOARD_LL = (int)13L;
+    private static final int WH_KEYBOARD_LL = (int) 13L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WH_KEYBOARD_LL 13
-     * }
+     *}
      */
     public static int WH_KEYBOARD_LL() {
         return WH_KEYBOARD_LL;
     }
-    private static final int WH_MOUSE_LL = (int)14L;
+
+    private static final int WH_MOUSE_LL = (int) 14L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WH_MOUSE_LL 14
-     * }
+     *}
      */
     public static int WH_MOUSE_LL() {
         return WH_MOUSE_LL;
     }
-    private static final int WM_QUIT = (int)18L;
+
+    private static final int WM_QUIT = (int) 18L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WM_QUIT 18
-     * }
+     *}
      */
     public static int WM_QUIT() {
         return WM_QUIT;
     }
-    private static final int WM_KEYDOWN = (int)256L;
+
+    private static final int WM_KEYDOWN = (int) 256L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WM_KEYDOWN 256
-     * }
+     *}
      */
     public static int WM_KEYDOWN() {
         return WM_KEYDOWN;
     }
-    private static final int WM_KEYUP = (int)257L;
+
+    private static final int WM_KEYUP = (int) 257L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WM_KEYUP 257
-     * }
+     *}
      */
     public static int WM_KEYUP() {
         return WM_KEYUP;
     }
-    private static final int WM_HOTKEY = (int)786L;
+
+    private static final int WM_HOTKEY = (int) 786L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define WM_HOTKEY 786
-     * }
+     *}
      */
     public static int WM_HOTKEY() {
         return WM_HOTKEY;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef unsigned long DWORD
-     * }
+     *}
      */
     public static final OfInt DWORD = ffm_h.C_LONG;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef unsigned long long ULONG_PTR
-     * }
+     *}
      */
     public static final OfLong ULONG_PTR = ffm_h.C_LONG_LONG;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef wchar_t WCHAR
-     * }
+     *}
      */
     public static final OfShort WCHAR = ffm_h.C_SHORT;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef WCHAR *LPWSTR
-     * }
+     *}
      */
     public static final AddressLayout LPWSTR = ffm_h.C_POINTER;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef struct HINSTANCE__ {
      *     int unused;
      * } *HINSTANCE
-     * }
+     *}
      */
     public static final AddressLayout HINSTANCE = ffm_h.C_POINTER;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef struct HWND__ {
      *     int unused;
      * } *HWND
-     * }
+     *}
      */
     public static final AddressLayout HWND = ffm_h.C_POINTER;
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef struct HHOOK__ {
      *     int unused;
      * } *HHOOK
-     * }
+     *}
      */
     public static final AddressLayout HHOOK = ffm_h.C_POINTER;
 
     private static class GetCurrentThreadId {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_LONG    );
+                ffm_h.C_LONG);
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("GetCurrentThreadId"),
-                    DESC);
+                ffm_h.findOrThrow("GetCurrentThreadId"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD GetCurrentThreadId()
-     * }
+     *}
      */
     public static FunctionDescriptor GetCurrentThreadId$descriptor() {
         return GetCurrentThreadId.DESC;
@@ -194,17 +204,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD GetCurrentThreadId()
-     * }
+     *}
      */
     public static MethodHandle GetCurrentThreadId$handle() {
         return GetCurrentThreadId.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD GetCurrentThreadId()
-     * }
+     *}
      */
     public static int GetCurrentThreadId() {
         var mh$ = GetCurrentThreadId.HANDLE;
@@ -212,13 +223,14 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("GetCurrentThreadId");
             }
-            return (int)mh$.invokeExact();
+            return (int) mh$.invokeExact();
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * typedef struct tagMSG {
      *     HWND hwnd;
      *     UINT message;
@@ -227,29 +239,29 @@ public class ffm_h {
      *     DWORD time;
      *     POINT pt;
      * } *LPMSG
-     * }
+     *}
      */
     public static final AddressLayout LPMSG = ffm_h.C_POINTER;
 
     private static class GetMessageA {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_POINTER,
-            ffm_h.C_POINTER,
-            ffm_h.C_INT,
-            ffm_h.C_INT
+                ffm_h.C_INT,
+                ffm_h.C_POINTER,
+                ffm_h.C_POINTER,
+                ffm_h.C_INT,
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("GetMessageA"),
-                    DESC);
+                ffm_h.findOrThrow("GetMessageA"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static FunctionDescriptor GetMessageA$descriptor() {
         return GetMessageA.DESC;
@@ -257,17 +269,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static MethodHandle GetMessageA$handle() {
         return GetMessageA.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static int GetMessageA(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax) {
         var mh$ = GetMessageA.HANDLE;
@@ -275,31 +288,31 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("GetMessageA", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
             }
-            return (int)mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+            return (int) mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class GetMessageW {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_POINTER,
-            ffm_h.C_POINTER,
-            ffm_h.C_INT,
-            ffm_h.C_INT
+                ffm_h.C_INT,
+                ffm_h.C_POINTER,
+                ffm_h.C_POINTER,
+                ffm_h.C_INT,
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("GetMessageW"),
-                    DESC);
+                ffm_h.findOrThrow("GetMessageW"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static FunctionDescriptor GetMessageW$descriptor() {
         return GetMessageW.DESC;
@@ -307,17 +320,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static MethodHandle GetMessageW$handle() {
         return GetMessageW.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL GetMessageW(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
-     * }
+     *}
      */
     public static int GetMessageW(MemorySegment lpMsg, MemorySegment hWnd, int wMsgFilterMin, int wMsgFilterMax) {
         var mh$ = GetMessageW.HANDLE;
@@ -325,31 +339,127 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("GetMessageW", lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
             }
-            return (int)mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+            return (int) mh$.invokeExact(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class TranslateMessage {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+                ffm_h.C_INT,
+                ffm_h.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                ffm_h.findOrThrow("TranslateMessage"),
+                DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang = c:
+     * BOOL TranslateMessage(const MSG *lpMsg)
+     *}
+     */
+    public static FunctionDescriptor TranslateMessage$descriptor() {
+        return TranslateMessage.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang = c:
+     * BOOL TranslateMessage(const MSG *lpMsg)
+     *}
+     */
+    public static MethodHandle TranslateMessage$handle() {
+        return TranslateMessage.HANDLE;
+    }
+
+    /**
+     * {@snippet lang = c:
+     * BOOL TranslateMessage(const MSG *lpMsg)
+     *}
+     */
+    public static int TranslateMessage(MemorySegment lpMsg) {
+        var mh$ = TranslateMessage.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("TranslateMessage", lpMsg);
+            }
+            return (int) mh$.invokeExact(lpMsg);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
+        }
+    }
+
+    private static class DispatchMessageW {
+        public static final FunctionDescriptor DESC = FunctionDescriptor.of(
+                ffm_h.C_LONG_LONG,
+                ffm_h.C_POINTER
+        );
+
+        public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
+                ffm_h.findOrThrow("DispatchMessageW"),
+                DESC);
+    }
+
+    /**
+     * Function descriptor for:
+     * {@snippet lang = c:
+     * LRESULT DispatchMessageW(const MSG *lpMsg)
+     *}
+     */
+    public static FunctionDescriptor DispatchMessageW$descriptor() {
+        return DispatchMessageW.DESC;
+    }
+
+    /**
+     * Downcall method handle for:
+     * {@snippet lang = c:
+     * LRESULT DispatchMessageW(const MSG *lpMsg)
+     *}
+     */
+    public static MethodHandle DispatchMessageW$handle() {
+        return DispatchMessageW.HANDLE;
+    }
+
+    /**
+     * {@snippet lang = c:
+     * LRESULT DispatchMessageW(const MSG *lpMsg)
+     *}
+     */
+    public static long DispatchMessageW(MemorySegment lpMsg) {
+        var mh$ = DispatchMessageW.HANDLE;
+        try {
+            if (TRACE_DOWNCALLS) {
+                traceDowncall("DispatchMessageW", lpMsg);
+            }
+            return (long) mh$.invokeExact(lpMsg);
+        } catch (Throwable ex$) {
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class PostThreadMessageW {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_LONG,
-            ffm_h.C_INT,
-            ffm_h.C_LONG_LONG,
-            ffm_h.C_LONG_LONG
+                ffm_h.C_INT,
+                ffm_h.C_LONG,
+                ffm_h.C_INT,
+                ffm_h.C_LONG_LONG,
+                ffm_h.C_LONG_LONG
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("PostThreadMessageW"),
-                    DESC);
+                ffm_h.findOrThrow("PostThreadMessageW"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL PostThreadMessageW(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static FunctionDescriptor PostThreadMessageW$descriptor() {
         return PostThreadMessageW.DESC;
@@ -357,17 +467,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL PostThreadMessageW(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static MethodHandle PostThreadMessageW$handle() {
         return PostThreadMessageW.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL PostThreadMessageW(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static int PostThreadMessageW(int idThread, int Msg, long wParam, long lParam) {
         var mh$ = PostThreadMessageW.HANDLE;
@@ -375,27 +486,27 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("PostThreadMessageW", idThread, Msg, wParam, lParam);
             }
-            return (int)mh$.invokeExact(idThread, Msg, wParam, lParam);
+            return (int) mh$.invokeExact(idThread, Msg, wParam, lParam);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class PostQuitMessage {
         public static final FunctionDescriptor DESC = FunctionDescriptor.ofVoid(
-            ffm_h.C_INT
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("PostQuitMessage"),
-                    DESC);
+                ffm_h.findOrThrow("PostQuitMessage"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * void PostQuitMessage(int nExitCode)
-     * }
+     *}
      */
     public static FunctionDescriptor PostQuitMessage$descriptor() {
         return PostQuitMessage.DESC;
@@ -403,17 +514,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * void PostQuitMessage(int nExitCode)
-     * }
+     *}
      */
     public static MethodHandle PostQuitMessage$handle() {
         return PostQuitMessage.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * void PostQuitMessage(int nExitCode)
-     * }
+     *}
      */
     public static void PostQuitMessage(int nExitCode) {
         var mh$ = PostQuitMessage.HANDLE;
@@ -423,28 +535,28 @@ public class ffm_h {
             }
             mh$.invokeExact(nExitCode);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class GetKeyNameTextA {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_LONG,
-            ffm_h.C_POINTER,
-            ffm_h.C_INT
+                ffm_h.C_INT,
+                ffm_h.C_LONG,
+                ffm_h.C_POINTER,
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("GetKeyNameTextA"),
-                    DESC);
+                ffm_h.findOrThrow("GetKeyNameTextA"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextA(LONG lParam, LPSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static FunctionDescriptor GetKeyNameTextA$descriptor() {
         return GetKeyNameTextA.DESC;
@@ -452,17 +564,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextA(LONG lParam, LPSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static MethodHandle GetKeyNameTextA$handle() {
         return GetKeyNameTextA.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextA(LONG lParam, LPSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static int GetKeyNameTextA(int lParam, MemorySegment lpString, int cchSize) {
         var mh$ = GetKeyNameTextA.HANDLE;
@@ -470,30 +583,30 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("GetKeyNameTextA", lParam, lpString, cchSize);
             }
-            return (int)mh$.invokeExact(lParam, lpString, cchSize);
+            return (int) mh$.invokeExact(lParam, lpString, cchSize);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class GetKeyNameTextW {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_LONG,
-            ffm_h.C_POINTER,
-            ffm_h.C_INT
+                ffm_h.C_INT,
+                ffm_h.C_LONG,
+                ffm_h.C_POINTER,
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("GetKeyNameTextW"),
-                    DESC);
+                ffm_h.findOrThrow("GetKeyNameTextW"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextW(LONG lParam, LPWSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static FunctionDescriptor GetKeyNameTextW$descriptor() {
         return GetKeyNameTextW.DESC;
@@ -501,17 +614,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextW(LONG lParam, LPWSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static MethodHandle GetKeyNameTextW$handle() {
         return GetKeyNameTextW.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * int GetKeyNameTextW(LONG lParam, LPWSTR lpString, int cchSize)
-     * }
+     *}
      */
     public static int GetKeyNameTextW(int lParam, MemorySegment lpString, int cchSize) {
         var mh$ = GetKeyNameTextW.HANDLE;
@@ -519,29 +633,29 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("GetKeyNameTextW", lParam, lpString, cchSize);
             }
-            return (int)mh$.invokeExact(lParam, lpString, cchSize);
+            return (int) mh$.invokeExact(lParam, lpString, cchSize);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class MapVirtualKeyW {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_INT,
-            ffm_h.C_INT
+                ffm_h.C_INT,
+                ffm_h.C_INT,
+                ffm_h.C_INT
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("MapVirtualKeyW"),
-                    DESC);
+                ffm_h.findOrThrow("MapVirtualKeyW"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * UINT MapVirtualKeyW(UINT uCode, UINT uMapType)
-     * }
+     *}
      */
     public static FunctionDescriptor MapVirtualKeyW$descriptor() {
         return MapVirtualKeyW.DESC;
@@ -549,17 +663,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * UINT MapVirtualKeyW(UINT uCode, UINT uMapType)
-     * }
+     *}
      */
     public static MethodHandle MapVirtualKeyW$handle() {
         return MapVirtualKeyW.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * UINT MapVirtualKeyW(UINT uCode, UINT uMapType)
-     * }
+     *}
      */
     public static int MapVirtualKeyW(int uCode, int uMapType) {
         var mh$ = MapVirtualKeyW.HANDLE;
@@ -567,31 +682,31 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("MapVirtualKeyW", uCode, uMapType);
             }
-            return (int)mh$.invokeExact(uCode, uMapType);
+            return (int) mh$.invokeExact(uCode, uMapType);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class SetWindowsHookExA {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_POINTER,
-            ffm_h.C_INT,
-            ffm_h.C_POINTER,
-            ffm_h.C_POINTER,
-            ffm_h.C_LONG
+                ffm_h.C_POINTER,
+                ffm_h.C_INT,
+                ffm_h.C_POINTER,
+                ffm_h.C_POINTER,
+                ffm_h.C_LONG
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("SetWindowsHookExA"),
-                    DESC);
+                ffm_h.findOrThrow("SetWindowsHookExA"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static FunctionDescriptor SetWindowsHookExA$descriptor() {
         return SetWindowsHookExA.DESC;
@@ -599,17 +714,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static MethodHandle SetWindowsHookExA$handle() {
         return SetWindowsHookExA.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static MemorySegment SetWindowsHookExA(int idHook, MemorySegment lpfn, MemorySegment hmod, int dwThreadId) {
         var mh$ = SetWindowsHookExA.HANDLE;
@@ -617,31 +733,31 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("SetWindowsHookExA", idHook, lpfn, hmod, dwThreadId);
             }
-            return (MemorySegment)mh$.invokeExact(idHook, lpfn, hmod, dwThreadId);
+            return (MemorySegment) mh$.invokeExact(idHook, lpfn, hmod, dwThreadId);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class SetWindowsHookExW {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_POINTER,
-            ffm_h.C_INT,
-            ffm_h.C_POINTER,
-            ffm_h.C_POINTER,
-            ffm_h.C_LONG
+                ffm_h.C_POINTER,
+                ffm_h.C_INT,
+                ffm_h.C_POINTER,
+                ffm_h.C_POINTER,
+                ffm_h.C_LONG
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("SetWindowsHookExW"),
-                    DESC);
+                ffm_h.findOrThrow("SetWindowsHookExW"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExW(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static FunctionDescriptor SetWindowsHookExW$descriptor() {
         return SetWindowsHookExW.DESC;
@@ -649,17 +765,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExW(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static MethodHandle SetWindowsHookExW$handle() {
         return SetWindowsHookExW.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * HHOOK SetWindowsHookExW(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
-     * }
+     *}
      */
     public static MemorySegment SetWindowsHookExW(int idHook, MemorySegment lpfn, MemorySegment hmod, int dwThreadId) {
         var mh$ = SetWindowsHookExW.HANDLE;
@@ -667,28 +784,28 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("SetWindowsHookExW", idHook, lpfn, hmod, dwThreadId);
             }
-            return (MemorySegment)mh$.invokeExact(idHook, lpfn, hmod, dwThreadId);
+            return (MemorySegment) mh$.invokeExact(idHook, lpfn, hmod, dwThreadId);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class UnhookWindowsHookEx {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_INT,
-            ffm_h.C_POINTER
+                ffm_h.C_INT,
+                ffm_h.C_POINTER
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("UnhookWindowsHookEx"),
-                    DESC);
+                ffm_h.findOrThrow("UnhookWindowsHookEx"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL UnhookWindowsHookEx(HHOOK hhk)
-     * }
+     *}
      */
     public static FunctionDescriptor UnhookWindowsHookEx$descriptor() {
         return UnhookWindowsHookEx.DESC;
@@ -696,17 +813,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL UnhookWindowsHookEx(HHOOK hhk)
-     * }
+     *}
      */
     public static MethodHandle UnhookWindowsHookEx$handle() {
         return UnhookWindowsHookEx.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * BOOL UnhookWindowsHookEx(HHOOK hhk)
-     * }
+     *}
      */
     public static int UnhookWindowsHookEx(MemorySegment hhk) {
         var mh$ = UnhookWindowsHookEx.HANDLE;
@@ -714,31 +832,31 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("UnhookWindowsHookEx", hhk);
             }
-            return (int)mh$.invokeExact(hhk);
+            return (int) mh$.invokeExact(hhk);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
 
     private static class CallNextHookEx {
         public static final FunctionDescriptor DESC = FunctionDescriptor.of(
-            ffm_h.C_LONG_LONG,
-            ffm_h.C_POINTER,
-            ffm_h.C_INT,
-            ffm_h.C_LONG_LONG,
-            ffm_h.C_LONG_LONG
+                ffm_h.C_LONG_LONG,
+                ffm_h.C_POINTER,
+                ffm_h.C_INT,
+                ffm_h.C_LONG_LONG,
+                ffm_h.C_LONG_LONG
         );
 
         public static final MethodHandle HANDLE = Linker.nativeLinker().downcallHandle(
-                    ffm_h.findOrThrow("CallNextHookEx"),
-                    DESC);
+                ffm_h.findOrThrow("CallNextHookEx"),
+                DESC);
     }
 
     /**
      * Function descriptor for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * LRESULT CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static FunctionDescriptor CallNextHookEx$descriptor() {
         return CallNextHookEx.DESC;
@@ -746,17 +864,18 @@ public class ffm_h {
 
     /**
      * Downcall method handle for:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * LRESULT CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static MethodHandle CallNextHookEx$handle() {
         return CallNextHookEx.HANDLE;
     }
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * LRESULT CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam)
-     * }
+     *}
      */
     public static long CallNextHookEx(MemorySegment hhk, int nCode, long wParam, long lParam) {
         var mh$ = CallNextHookEx.HANDLE;
@@ -764,16 +883,18 @@ public class ffm_h {
             if (TRACE_DOWNCALLS) {
                 traceDowncall("CallNextHookEx", hhk, nCode, wParam, lParam);
             }
-            return (long)mh$.invokeExact(hhk, nCode, wParam, lParam);
+            return (long) mh$.invokeExact(hhk, nCode, wParam, lParam);
         } catch (Throwable ex$) {
-           throw new AssertionError("should not reach here", ex$);
+            throw new AssertionError("should not reach here", ex$);
         }
     }
-    private static final int MAPVK_VK_TO_VSC = (int)0L;
+
+    private static final int MAPVK_VK_TO_VSC = (int) 0L;
+
     /**
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * #define MAPVK_VK_TO_VSC 0
-     * }
+     *}
      */
     public static int MAPVK_VK_TO_VSC() {
         return MAPVK_VK_TO_VSC;

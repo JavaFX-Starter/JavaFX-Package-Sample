@@ -68,6 +68,8 @@ public class GlobalKeyboardListener {
                         var id = tagMSG.wParam(m);
                         System.out.println("使用[RegisterHotKey]注册的快捷键[" + id + "]被触发了");
                     }
+                    TranslateMessage(msg);
+                    DispatchMessageW(msg);
                 }
                 UnhookWindowsHookEx(hook);
                 System.out.println("全局键盘事件钩子已卸载");

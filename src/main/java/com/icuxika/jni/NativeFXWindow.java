@@ -1,21 +1,77 @@
 package com.icuxika.jni;
 
+import com.icuxika.MainApp;
+import javafx.stage.Stage;
+
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 /**
- * mvn exec:exec@jni-generate
- * javac -J-D"sun.stdout.encoding"=UTF-8 -J-D"sun.stderr.encoding"=UTF-8 -h .\src\native\include\ .\src\main\java\com\icuxika\jni\NativeFXWindow.java
+ * mvn -Pjni clean compile
  */
 public class NativeFXWindow {
-    public static native long getHWnd(Object stage);
 
-    public static native String getWindowText(long hWnd);
+    private static final String LIB_NAME = "NativeFXWindow.dll";
 
-    public static native String getClassName(long hWnd);
+    private long hWnd;
+
+    public NativeFXWindow() {
+    }
+
+    static {
+        try (InputStream inputStream = MainApp.class.getResourceAsStream("/native/lib/" + LIB_NAME)) {
+            if (inputStream != null) {
+                Path tempFilePath = Files.createTempFile(LIB_NAME, "");
+                Files.copy(inputStream, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
+                System.load(tempFilePath.toString());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 需要在{@link Stage#show()}之后调用
+     */
+    public void initialize(Stage stage) {
+        hWnd = NativeFXWindow.getHWnd(stage);
+    }
+
+    public long getHWnd() {
+        return hWnd;
+    }
+
+    public String getWindowText() {
+        return getWindowText(hWnd);
+    }
+
+    public String getClassName() {
+        return getClassName(hWnd);
+    }
+
+    public void setWindowTransparency() {
+        setWindowTransparency(hWnd);
+    }
+
+    public void unsetWindowTransparency() {
+        unsetWindowTransparency(hWnd);
+    }
+
+    // ------------------------------------------------------------
+
+    private static native long getHWnd(Stage stage);
+
+    private static native String getWindowText(long hWnd);
+
+    private static native String getClassName(long hWnd);
 
     public static native boolean registerHotKey(int id, int fsModifiers, int vk);
 
     public static native boolean unregisterHotKey(int id);
 
-    public static native void setWindowTransparency(long hWnd);
+    private static native void setWindowTransparency(long hWnd);
 
-    public static native void unsetWindowTransparency(long hWnd);
+    private static native void unsetWindowTransparency(long hWnd);
 }

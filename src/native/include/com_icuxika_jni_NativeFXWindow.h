@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    getHWnd
- * Signature: (Ljava/lang/Object;)J
+ * Signature: (Ljavafx/stage/Stage;)J
  */
 JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd(JNIEnv *,
                                                                     jclass,

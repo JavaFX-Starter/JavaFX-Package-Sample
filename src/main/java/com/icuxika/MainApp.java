@@ -1,6 +1,6 @@
 package com.icuxika;
 
-import com.icuxika.jni.NativeFXWindowWrapper;
+import com.icuxika.jni.NativeFXWindow;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXToggleButton;
 import io.github.palexdev.materialfx.enums.ButtonType;
@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class MainApp extends Application {
 
@@ -79,7 +80,7 @@ public class MainApp extends Application {
             mfxToggleButton.setSelected(false);
         });
 
-        NativeFXWindowWrapper nativeFXWindow = new NativeFXWindowWrapper();
+        NativeFXWindow nativeFXWindow = new NativeFXWindow();
 
         SimpleStringProperty hWndProperty = new SimpleStringProperty();
         Label hWndLabel = createLabel();
@@ -121,19 +122,28 @@ public class MainApp extends Application {
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
         vBox.getChildren().addAll(
-                label, zhButton, enButton, mfxToggleButton, addKeyEventButton, removeKeyEventButton,
+                label, zhButton, enButton,
+                mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton
         );
 
+        Scene scene = new Scene(vBox, 400, 600);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/main.css")).toExternalForm());
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
-        primaryStage.setScene(new Scene(vBox, 400, 600));
+        primaryStage.setScene(scene);
         primaryStage.show();
 
         nativeFXWindow.initialize(primaryStage);
         hWndProperty.set(String.valueOf(nativeFXWindow.getHWnd()));
         classNameProperty.set(nativeFXWindow.getClassName());
         windowNameProperty.set(nativeFXWindow.getWindowText());
+
+        primaryStage.titleProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                windowNameProperty.set(nativeFXWindow.getWindowText());
+            }
+        });
 
         // 挂载全局键盘事件监听钩子
         GlobalKeyboardListener globalKeyboardListener = new GlobalKeyboardListener();

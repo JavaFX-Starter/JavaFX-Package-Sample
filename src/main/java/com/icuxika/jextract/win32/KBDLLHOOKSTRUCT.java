@@ -2,18 +2,8 @@
 
 package com.icuxika.jextract.win32;
 
-import java.lang.invoke.*;
-import java.lang.foreign.*;
-import java.nio.ByteOrder;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
-
-import static java.lang.foreign.ValueLayout.*;
-import static java.lang.foreign.MemoryLayout.PathElement.*;
-
 /**
- * {@snippet lang=c :
+ * {@snippet lang = c:
  * typedef struct tagKBDLLHOOKSTRUCT {
  *     DWORD vkCode;
  *     DWORD scanCode;
@@ -21,7 +11,7 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  *     DWORD time;
  *     ULONG_PTR dwExtraInfo;
  * } KBDLLHOOKSTRUCT
- * }
+ *}
  */
 public class KBDLLHOOKSTRUCT extends tagKBDLLHOOKSTRUCT {
 

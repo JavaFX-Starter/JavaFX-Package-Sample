@@ -12,9 +12,9 @@ mvn -Pwin exec:exec@image
 ```
 ## 构建 native 动态库
 ### 生成 JNI 头文件
-> 不修改可以不执行
+> 没有新增或修改native函数可以不执行
 ```
-mvn exec:exec@jni-generate
+mvn -Pjni clean compile
 ```
 
 ### 构建

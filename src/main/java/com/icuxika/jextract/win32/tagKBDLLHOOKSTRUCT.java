@@ -2,18 +2,15 @@
 
 package com.icuxika.jextract.win32;
 
-import java.lang.invoke.*;
 import java.lang.foreign.*;
-import java.nio.ByteOrder;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.function.Consumer;
 
-import static java.lang.foreign.ValueLayout.*;
-import static java.lang.foreign.MemoryLayout.PathElement.*;
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
+import static java.lang.foreign.ValueLayout.OfInt;
+import static java.lang.foreign.ValueLayout.OfLong;
 
 /**
- * {@snippet lang=c :
+ * {@snippet lang = c:
  * struct tagKBDLLHOOKSTRUCT {
  *     DWORD vkCode;
  *     DWORD scanCode;
@@ -21,7 +18,7 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  *     DWORD time;
  *     ULONG_PTR dwExtraInfo;
  * }
- * }
+ *}
  */
 public class tagKBDLLHOOKSTRUCT {
 
@@ -30,11 +27,11 @@ public class tagKBDLLHOOKSTRUCT {
     }
 
     private static final GroupLayout $LAYOUT = MemoryLayout.structLayout(
-        ffm_h.C_LONG.withName("vkCode"),
-        ffm_h.C_LONG.withName("scanCode"),
-        ffm_h.C_LONG.withName("flags"),
-        ffm_h.C_LONG.withName("time"),
-        ffm_h.C_LONG_LONG.withName("dwExtraInfo")
+            ffm_h.C_LONG.withName("vkCode"),
+            ffm_h.C_LONG.withName("scanCode"),
+            ffm_h.C_LONG.withName("flags"),
+            ffm_h.C_LONG.withName("time"),
+            ffm_h.C_LONG_LONG.withName("dwExtraInfo")
     ).withName("tagKBDLLHOOKSTRUCT");
 
     /**
@@ -44,13 +41,13 @@ public class tagKBDLLHOOKSTRUCT {
         return $LAYOUT;
     }
 
-    private static final OfInt vkCode$LAYOUT = (OfInt)$LAYOUT.select(groupElement("vkCode"));
+    private static final OfInt vkCode$LAYOUT = (OfInt) $LAYOUT.select(groupElement("vkCode"));
 
     /**
      * Layout for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD vkCode
-     * }
+     *}
      */
     public static final OfInt vkCode$layout() {
         return vkCode$LAYOUT;
@@ -60,9 +57,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Offset for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD vkCode
-     * }
+     *}
      */
     public static final long vkCode$offset() {
         return vkCode$OFFSET;
@@ -70,9 +67,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Getter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD vkCode
-     * }
+     *}
      */
     public static int vkCode(MemorySegment struct) {
         return struct.get(vkCode$LAYOUT, vkCode$OFFSET);
@@ -80,21 +77,21 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Setter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD vkCode
-     * }
+     *}
      */
     public static void vkCode(MemorySegment struct, int fieldValue) {
         struct.set(vkCode$LAYOUT, vkCode$OFFSET, fieldValue);
     }
 
-    private static final OfInt scanCode$LAYOUT = (OfInt)$LAYOUT.select(groupElement("scanCode"));
+    private static final OfInt scanCode$LAYOUT = (OfInt) $LAYOUT.select(groupElement("scanCode"));
 
     /**
      * Layout for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD scanCode
-     * }
+     *}
      */
     public static final OfInt scanCode$layout() {
         return scanCode$LAYOUT;
@@ -104,9 +101,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Offset for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD scanCode
-     * }
+     *}
      */
     public static final long scanCode$offset() {
         return scanCode$OFFSET;
@@ -114,9 +111,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Getter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD scanCode
-     * }
+     *}
      */
     public static int scanCode(MemorySegment struct) {
         return struct.get(scanCode$LAYOUT, scanCode$OFFSET);
@@ -124,21 +121,21 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Setter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD scanCode
-     * }
+     *}
      */
     public static void scanCode(MemorySegment struct, int fieldValue) {
         struct.set(scanCode$LAYOUT, scanCode$OFFSET, fieldValue);
     }
 
-    private static final OfInt flags$LAYOUT = (OfInt)$LAYOUT.select(groupElement("flags"));
+    private static final OfInt flags$LAYOUT = (OfInt) $LAYOUT.select(groupElement("flags"));
 
     /**
      * Layout for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD flags
-     * }
+     *}
      */
     public static final OfInt flags$layout() {
         return flags$LAYOUT;
@@ -148,9 +145,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Offset for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD flags
-     * }
+     *}
      */
     public static final long flags$offset() {
         return flags$OFFSET;
@@ -158,9 +155,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Getter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD flags
-     * }
+     *}
      */
     public static int flags(MemorySegment struct) {
         return struct.get(flags$LAYOUT, flags$OFFSET);
@@ -168,21 +165,21 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Setter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD flags
-     * }
+     *}
      */
     public static void flags(MemorySegment struct, int fieldValue) {
         struct.set(flags$LAYOUT, flags$OFFSET, fieldValue);
     }
 
-    private static final OfInt time$LAYOUT = (OfInt)$LAYOUT.select(groupElement("time"));
+    private static final OfInt time$LAYOUT = (OfInt) $LAYOUT.select(groupElement("time"));
 
     /**
      * Layout for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD time
-     * }
+     *}
      */
     public static final OfInt time$layout() {
         return time$LAYOUT;
@@ -192,9 +189,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Offset for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD time
-     * }
+     *}
      */
     public static final long time$offset() {
         return time$OFFSET;
@@ -202,9 +199,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Getter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD time
-     * }
+     *}
      */
     public static int time(MemorySegment struct) {
         return struct.get(time$LAYOUT, time$OFFSET);
@@ -212,21 +209,21 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Setter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * DWORD time
-     * }
+     *}
      */
     public static void time(MemorySegment struct, int fieldValue) {
         struct.set(time$LAYOUT, time$OFFSET, fieldValue);
     }
 
-    private static final OfLong dwExtraInfo$LAYOUT = (OfLong)$LAYOUT.select(groupElement("dwExtraInfo"));
+    private static final OfLong dwExtraInfo$LAYOUT = (OfLong) $LAYOUT.select(groupElement("dwExtraInfo"));
 
     /**
      * Layout for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * ULONG_PTR dwExtraInfo
-     * }
+     *}
      */
     public static final OfLong dwExtraInfo$layout() {
         return dwExtraInfo$LAYOUT;
@@ -236,9 +233,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Offset for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * ULONG_PTR dwExtraInfo
-     * }
+     *}
      */
     public static final long dwExtraInfo$offset() {
         return dwExtraInfo$OFFSET;
@@ -246,9 +243,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Getter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * ULONG_PTR dwExtraInfo
-     * }
+     *}
      */
     public static long dwExtraInfo(MemorySegment struct) {
         return struct.get(dwExtraInfo$LAYOUT, dwExtraInfo$OFFSET);
@@ -256,9 +253,9 @@ public class tagKBDLLHOOKSTRUCT {
 
     /**
      * Setter for field:
-     * {@snippet lang=c :
+     * {@snippet lang = c:
      * ULONG_PTR dwExtraInfo
-     * }
+     *}
      */
     public static void dwExtraInfo(MemorySegment struct, long fieldValue) {
         struct.set(dwExtraInfo$LAYOUT, dwExtraInfo$OFFSET, fieldValue);
@@ -275,7 +272,9 @@ public class tagKBDLLHOOKSTRUCT {
     /**
      * The size (in bytes) of this struct
      */
-    public static long sizeof() { return layout().byteSize(); }
+    public static long sizeof() {
+        return layout().byteSize();
+    }
 
     /**
      * Allocate a segment of size {@code layout().byteSize()} using {@code allocator}

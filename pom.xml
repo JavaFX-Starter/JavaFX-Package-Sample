@@ -11,7 +11,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>22</maven.compiler.release>
-        <javafx.version>22</javafx.version>
+        <javafx.version>23</javafx.version>
         <mainClass>com.icuxika.Launcher</mainClass>
     </properties>
 
@@ -101,6 +101,25 @@
                 <application.package.options/>
             </properties>
         </profile>
+        <profile>
+            <id>jni</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.10.1</version>
+                        <configuration>
+                            <release>${maven.compiler.release}</release>
+                            <compilerArgs>
+                                <arg>-h</arg>
+                                <arg>${project.basedir}/src/native/include</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -153,22 +172,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
-                    <execution>
-                        <id>jni-generate</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>javac</executable>
-                            <workingDirectory>${project.basedir}</workingDirectory>
-                            <arguments>
-                                <argument>-h</argument>
-                                <argument>${project.basedir}/src/native/include</argument>
-                                <argument>${project.basedir}/src/main/java/com/icuxika/jni/NativeFXWindow.java
-                                </argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>image</id>
                         <goals>

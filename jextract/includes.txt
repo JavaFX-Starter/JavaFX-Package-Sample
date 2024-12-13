@@ -10,6 +10,8 @@
 --include-function PostQuitMessage
 --include-function PostThreadMessageW
 --include-function GetCurrentThreadId
+--include-function TranslateMessage
+--include-function DispatchMessageW
 --include-typedef HOOKPROC
 --include-typedef HINSTANCE
 --include-typedef HHOOK

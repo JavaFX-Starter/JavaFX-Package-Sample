@@ -2,20 +2,16 @@
 
 package com.icuxika.jextract.win32;
 
-import java.lang.invoke.*;
-import java.lang.foreign.*;
-import java.nio.ByteOrder;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
-
-import static java.lang.foreign.ValueLayout.*;
-import static java.lang.foreign.MemoryLayout.PathElement.*;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
+import java.lang.invoke.MethodHandle;
 
 /**
- * {@snippet lang=c :
+ * {@snippet lang = c:
  * typedef LRESULT (*HOOKPROC)(int, WPARAM, LPARAM) __attribute__((stdcall))
- * }
+ *}
  */
 public class HOOKPROC {
 
@@ -31,10 +27,10 @@ public class HOOKPROC {
     }
 
     private static final FunctionDescriptor $DESC = FunctionDescriptor.of(
-        ffm_h.C_LONG_LONG,
-        ffm_h.C_INT,
-        ffm_h.C_LONG_LONG,
-        ffm_h.C_LONG_LONG
+            ffm_h.C_LONG_LONG,
+            ffm_h.C_INT,
+            ffm_h.C_LONG_LONG,
+            ffm_h.C_LONG_LONG
     );
 
     /**
@@ -59,7 +55,7 @@ public class HOOKPROC {
     /**
      * Invoke the upcall stub {@code funcPtr}, with given parameters
      */
-    public static long invoke(MemorySegment funcPtr,int code, long wParam, long lParam) {
+    public static long invoke(MemorySegment funcPtr, int code, long wParam, long lParam) {
         try {
             return (long) DOWN$MH.invokeExact(funcPtr, code, wParam, lParam);
         } catch (Throwable ex$) {
