@@ -12,9 +12,11 @@ import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Background;
@@ -26,6 +28,7 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +53,6 @@ public class MainApp extends Application {
 
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
-
-        MFXButton zhButton = createButton("中文");
-        zhButton.setOnAction(_ -> AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE));
-
-        MFXButton enButton = createButton("English");
-        enButton.setOnAction(_ -> AppResource.setLanguage(Locale.ENGLISH));
 
         MFXToggleButton mfxToggleButton = new MFXToggleButton();
         mfxToggleButton.textProperty().bind(new When(mfxToggleButton.selectedProperty().isEqualTo(new SimpleBooleanProperty(true))).then("监听 Ctrl + Alt + Z").otherwise("取消监听 Ctrl + Alt + Z"));
@@ -122,7 +119,7 @@ public class MainApp extends Application {
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
         vBox.getChildren().addAll(
-                label, zhButton, enButton,
+                label, createComboBox(),
                 mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton
@@ -156,6 +153,44 @@ public class MainApp extends Application {
         LOGGER.info("[info]日志记录到logs/application.log中");
         LOGGER.warn("[warn]日志记录到logs/application.log中");
         LOGGER.error("[error]日志记录到logs/application.log中");
+    }
+
+    private ComboBox<Locale> createComboBox() {
+        ComboBox<Locale> comboBox = new ComboBox<>(FXCollections.observableList(AppResource.SUPPORT_LANGUAGE_LIST));
+        comboBox.valueProperty().subscribe(locale -> {
+            if (locale != null) {
+                AppResource.setLanguage(locale);
+            }
+        });
+        comboBox.valueProperty().bindBidirectional(AppResource.currentLocaleProperty());
+        comboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Locale locale) {
+                String text;
+                switch (locale) {
+                    case Locale l when l.equals(Locale.SIMPLIFIED_CHINESE) ->
+                            text = AppResource.getLanguageBinding("lang-zh-CN").get();
+                    case Locale l when l.equals(Locale.ENGLISH) ->
+                            text = AppResource.getLanguageBinding("lang-en").get();
+                    default -> throw new IllegalStateException("暂不支持此区域: " + locale);
+                }
+                return text;
+            }
+
+            @Override
+            public Locale fromString(String s) {
+                Locale locale;
+                switch (s) {
+                    case String text when text.equals(AppResource.getLanguageBinding("lang-zh-CN").get()) ->
+                            locale = Locale.SIMPLIFIED_CHINESE;
+                    case String text when text.equals(AppResource.getLanguageBinding("lang-en").get()) ->
+                            locale = Locale.ENGLISH;
+                    default -> throw new IllegalStateException("暂不支持此区域: " + s);
+                }
+                return locale;
+            }
+        });
+        return comboBox;
     }
 
     private MFXButton createButton(String text) {

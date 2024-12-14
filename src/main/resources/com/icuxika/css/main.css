@@ -1,0 +1,40 @@
+.text {
+    -fx-font-smoothing-type: gray;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: dodgerblue;
+    -fx-opacity: 1;
+}
+
+.combo-box:hover .arrow-button {
+    -fx-background-color: dodgerblue;
+    -fx-opacity: 0.8;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+.combo-box > .list-cell {
+    -fx-background-color: dodgerblue;
+    -fx-text-fill: white;
+    -fx-opacity: 1;
+}
+
+.combo-box:hover > .list-cell {
+    -fx-background-color: dodgerblue;
+    -fx-text-fill: white;
+    -fx-opacity: 0.8;
+}
+
+.combo-box .list-view .list-cell:focused {
+    -fx-background-color: dodgerblue;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-view .list-cell:hover {
+    -fx-background-color: dodgerblue;
+    -fx-text-fill: white;
+    -fx-opacity: 0.8;
+}
