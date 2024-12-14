@@ -1,0 +1,1 @@
+.\nsis\build-strlen.ps1

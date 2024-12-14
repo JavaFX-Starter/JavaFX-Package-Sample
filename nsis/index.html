@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>浏览器唤起NSISBuilder</title>
+        <style>
+            html {
+                box-sizing: border-box;
+            }
+
+            *,
+            *::before,
+            *::after {
+                margin: 0;
+                padding: 0;
+                box-sizing: inherit;
+            }
+
+            .container {
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+
+                &:hover {
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+            }
+            button {
+                border-radius: 8px;
+                border: 1px solid transparent;
+                padding: 0.6em 1.2em;
+                font-size: 1em;
+                font-weight: 500;
+                font-family: inherit;
+                background-color: #1a1a1a;
+                cursor: pointer;
+                transition: border-color 0.25s;
+                color: white;
+            }
+            button:hover {
+                border-color: #646cff;
+            }
+            button:focus,
+            button:focus-visible {
+                outline: 4px auto -webkit-focus-ring-color;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="JavaFXSample://">唤起 JavaFX Package Sample</a>
+            <button type="button" onclick="callNSISBuilder()">
+                唤起 JavaFX Package Sample
+            </button>
+        </div>
+
+        <script>
+            function callNSISBuilder() {
+                window.location.href = "JavaFXSample://";
+            }
+        </script>
+    </body>
+</html>
