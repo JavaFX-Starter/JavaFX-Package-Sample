@@ -1,5 +1,8 @@
+@import "../fonts/Fonts.css";
+
 .text {
     -fx-font-smoothing-type: gray;
+    -fx-font-family: "HarmonyOS Sans SC Bold";
 }
 
 .combo-box .arrow-button {
@@ -37,4 +40,8 @@
     -fx-background-color: dodgerblue;
     -fx-text-fill: white;
     -fx-opacity: 0.8;
+}
+
+.mfx-toggle-button {
+    -fx-font-family: "HarmonyOS Sans SC Bold";
 }

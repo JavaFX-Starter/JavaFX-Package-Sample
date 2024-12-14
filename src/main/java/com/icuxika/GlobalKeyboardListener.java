@@ -4,6 +4,8 @@ import com.icuxika.jextract.win32.HOOKPROC;
 import com.icuxika.jextract.win32.KBDLLHOOKSTRUCT;
 import com.icuxika.jextract.win32.tagMSG;
 import com.icuxika.jni.NativeFXWindow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -13,6 +15,8 @@ import static com.icuxika.jextract.win32.ffm_h.*;
 
 public class GlobalKeyboardListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalKeyboardListener.class);
+
     public static ConcurrentHashMap<String, GlobalKeyEvent> globalKeyEventMap = new ConcurrentHashMap<>();
 
     public static void registerGlobalKeyEvent(GlobalKeyEvent globalKeyEvent) {
@@ -21,6 +25,16 @@ public class GlobalKeyboardListener {
 
     public static void unregisterGlobalKeyEvent(String id) {
         globalKeyEventMap.remove(id);
+    }
+
+    private Runnable callback;
+
+    public void setCallback(Runnable callback) {
+        this.callback = callback;
+    }
+
+    public Runnable getCallback() {
+        return callback;
     }
 
     private int currentThreadId;
@@ -38,9 +52,10 @@ public class GlobalKeyboardListener {
                 // 每次更改，取消注册所有的快捷键，然后结束消息循环，重新创建相应的线程
                 // 也可以将RegisterHotKey只用来检测是否有其他程序已经注册了快捷键，然后本应用的全局快捷键功能全部由SetWindowsHookExW实现
                 // 这样在其他线程也可以调用RegisterHotKey了，此类功能逻辑也不需要变动
+                // TODO 沙盒中对于 SetWindowsHookExW 方式设置的快捷键不够敏感
                 boolean success = NativeFXWindow.registerHotKey(1, 0x0002 | 0x0001, 0x41);
                 if (!success) {
-                    System.out.println("[RegisterHotKey]注册快捷键失败");
+                    LOGGER.error("[RegisterHotKey]注册快捷键失败");
                 }
 
                 hook = SetWindowsHookExW(WH_KEYBOARD_LL(), HOOKPROC.allocate((code, wParam, lParam) -> {
@@ -58,7 +73,7 @@ public class GlobalKeyboardListener {
                     }
                     return CallNextHookEx(hook, code, wParam, lParam);
                 }, arena), MemorySegment.NULL, 0);
-                System.out.println("全局键盘事件钩子已安装");
+                LOGGER.info("全局键盘事件钩子已安装");
                 //noinspection StatementWithEmptyBody
                 MemorySegment msg = arena.allocate(LPMSG);
                 while (GetMessageW(msg, MemorySegment.NULL, 0, 0) != 0) {
@@ -66,13 +81,14 @@ public class GlobalKeyboardListener {
                     });
                     if (tagMSG.message(m) == WM_HOTKEY()) {
                         var id = tagMSG.wParam(m);
-                        System.out.println("使用[RegisterHotKey]注册的快捷键[" + id + "]被触发了");
+                        getCallback().run();
+                        LOGGER.info("使用[RegisterHotKey]注册的快捷键[{}]被触发了", id);
                     }
                     TranslateMessage(msg);
                     DispatchMessageW(msg);
                 }
                 UnhookWindowsHookEx(hook);
-                System.out.println("全局键盘事件钩子已卸载");
+                LOGGER.info("全局键盘事件钩子已卸载");
 
                 NativeFXWindow.unregisterHotKey(1);
             }

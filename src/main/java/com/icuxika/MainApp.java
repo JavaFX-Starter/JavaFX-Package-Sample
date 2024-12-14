@@ -7,6 +7,9 @@ import io.github.palexdev.materialfx.enums.ButtonType;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.When;
@@ -28,6 +31,7 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +45,8 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // 需要创建一份内容与LanguageResource.properties一致的LanguageResource_zh_CN.properties文件，否则在不是中文作为系统语言的操作系统上，中文语言绑定将无法正常运行
+        // 同时最好准备一份字体用来渲染文字，沙盒中测试缺少字体的情况中文文字无法显示
         AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE);
 
         UserAgentBuilder.builder()
@@ -144,6 +150,13 @@ public class MainApp extends Application {
 
         // 挂载全局键盘事件监听钩子
         GlobalKeyboardListener globalKeyboardListener = new GlobalKeyboardListener();
+        globalKeyboardListener.setCallback(() -> Platform.runLater(() -> {
+            Label animationLabel = new Label("RegisterHotKey注册的快捷键被触发了");
+            animationLabel.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+            animationLabel.setTextFill(Color.WHITE);
+            vBox.getChildren().add(animationLabel);
+            new Timeline(new KeyFrame(Duration.millis(1000), _ -> vBox.getChildren().remove(animationLabel), new KeyValue(animationLabel.opacityProperty(), 0))).play();
+        }));
         globalKeyboardListener.hook();
         // 窗口关闭时，卸载全局键盘事件监听钩子
         primaryStage.setOnCloseRequest(_ -> globalKeyboardListener.stop());
