@@ -226,6 +226,12 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
+        if (!SingleInstanceManager.isFirstInstance(args)) {
+            System.out.println("已有实例运行，本进程退出");
+            System.exit(0);
+        }
+        Runtime.getRuntime().addShutdownHook(new Thread(SingleInstanceManager::cleanup));
+
         launch(args);
     }
 }
