@@ -51,17 +51,17 @@ public class SingleInstanceManager {
 
     private static void handleSecondInstanceArgs() {
         new Thread(() -> {
-            while (!serverSocket.isClosed()) {
-                try (Socket socket = serverSocket.accept()) {
-                    DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-                    String args = inputStream.readUTF();
-                    System.out.println("收到第二个实例传来的参数: " + args);
-                    URI uri = new URI(args);
-                    System.out.println(uri.getScheme());
-                    System.out.println(uri.getHost());
-                    System.out.println(uri.getPath());
-                    System.out.println(uri.getQuery());
-                } catch (Exception e) {
+            try (Socket socket = serverSocket.accept()) {
+                DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+                String args = inputStream.readUTF();
+                System.out.println("收到第二个实例传来的参数: " + args);
+                URI uri = new URI(args);
+                System.out.println(uri.getScheme());
+                System.out.println(uri.getHost());
+                System.out.println(uri.getPath());
+                System.out.println(uri.getQuery());
+            } catch (Exception e) {
+                if (!serverSocket.isClosed()) {
                     throw new RuntimeException(e);
                 }
             }
@@ -70,7 +70,7 @@ public class SingleInstanceManager {
 
     public static void cleanup() {
         try {
-            if (serverSocket != null) {
+            if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
             Files.deleteIfExists(Paths.get(PORT_FILE));

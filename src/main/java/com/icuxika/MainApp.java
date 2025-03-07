@@ -174,8 +174,12 @@ public class MainApp extends Application {
             new Timeline(new KeyFrame(Duration.millis(1000), _ -> vBox.getChildren().remove(animationLabel), new KeyValue(animationLabel.opacityProperty(), 0))).play();
         }));
         globalKeyboardListener.hook();
-        // 窗口关闭时，卸载全局键盘事件监听钩子
-        primaryStage.setOnCloseRequest(_ -> globalKeyboardListener.stop());
+        primaryStage.setOnCloseRequest(_ -> {
+            // 窗口关闭时，卸载全局键盘事件监听钩子
+            globalKeyboardListener.stop();
+            // 停止监听新实例启动的任务
+            SingleInstanceManager.cleanup();
+        });
 
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
