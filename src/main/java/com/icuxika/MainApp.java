@@ -36,6 +36,10 @@ import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -121,6 +125,17 @@ public class MainApp extends Application {
                 )));
         unsetTransparencyButton.setOnAction(_ -> nativeFXWindow.unsetWindowTransparency());
 
+        MFXButton loginButton = createButton("登录");
+        loginButton.setOnAction(_ -> {
+            // 测试 OAuth 2.0 登录逻辑
+            // 服务端代码 https://github.com/icuxika/driftwood-cloud
+            try {
+                Desktop.getDesktop().browse(new URI("http://localhost:8900/oauth2/authorize?response_type=code&client_id=id_desktop_authorization_code"));
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
@@ -128,7 +143,8 @@ public class MainApp extends Application {
                 label, createComboBox(),
                 mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
-                setTransparencyButton, unsetTransparencyButton
+                setTransparencyButton, unsetTransparencyButton,
+                loginButton
         );
 
         Scene scene = new Scene(vBox, 400, 600);

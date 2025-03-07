@@ -2,9 +2,9 @@ package com.icuxika;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,7 +56,12 @@ public class SingleInstanceManager {
                     DataInputStream inputStream = new DataInputStream(socket.getInputStream());
                     String args = inputStream.readUTF();
                     System.out.println("收到第二个实例传来的参数: " + args);
-                } catch (IOException e) {
+                    URI uri = new URI(args);
+                    System.out.println(uri.getScheme());
+                    System.out.println(uri.getHost());
+                    System.out.println(uri.getPath());
+                    System.out.println(uri.getQuery());
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
