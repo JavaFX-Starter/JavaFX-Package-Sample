@@ -13,13 +13,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: 21
+          java-version: 25
 
       - name: chmod gradlew
         run: chmod +x ./gradlew
@@ -28,14 +28,14 @@ jobs:
       - run: mkdir staging && rm -rf build/build-package/JavaFXSample.app && cp build/build-package/*.dmg staging
 
       - name: get current time
-        uses: 1466587594/get-current-time@v2
+        uses: josStorer/get-current-time@v2
         id: current-time
         with:
           format: YYYYMMDD-HH
           utcOffset: "+08:00"
 
       - name: upload build result
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: JavaFXSample-${{ steps.current-time.outputs.formattedTime }}-${{ matrix.os }}
           path: staging
