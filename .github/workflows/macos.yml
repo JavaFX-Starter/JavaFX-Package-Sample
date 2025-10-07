@@ -2,13 +2,13 @@ name: Build installer for macOS
 on:
   push:
     branches:
-      - java21
+      - java25
 
 jobs:
   build-app:
     strategy:
       matrix:
-        os: [ macos-12 ]
+        os: [ macos-15-intel ]
     name: Build the application
     runs-on: ${{ matrix.os }}
     steps:

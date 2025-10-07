@@ -2,13 +2,13 @@ name: Build installer for Windows
 on:
   push:
     branches:
-      - java21
+      - java25
 
 jobs:
   build-app:
     strategy:
       matrix:
-        os: [ windows-2019 ]
+        os: [ windows-2025 ]
     name: Build the application
     runs-on: ${{ matrix.os }}
     steps:

@@ -2,13 +2,13 @@ name: Build installer for Linux
 on:
   push:
     branches:
-      - java21
+      - java25
 
 jobs:
   build-app:
     strategy:
       matrix:
-        os: [ ubuntu-20.04 ]
+        os: [ ubuntu-22.04 ]
     name: Build the application
     runs-on: ${{ matrix.os }}
     steps:
