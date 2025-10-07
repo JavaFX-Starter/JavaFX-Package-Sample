@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>21</maven.compiler.release>
-        <javafx.version>21</javafx.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <javafx.version>25</javafx.version>
     </properties>
 
     <dependencies>
@@ -114,7 +114,7 @@
                                 <argument>sample/com.icuxika.MainApp</argument>
                                 <argument>--icon</argument>
                                 <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
+                                    ${project.basedir}/src/main/resources/application.icns
                                 </argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
@@ -144,7 +144,7 @@
                                 <argument>sample/com.icuxika.MainApp</argument>
                                 <argument>--icon</argument>
                                 <argument>
-                                    ${project.basedir}/src/main/resources/application.ico
+                                    ${project.basedir}/src/main/resources/application.icns
                                 </argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
@@ -179,7 +179,7 @@
                     <plugin>
                         <groupId>com.gluonhq</groupId>
                         <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
+                        <version>1.0.27</version>
                         <configuration>
                             <mainClass>com.icuxika.MainApp</mainClass>
                             <bundlesList>
@@ -199,7 +199,7 @@
                     <plugin>
                         <groupId>com.gluonhq</groupId>
                         <artifactId>gluonfx-maven-plugin</artifactId>
-                        <version>1.0.22</version>
+                        <version>1.0.27</version>
                         <configuration>
                             <mainClass>com.icuxika.MainApp</mainClass>
                             <bundlesList>
