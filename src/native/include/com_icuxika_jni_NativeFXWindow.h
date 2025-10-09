@@ -75,6 +75,23 @@ JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize(JNIEnv *,
                                                                       jobject,
                                                                       jlong);
 
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    isApplicationRunning
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning(JNIEnv *, jclass,
+                                                         jstring);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    callPrevInstance
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
+    JNIEnv *, jclass, jstring, jstring, jstring);
+
 #ifdef __cplusplus
 }
 #endif

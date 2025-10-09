@@ -31,11 +31,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Properties;
 
 public class MainApp extends Application {
 
@@ -163,9 +169,17 @@ public class MainApp extends Application {
 
         nativeFXWindow.initialize();
 
-        primaryStage.setOnCloseRequest(_ -> {
-            SingleInstanceManager.cleanup();
-        });
+        Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
+        if (!applicationDataPath.toFile().exists()) {
+            Files.createDirectory(applicationDataPath);
+        }
+        Path configFilePath = applicationDataPath.resolve("config.properties");
+        Properties properties = new Properties();
+        properties.setProperty("windowName", nativeFXWindow.getWindowText());
+        properties.setProperty("className", nativeFXWindow.getClassName());
+        try (FileOutputStream outputStream = new FileOutputStream(configFilePath.toFile())) {
+            properties.store(outputStream, "");
+        }
 
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
@@ -232,12 +246,21 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
-        if (!SingleInstanceManager.isFirstInstance(args)) {
-            System.out.println("已有实例运行，本进程退出");
+        if (NativeFXWindow.isApplicationRunning("JavaFXPackageSample")) {
+            Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
+            Path configFilePath = applicationDataPath.resolve("config.properties");
+            Properties properties = new Properties();
+            try (FileInputStream inputStream = new FileInputStream(configFilePath.toFile())) {
+                properties.load(inputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            LOGGER.info("已存在实例，窗口名称: {}", properties.getProperty("windowName"));
+            LOGGER.info("已存在实例，类名: {}", properties.getProperty("className"));
+            NativeFXWindow.callPrevInstance("参数", properties.getProperty("className"), properties.getProperty("windowName"));
+            LOGGER.info("已有实例运行，本进程退出");
             System.exit(0);
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(SingleInstanceManager::cleanup));
-
         launch(args);
     }
 }

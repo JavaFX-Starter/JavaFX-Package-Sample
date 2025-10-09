@@ -9,6 +9,8 @@ NativeWindowProc::NativeWindowProc(JNIEnv *env, jobject obj, jlong hWnd)
   _objRef = _env->NewGlobalRef(_obj);
   _clazz = _env->GetObjectClass(_obj);
   callbackHotKeyMethodID = _env->GetMethodID(_clazz, "callbackHotKey", "(I)V");
+  callPrevInstanceMethodID =
+      _env->GetMethodID(_clazz, "callPrevInstance", "(Ljava/lang/String;)V");
 }
 
 NativeWindowProc::~NativeWindowProc() {}
@@ -34,6 +36,40 @@ LRESULT CALLBACK NativeWindowProc::MainWndProc(HWND hWnd, UINT uMsg,
       _javaVM->DetachCurrentThread();
     }
   } break;
+  case WM_COPYDATA: {
+    PCOPYDATASTRUCT pCDS = reinterpret_cast<PCOPYDATASTRUCT>(lParam);
+    switch (pCDS->dwData) {
+    case 1: {
+      std::wstring received(static_cast<wchar_t *>(pCDS->lpData),
+                            pCDS->cbData / sizeof(wchar_t));
+      copyMessage = received;
+      PostMessage(hWnd, WM_APP + 1, 0, 0);
+      break;
+    }
+    default:;
+    }
+    break;
+  }
+  case WM_APP + 1: {
+    ShowWindow(hWnd, SW_RESTORE);
+    SetForegroundWindow(hWnd);
+    MessageBoxW(hWnd, copyMessage.c_str(), L"浏览器唤起", MB_OK);
+    boolean detached = false;
+    GetOperateEnv(detached);
+
+    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, copyMessage.c_str(), -1,
+                                         nullptr, 0, nullptr, nullptr);
+    std::string utf8Str(sizeNeeded, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, copyMessage.c_str(), -1, &utf8Str[0],
+                        sizeNeeded, nullptr, nullptr);
+
+    jstring jStr = _operateEnv->NewStringUTF(utf8Str.c_str());
+    _operateEnv->CallVoidMethod(_objRef, callPrevInstanceMethodID, jStr);
+    if (detached) {
+      _javaVM->DetachCurrentThread();
+    }
+    break;
+  }
   default:
     return CallWindowProc(nativeWindowProc->defaultWndProc, hWnd, uMsg, wParam,
                           lParam);

@@ -1,6 +1,7 @@
 #include "com_icuxika_jni_NativeFXWindow.h"
 #include "jni.h"
 #include "jni_md.h"
+#include "native-singleton.h"
 #include "native-window-proc.h"
 #include <Windows.h>
 #include <cstddef>
@@ -106,6 +107,36 @@ JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize(
                                 (LONG_PTR)NativeWindowProc::StaticWndProc);
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning(JNIEnv *env,
+                                                         jclass clazz,
+                                                         jstring mutexName) {
+  nativeSingleton = std::make_unique<NativeSingleton>();
+  std::wstring m = nativeSingleton->JStr2WStr(env, mutexName);
+  return nativeSingleton->IsApplicationRunning(m);
+}
+
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
+    JNIEnv *env, jclass clazz, jstring message, jstring className,
+    jstring windowName) {
+  std::wstring m = nativeSingleton->JStr2WStr(env, message);
+  std::wstring c = nativeSingleton->JStr2WStr(env, className);
+  std::wstring w = nativeSingleton->JStr2WStr(env, windowName);
+
+  if (const HWND hWnd = FindWindowW(c.c_str(), w.c_str())) {
+    ShowWindow(hWnd, SW_RESTORE);
+    SetForegroundWindow(hWnd);
+
+    const std::wstring &msg = m;
+
+    COPYDATASTRUCT cds;
+    cds.dwData = 1;
+    cds.cbData = (msg.size() + 1) * sizeof(wchar_t);
+    cds.lpData = (void *)msg.c_str();
+
+    SendMessage(hWnd, WM_COPYDATA, 0, reinterpret_cast<LPARAM>(&cds));
+  }
+}
 #ifdef __cplusplus
 }
 #endif

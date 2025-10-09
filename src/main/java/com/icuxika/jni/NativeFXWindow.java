@@ -72,6 +72,10 @@ public class NativeFXWindow {
         LOGGER.info("callbackHotKey {}", id);
     }
 
+    public void callPrevInstance(String message) {
+        LOGGER.info("callPrevInstance {}", message);
+    }
+
     // ------------------------------------------------------------
 
     private static native long getHWnd(Stage stage);
@@ -89,4 +93,8 @@ public class NativeFXWindow {
     private static native void unsetWindowTransparency(long hWnd);
 
     private native void initialize(long hWnd);
+
+    public static native boolean isApplicationRunning(String mutexName);
+
+    public static native void callPrevInstance(String message, String className, String windowName);
 }

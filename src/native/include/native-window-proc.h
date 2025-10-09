@@ -3,6 +3,7 @@
 #include "jni.h"
 #include <Windows.h>
 #include <memory>
+#include <string>
 
 class NativeWindowProc {
 public:
@@ -24,8 +25,10 @@ private:
   jclass _clazz;
 
   jmethodID callbackHotKeyMethodID;
+  jmethodID callPrevInstanceMethodID;
   JNIEnv *_operateEnv;
 
   void GetOperateEnv(boolean &detached);
+  std::wstring copyMessage;
 };
 extern std::unique_ptr<NativeWindowProc> nativeWindowProc;
