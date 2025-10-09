@@ -44,8 +44,12 @@ public class MainApp extends Application {
         vBox.setSpacing(10);
         vBox.getChildren().addAll(label, zhButton, enButton);
 
+        Scene scene = new Scene(vBox, 600, 400);
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            scene.getStylesheets().add(AppResource.load("css/application-win-fix.css").toExternalForm());
+        }
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
-        primaryStage.setScene(new Scene(vBox, 600, 400));
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
