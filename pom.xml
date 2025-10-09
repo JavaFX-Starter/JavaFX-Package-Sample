@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>22</maven.compiler.release>
-        <javafx.version>23</javafx.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <javafx.version>25</javafx.version>
         <mainClass>com.icuxika.Launcher</mainClass>
     </properties>
 
@@ -89,16 +89,6 @@
                 <application.package.options7>--win-shortcut-prompt</application.package.options7>
                 <application.package.options8>--win-upgrade-uuid</application.package.options8>
                 <application.package.options9>fd5b16cf-e0a9-4ef4-abc8-73d396fecf6d</application.package.options9>
-            </properties>
-        </profile>
-        <profile>
-            <id>mac</id>
-            <properties>
-                <application.package.type>dmg</application.package.type>
-                <application.icon>${project.basedir}/src/main/resources/application.icns</application.icon>
-                <application.package.stdout.encoding>-J-Dsun.stdout.encoding=UTF-8</application.package.stdout.encoding>
-                <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
-                <application.package.options/>
             </properties>
         </profile>
         <profile>

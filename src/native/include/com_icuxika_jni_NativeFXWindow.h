@@ -35,18 +35,18 @@ Java_com_icuxika_jni_NativeFXWindow_getClassName(JNIEnv *, jclass, jlong);
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    registerHotKey
- * Signature: (III)Z
+ * Signature: (JIII)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
-    JNIEnv *, jclass, jint, jint, jint);
+    JNIEnv *, jclass, jlong, jint, jint, jint);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    unregisterHotKey
- * Signature: (I)Z
+ * Signature: (JI)Z
  */
-JNIEXPORT jboolean JNICALL
-Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(JNIEnv *, jclass, jint);
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(
+    JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
@@ -65,6 +65,15 @@ Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *, jclass,
 JNIEXPORT void JNICALL
 Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *, jclass,
                                                             jlong);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    initialize
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize(JNIEnv *,
+                                                                      jobject,
+                                                                      jlong);
 
 #ifdef __cplusplus
 }

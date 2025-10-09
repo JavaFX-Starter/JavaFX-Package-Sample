@@ -1,8 +1,10 @@
 #include "com_icuxika_jni_NativeFXWindow.h"
 #include "jni.h"
 #include "jni_md.h"
+#include "native-window-proc.h"
 #include <Windows.h>
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #ifdef __cplusplus
@@ -59,16 +61,16 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName(
 }
 
 JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
-    JNIEnv *env, jclass clazz, jint id, jint fsModifiers, jint vk) {
-  if (RegisterHotKey(NULL, id, fsModifiers, vk)) {
+    JNIEnv *env, jclass clazz, jlong hWnd, jint id, jint fsModifiers, jint vk) {
+  if (RegisterHotKey(reinterpret_cast<HWND>(hWnd), id, fsModifiers, vk)) {
     return JNI_TRUE;
   }
   return JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(
-    JNIEnv *env, jclass clazz, jint id) {
-  if (UnregisterHotKey(NULL, id)) {
+    JNIEnv *env, jclass clazz, jlong hWnd, jint id) {
+  if (UnregisterHotKey(reinterpret_cast<HWND>(hWnd), id)) {
     return JNI_TRUE;
   }
   return JNI_FALSE;
@@ -94,6 +96,14 @@ Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *env,
                     ~WS_EX_LAYERED);
   RedrawWindow(reinterpret_cast<HWND>(hWnd), NULL, NULL,
                RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+}
+
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize(
+    JNIEnv *env, jobject obj, jlong hWnd) {
+  nativeWindowProc = std::make_unique<NativeWindowProc>(env, obj, hWnd);
+  nativeWindowProc->defaultWndProc =
+      (WNDPROC)SetWindowLongPtr(reinterpret_cast<HWND>(hWnd), GWLP_WNDPROC,
+                                (LONG_PTR)NativeWindowProc::StaticWndProc);
 }
 
 #ifdef __cplusplus

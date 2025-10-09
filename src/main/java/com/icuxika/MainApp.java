@@ -7,11 +7,7 @@ import io.github.palexdev.materialfx.enums.ButtonType;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,7 +17,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -31,7 +26,6 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,29 +59,32 @@ public class MainApp extends Application {
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
         MFXToggleButton mfxToggleButton = new MFXToggleButton();
-        mfxToggleButton.textProperty().bind(new When(mfxToggleButton.selectedProperty().isEqualTo(new SimpleBooleanProperty(true))).then("监听 Ctrl + Alt + Z").otherwise("取消监听 Ctrl + Alt + Z"));
+        mfxToggleButton.textProperty().bind(new When(mfxToggleButton.selectedProperty().isEqualTo(new SimpleBooleanProperty(true))).then("监听 Ctrl + Alt + T").otherwise("取消监听 Ctrl + Alt + T"));
         mfxToggleButton.setDisable(true);
 
-        GlobalKeyEvent globalKeyEvent = new GlobalKeyEvent().combine(0xA2).combine(0xA4).combine(KeyCode.Z.getCode()).onAction(() -> Platform.runLater(() -> {
-            primaryStage.setIconified(!primaryStage.isIconified());
-            primaryStage.toFront();
-        }));
+        NativeFXWindow nativeFXWindow = new NativeFXWindow();
 
         MFXButton addKeyEventButton = createButton("添加全局键盘事件");
         addKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("add-global-key-event-listening"));
         addKeyEventButton.setOnAction(_ -> {
-            GlobalKeyboardListener.registerGlobalKeyEvent(globalKeyEvent);
             mfxToggleButton.setSelected(true);
+            boolean success = NativeFXWindow.registerHotKey(nativeFXWindow.getHWnd(), 1, 0x0002 | 0x0001, 0x54);
+            if (!success) {
+                LOGGER.error("[RegisterHotKey]注册快捷键失败");
+            }
+            LOGGER.info("注册快捷键成功: {}", success);
         });
 
         MFXButton removeKeyEventButton = createButton("移除全局键盘事件");
         removeKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("remove-global-key-event-listening"));
         removeKeyEventButton.setOnAction(_ -> {
-            GlobalKeyboardListener.unregisterGlobalKeyEvent(globalKeyEvent.getId());
             mfxToggleButton.setSelected(false);
+            boolean success = NativeFXWindow.unregisterHotKey(nativeFXWindow.getHWnd(), 1);
+            if (!success) {
+                LOGGER.error("[UnregisterHotKey]注销快捷键失败");
+            }
+            LOGGER.info("注销快捷键成功: {}", success);
         });
-
-        NativeFXWindow nativeFXWindow = new NativeFXWindow();
 
         SimpleStringProperty hWndProperty = new SimpleStringProperty();
         Label hWndLabel = createLabel();
@@ -164,20 +161,9 @@ public class MainApp extends Application {
             }
         });
 
-        // 挂载全局键盘事件监听钩子
-        GlobalKeyboardListener globalKeyboardListener = new GlobalKeyboardListener();
-        globalKeyboardListener.setCallback(() -> Platform.runLater(() -> {
-            Label animationLabel = new Label("RegisterHotKey注册的快捷键被触发了");
-            animationLabel.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-            animationLabel.setTextFill(Color.WHITE);
-            vBox.getChildren().add(animationLabel);
-            new Timeline(new KeyFrame(Duration.millis(1000), _ -> vBox.getChildren().remove(animationLabel), new KeyValue(animationLabel.opacityProperty(), 0))).play();
-        }));
-        globalKeyboardListener.hook();
+        nativeFXWindow.initialize();
+
         primaryStage.setOnCloseRequest(_ -> {
-            // 窗口关闭时，卸载全局键盘事件监听钩子
-            globalKeyboardListener.stop();
-            // 停止监听新实例启动的任务
             SingleInstanceManager.cleanup();
         });
 

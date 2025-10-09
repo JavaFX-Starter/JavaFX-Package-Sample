@@ -2,6 +2,8 @@ package com.icuxika.jni;
 
 import com.icuxika.MainApp;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -12,6 +14,8 @@ import java.nio.file.StandardCopyOption;
  * mvn -Pjni clean compile
  */
 public class NativeFXWindow {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeFXWindow.class);
 
     private static final String LIB_NAME = "NativeFXWindow.dll";
 
@@ -59,6 +63,15 @@ public class NativeFXWindow {
         unsetWindowTransparency(hWnd);
     }
 
+    public void initialize() {
+        initialize(hWnd);
+    }
+
+    // ------------------------------------------------------------
+    public void callbackHotKey(int id) {
+        LOGGER.info("callbackHotKey {}", id);
+    }
+
     // ------------------------------------------------------------
 
     private static native long getHWnd(Stage stage);
@@ -67,11 +80,13 @@ public class NativeFXWindow {
 
     private static native String getClassName(long hWnd);
 
-    public static native boolean registerHotKey(int id, int fsModifiers, int vk);
+    public static native boolean registerHotKey(long hWnd, int id, int fsModifiers, int vk);
 
-    public static native boolean unregisterHotKey(int id);
+    public static native boolean unregisterHotKey(long hWnd, int id);
 
     private static native void setWindowTransparency(long hWnd);
 
     private static native void unsetWindowTransparency(long hWnd);
+
+    private native void initialize(long hWnd);
 }

@@ -9,6 +9,6 @@ include_directories(${JAVA_INCLUDE_PATH})
 include_directories(${JAVA_INCLUDE_PATH2})
 
 set(LIB_NAME NativeFXWindow)
-add_library(${LIB_NAME} SHARED src/native-fx-window.cpp)
+add_library(${LIB_NAME} SHARED src/native-fx-window.cpp src/native-window-proc.cpp)
 target_include_directories(${LIB_NAME} PUBLIC include)
 
