@@ -22,23 +22,4 @@ bool NativeSingleton::IsApplicationRunning(const std::wstring &mutexName) {
   return false;
 }
 
-std::wstring NativeSingleton::JStr2WStr(JNIEnv *env, jstring jstr) {
-  if (jstr == nullptr) {
-    return L"";
-  }
-  const char *chars = env->GetStringUTFChars(jstr, nullptr);
-  if (chars == nullptr) {
-    return L"";
-  }
-  int len = MultiByteToWideChar(CP_UTF8, 0, chars, -1, nullptr, 0);
-  if (len == 0) {
-    env->ReleaseStringUTFChars(jstr, chars);
-    return L"";
-  }
-  std::wstring wstr(len - 1, 0);
-  MultiByteToWideChar(CP_UTF8, 0, chars, -1, &wstr[0], len);
-  env->ReleaseStringUTFChars(jstr, chars);
-  return wstr;
-}
-
 std::unique_ptr<NativeSingleton> nativeSingleton;

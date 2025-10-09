@@ -2,6 +2,7 @@
 #include "jni.h"
 #include "jni_md.h"
 #include "native-singleton.h"
+#include "native-util.h"
 #include "native-window-proc.h"
 #include <Windows.h>
 #include <cstddef>
@@ -34,13 +35,8 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowText(
   if (windowTextLength > 0) {
     std::wstring buffer(windowTextLength + 1, L'\0');
     if (GetWindowText(reinterpret_cast<HWND>(hWnd), &buffer[0],
-                       windowTextLength + 1) > 0) {
-      int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1,
-                                           nullptr, 0, nullptr, nullptr);
-      std::string utf8Str(sizeNeeded, '\0');
-      WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1, &utf8Str[0],
-                          sizeNeeded, nullptr, nullptr);
-      return env->NewStringUTF(utf8Str.c_str());
+                      windowTextLength + 1) > 0) {
+      return NativeUtil::wstr2jstr(env, buffer);
     }
   }
   return nullptr;
@@ -50,13 +46,11 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName(
     JNIEnv *env, jclass clazz, jlong hWnd) {
   int length = 256;
   std::wstring buffer(length, L'\0');
-  if (GetClassName(reinterpret_cast<HWND>(hWnd), &buffer[0], length)) {
-    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1,
-                                         nullptr, 0, nullptr, nullptr);
-    std::string utf8Str(sizeNeeded, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1, &utf8Str[0], sizeNeeded,
-                        nullptr, nullptr);
-    return env->NewStringUTF(utf8Str.c_str());
+  int actualLen =
+      GetClassName(reinterpret_cast<HWND>(hWnd), &buffer[0], length);
+  if (actualLen > 0) {
+    buffer.resize(actualLen);
+    return NativeUtil::wstr2jstr(env, buffer);
   }
   return nullptr;
 }
@@ -112,16 +106,16 @@ Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning(JNIEnv *env,
                                                          jclass clazz,
                                                          jstring mutexName) {
   nativeSingleton = std::make_unique<NativeSingleton>();
-  std::wstring m = nativeSingleton->JStr2WStr(env, mutexName);
+  std::wstring m = NativeUtil::jstr2wstr(env, mutexName);
   return nativeSingleton->IsApplicationRunning(m);
 }
 
 JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
     JNIEnv *env, jclass clazz, jstring message, jstring className,
     jstring windowName) {
-  std::wstring m = nativeSingleton->JStr2WStr(env, message);
-  std::wstring c = nativeSingleton->JStr2WStr(env, className);
-  std::wstring w = nativeSingleton->JStr2WStr(env, windowName);
+  std::wstring m = NativeUtil::jstr2wstr(env, message);
+  std::wstring c = NativeUtil::jstr2wstr(env, className);
+  std::wstring w = NativeUtil::jstr2wstr(env, windowName);
 
   if (const HWND hWnd = FindWindow(c.c_str(), w.c_str())) {
     ShowWindow(hWnd, SW_RESTORE);

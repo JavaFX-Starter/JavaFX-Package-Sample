@@ -1,6 +1,5 @@
 #pragma once
 
-#include "jni.h"
 #include <Windows.h>
 #include <memory>
 #include <string>
@@ -10,7 +9,6 @@ public:
   NativeSingleton();
   ~NativeSingleton();
   bool IsApplicationRunning(const std::wstring &mutexName);
-  std::wstring JStr2WStr(JNIEnv *env, jstring jstr);
 
 private:
   HANDLE mutex;

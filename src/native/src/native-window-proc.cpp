@@ -1,5 +1,6 @@
 #include "native-window-proc.h"
 #include "jni.h"
+#include "native-util.h"
 #include <Windows.h>
 #include <iostream>
 
@@ -40,8 +41,11 @@ LRESULT CALLBACK NativeWindowProc::MainWndProc(HWND hWnd, UINT uMsg,
     PCOPYDATASTRUCT pCDS = reinterpret_cast<PCOPYDATASTRUCT>(lParam);
     switch (pCDS->dwData) {
     case 1: {
-      std::wstring received(static_cast<wchar_t *>(pCDS->lpData),
-                            pCDS->cbData / sizeof(wchar_t));
+      size_t len = pCDS->cbData / sizeof(wchar_t);
+      if (len > 0 && static_cast<wchar_t *>(pCDS->lpData)[len - 1] == L'\0') {
+        len--;
+      }
+      std::wstring received(static_cast<wchar_t *>(pCDS->lpData), len);
       copyMessage = received;
       PostMessage(hWnd, WM_APP + 1, 0, 0);
       break;
@@ -54,16 +58,10 @@ LRESULT CALLBACK NativeWindowProc::MainWndProc(HWND hWnd, UINT uMsg,
     ShowWindow(hWnd, SW_RESTORE);
     SetForegroundWindow(hWnd);
     MessageBox(hWnd, copyMessage.c_str(), L"浏览器唤起", MB_OK);
+
     boolean detached = false;
     GetOperateEnv(detached);
-
-    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, copyMessage.c_str(), -1,
-                                         nullptr, 0, nullptr, nullptr);
-    std::string utf8Str(sizeNeeded, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, copyMessage.c_str(), -1, &utf8Str[0],
-                        sizeNeeded, nullptr, nullptr);
-
-    jstring jStr = _operateEnv->NewStringUTF(utf8Str.c_str());
+    jstring jStr = NativeUtil::wstr2jstr(_operateEnv, copyMessage);
     _operateEnv->CallVoidMethod(_objRef, callPrevInstanceMethodID, jStr);
     if (detached) {
       _javaVM->DetachCurrentThread();
