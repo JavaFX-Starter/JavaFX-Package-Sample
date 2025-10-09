@@ -47,8 +47,8 @@ public class NativeFXWindow {
         return hWnd;
     }
 
-    public String getWindowText() {
-        return getWindowText(hWnd);
+    public String getWindowName() {
+        return getWindowName(hWnd);
     }
 
     public String getClassName() {
@@ -80,7 +80,7 @@ public class NativeFXWindow {
 
     private static native long getHWnd(Stage stage);
 
-    private static native String getWindowText(long hWnd);
+    private static native String getWindowName(long hWnd);
 
     private static native String getClassName(long hWnd);
 

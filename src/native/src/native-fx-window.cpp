@@ -29,13 +29,14 @@ JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd(
   return hWnd;
 }
 
-JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowText(
+JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowName(
     JNIEnv *env, jclass clazz, jlong hWnd) {
   int windowTextLength = GetWindowTextLength(reinterpret_cast<HWND>(hWnd));
   if (windowTextLength > 0) {
     std::wstring buffer(windowTextLength + 1, L'\0');
     if (GetWindowText(reinterpret_cast<HWND>(hWnd), &buffer[0],
                       windowTextLength + 1) > 0) {
+      buffer.resize(windowTextLength);
       return NativeUtil::wstr2jstr(env, buffer);
     }
   }

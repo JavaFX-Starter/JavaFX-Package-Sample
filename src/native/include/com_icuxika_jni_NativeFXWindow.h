@@ -18,11 +18,11 @@ JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd(JNIEnv *,
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
- * Method:    getWindowText
+ * Method:    getWindowName
  * Signature: (J)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL
-Java_com_icuxika_jni_NativeFXWindow_getWindowText(JNIEnv *, jclass, jlong);
+Java_com_icuxika_jni_NativeFXWindow_getWindowName(JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow

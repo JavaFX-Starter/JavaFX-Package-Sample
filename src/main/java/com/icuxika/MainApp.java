@@ -159,11 +159,11 @@ public class MainApp extends Application {
         nativeFXWindow.initialize(primaryStage);
         hWndProperty.set(String.valueOf(nativeFXWindow.getHWnd()));
         classNameProperty.set(nativeFXWindow.getClassName());
-        windowNameProperty.set(nativeFXWindow.getWindowText());
+        windowNameProperty.set(nativeFXWindow.getWindowName());
 
         primaryStage.titleProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
-                windowNameProperty.set(nativeFXWindow.getWindowText());
+                windowNameProperty.set(nativeFXWindow.getWindowName());
             }
         });
 
@@ -175,7 +175,7 @@ public class MainApp extends Application {
         }
         Path configFilePath = applicationDataPath.resolve("config.properties");
         Properties properties = new Properties();
-        properties.setProperty("windowName", nativeFXWindow.getWindowText());
+        properties.setProperty("windowName", nativeFXWindow.getWindowName());
         properties.setProperty("className", nativeFXWindow.getClassName());
         try (FileOutputStream outputStream = new FileOutputStream(configFilePath.toFile())) {
             properties.store(outputStream, "");
