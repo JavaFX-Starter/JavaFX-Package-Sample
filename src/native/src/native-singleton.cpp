@@ -9,7 +9,7 @@ NativeSingleton::~NativeSingleton() {
 }
 
 bool NativeSingleton::IsApplicationRunning(const std::wstring &mutexName) {
-  mutex = CreateMutexW(nullptr, false, mutexName.c_str());
+  mutex = CreateMutex(nullptr, false, mutexName.c_str());
   if (mutex != nullptr) {
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
       CloseHandle(mutex);

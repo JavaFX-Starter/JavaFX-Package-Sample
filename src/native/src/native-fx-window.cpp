@@ -33,7 +33,7 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowText(
   int windowTextLength = GetWindowTextLength(reinterpret_cast<HWND>(hWnd));
   if (windowTextLength > 0) {
     std::wstring buffer(windowTextLength + 1, L'\0');
-    if (GetWindowTextW(reinterpret_cast<HWND>(hWnd), &buffer[0],
+    if (GetWindowText(reinterpret_cast<HWND>(hWnd), &buffer[0],
                        windowTextLength + 1) > 0) {
       int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1,
                                            nullptr, 0, nullptr, nullptr);
@@ -50,7 +50,7 @@ JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName(
     JNIEnv *env, jclass clazz, jlong hWnd) {
   int length = 256;
   std::wstring buffer(length, L'\0');
-  if (GetClassNameW(reinterpret_cast<HWND>(hWnd), &buffer[0], length)) {
+  if (GetClassName(reinterpret_cast<HWND>(hWnd), &buffer[0], length)) {
     int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, buffer.c_str(), -1,
                                          nullptr, 0, nullptr, nullptr);
     std::string utf8Str(sizeNeeded, '\0');
@@ -123,7 +123,7 @@ JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
   std::wstring c = nativeSingleton->JStr2WStr(env, className);
   std::wstring w = nativeSingleton->JStr2WStr(env, windowName);
 
-  if (const HWND hWnd = FindWindowW(c.c_str(), w.c_str())) {
+  if (const HWND hWnd = FindWindow(c.c_str(), w.c_str())) {
     ShowWindow(hWnd, SW_RESTORE);
     SetForegroundWindow(hWnd);
 

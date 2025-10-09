@@ -12,4 +12,5 @@ include_directories(${JAVA_INCLUDE_PATH2})
 set(LIB_NAME NativeFXWindow)
 add_library(${LIB_NAME} SHARED src/native-fx-window.cpp src/native-window-proc.cpp src/native-singleton.cpp)
 target_include_directories(${LIB_NAME} PUBLIC include)
+target_compile_definitions(${LIB_NAME} PRIVATE UNICODE _UNICODE)
 
