@@ -1,1 +1,1 @@
-.\nsis\build-strlen.ps1
+.\nsis\build.ps1

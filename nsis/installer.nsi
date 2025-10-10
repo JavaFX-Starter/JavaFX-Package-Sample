@@ -215,25 +215,19 @@ Function addLicense
     FileOpen $0 "$PluginsDir\License-English.txt" r
     IfErrors exit
   ${EndIf}
-  ;$R0 is the file content 
-  ;$R1 is the line of content read from the file each time
-  ;$R2 is the file size
-  FileSeek $0 0 END $R2
-  FileSeek $0 0 SET
-  StrCpy $R0 ""
+
+  FindWindow $1 "#32770" "" $HWNDPARENT
+  GetDlgItem $1 $1 1000
+  SendMessage $1 ${EM_SETLIMITTEXT} 0 0
+  SendMessage $1 ${WM_SETTEXT} 0 "STR:"
+
   ${Do}
-    FILEREADUTF16LE $0 $R1
-    ${If} $R1 == ""
+    FILEREADUTF16LE $0 $2
+    ${If} $2 == ""
       ${ExitDo}
     ${EndIf}
-    StrCpy $R0 $R0$R1
+    SendMessage $1 ${EM_REPLACESEL} 0 "STR:$2"
   ${Loop}
   FileClose $0
-
-  FindWindow $0 "#32770" "" $HWNDPARENT
-  GetDlgItem $0 $0 1000
-  SendMessage $0 ${EM_SETLIMITTEXT} 0 0
-  SendMessage $0 ${WM_SETTEXT} 0 "STR:$R0"
 exit:
- 
 FunctionEnd
