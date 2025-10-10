@@ -211,6 +211,10 @@
                                 <argument>${application.icon}</argument>
                                 <argument>--app-version</argument>
                                 <argument>1.0.0</argument>
+                                <argument>--java-options</argument>
+                                <argument>-XX:+UseZGC</argument>
+                                <argument>--java-options</argument>
+                                <argument>-Dprism.allowhidpi=true</argument>
                             </arguments>
                         </configuration>
                     </execution>
