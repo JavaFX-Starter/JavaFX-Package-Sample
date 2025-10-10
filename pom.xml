@@ -6,7 +6,7 @@
 
     <groupId>com.icuxika</groupId>
     <artifactId>JavaFX-Package-Sample</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -210,7 +210,7 @@
                                 <argument>--icon</argument>
                                 <argument>${application.icon}</argument>
                                 <argument>--app-version</argument>
-                                <argument>1.0.0</argument>
+                                <argument>${project.version}</argument>
                                 <argument>--java-options</argument>
                                 <argument>-XX:+UseZGC</argument>
                                 <argument>--java-options</argument>

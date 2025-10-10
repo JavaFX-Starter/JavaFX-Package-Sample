@@ -156,9 +156,14 @@ public class MainApp extends Application {
         leading.setPrefWidth(36);
         leading.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
         headerBar.setLeading(leading);
-        var center = new Pane();
+
+        var center = new StackPane();
         center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
         headerBar.setCenter(center);
+
+        var appVersionLabel = new Label(getAppVersion());
+        center.getChildren().add(appVersionLabel);
+
         var trailing = new StackPane();
         trailing.setPrefWidth(36);
         headerBar.setTrailing(trailing);
@@ -175,7 +180,6 @@ public class MainApp extends Application {
                 pinToTopBtn.setStyle("-fx-background-color: transparent;");
             }
         });
-        trailing.getChildren().add(pinToTopBtn);
         pinToTopBtn.setOnAction(_ -> {
             primaryStage.setAlwaysOnTop(!primaryStage.isAlwaysOnTop());
             if (primaryStage.isAlwaysOnTop()) {
@@ -184,6 +188,7 @@ public class MainApp extends Application {
                 icon.setIconColor(Color.BLACK);
             }
         });
+        trailing.getChildren().add(pinToTopBtn);
 
         HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
         HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
@@ -286,6 +291,17 @@ public class MainApp extends Application {
         label.setTextFill(Color.WHITE);
         label.setAlignment(Pos.CENTER);
         return label;
+    }
+
+    /**
+     * jpackage 生成应用程序映像时会在 app 目录下 .cfg 文件中写入应用程序版本
+     */
+    private String getAppVersion() {
+        String appVersion = System.getProperty("jpackage.app-version");
+        if (appVersion != null) {
+            return appVersion;
+        }
+        return "开发版本";
     }
 
     public static void main(String[] args) {
