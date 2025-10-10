@@ -9,6 +9,9 @@ module sample {
 
     requires MaterialFX;
     requires org.slf4j;
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.fontawesome5;
+    requires org.kordamp.ikonli.fluentui;
 
     exports com.icuxika;
 }

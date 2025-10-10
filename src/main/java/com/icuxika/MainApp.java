@@ -15,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
@@ -25,6 +26,8 @@ import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,13 +159,34 @@ public class MainApp extends Application {
         var center = new Pane();
         center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
         headerBar.setCenter(center);
-        var trailing = new Pane();
+        var trailing = new StackPane();
         trailing.setPrefWidth(36);
-        trailing.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
         headerBar.setTrailing(trailing);
+
+        Button pinToTopBtn = new Button();
+        var icon = new FontIcon(FluentUiRegularMZ.PIN_12);
+        icon.setIconSize(16);
+        pinToTopBtn.setStyle("-fx-background-color: transparent;");
+        pinToTopBtn.setGraphic(icon);
+        pinToTopBtn.hoverProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                pinToTopBtn.setStyle("-fx-background-color: rgba(0,0,0,0.1);");
+            } else {
+                pinToTopBtn.setStyle("-fx-background-color: transparent;");
+            }
+        });
+        trailing.getChildren().add(pinToTopBtn);
+        pinToTopBtn.setOnAction(_ -> {
+            primaryStage.setAlwaysOnTop(!primaryStage.isAlwaysOnTop());
+            if (primaryStage.isAlwaysOnTop()) {
+                icon.setIconColor(Color.DODGERBLUE);
+            } else {
+                icon.setIconColor(Color.BLACK);
+            }
+        });
+
         HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
         HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
-        HeaderBar.setDragType(trailing, HeaderDragType.DRAGGABLE_SUBTREE);
 
         var root = new BorderPane();
         root.setTop(headerBar);
