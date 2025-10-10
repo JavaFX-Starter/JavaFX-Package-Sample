@@ -17,15 +17,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,10 +148,31 @@ public class MainApp extends Application {
                 loginButton
         );
 
-        Scene scene = new Scene(vBox, 400, 600);
+        HeaderBar headerBar = new HeaderBar();
+        var leading = new Pane();
+        leading.setPrefWidth(36);
+        leading.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
+        headerBar.setLeading(leading);
+        var center = new Pane();
+        center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
+        headerBar.setCenter(center);
+        var trailing = new Pane();
+        trailing.setPrefWidth(36);
+        trailing.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+        headerBar.setTrailing(trailing);
+        HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
+        HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
+        HeaderBar.setDragType(trailing, HeaderDragType.DRAGGABLE_SUBTREE);
+
+        var root = new BorderPane();
+        root.setTop(headerBar);
+        root.setCenter(vBox);
+
+        Scene scene = new Scene(root, 400, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/main.css")).toExternalForm());
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(scene);
+        primaryStage.initStyle(StageStyle.EXTENDED);
         primaryStage.show();
 
         nativeFXWindow.initialize(primaryStage);
@@ -261,6 +280,9 @@ public class MainApp extends Application {
             LOGGER.info("已有实例运行，本进程退出");
             System.exit(0);
         }
+
+        // 启用 HeaderBar 预览功能
+        System.setProperty("javafx.enablePreview", "true");
         launch(args);
     }
 }

@@ -211,7 +211,9 @@
                     <mainClass>sample/com.icuxika.MainApp</mainClass>
                     <options>
                         <option>--enable-native-access=sample</option>
+                        <option>--enable-native-access=javafx.graphics</option>
                         <option>-Dsun.stdout.encoding=UTF-8</option>
+                        <option>-Djavafx.enablePreview=true</option>
                     </options>
                 </configuration>
             </plugin>
