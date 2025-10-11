@@ -59,6 +59,15 @@ Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *, jclass,
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    setWindowTransparencyAlpha
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_setWindowTransparencyAlpha(JNIEnv *, jclass,
+                                                               jlong, jint);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    unsetWindowTransparency
  * Signature: (J)V
  */

@@ -84,6 +84,18 @@ Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
+Java_com_icuxika_jni_NativeFXWindow_setWindowTransparencyAlpha(JNIEnv *env,
+                                                               jclass clazz,
+                                                               jlong hWnd,
+                                                               jint alpha) {
+  SetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE,
+                GetWindowLong(reinterpret_cast<HWND>(hWnd), GWL_EXSTYLE) |
+                    WS_EX_LAYERED);
+  SetLayeredWindowAttributes(reinterpret_cast<HWND>(hWnd), 0,
+                             (255 * alpha) / 100, LWA_ALPHA);
+}
+
+JNIEXPORT void JNICALL
 Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *env,
                                                             jclass clazz,
                                                             jlong hWnd) {

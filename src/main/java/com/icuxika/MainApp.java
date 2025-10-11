@@ -2,8 +2,10 @@ package com.icuxika;
 
 import com.icuxika.jni.NativeFXWindow;
 import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.controls.MFXSlider;
 import io.github.palexdev.materialfx.controls.MFXToggleButton;
 import io.github.palexdev.materialfx.enums.ButtonType;
+import io.github.palexdev.materialfx.enums.SliderEnums;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
@@ -75,7 +77,7 @@ public class MainApp extends Application {
         addKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("add-global-key-event-listening"));
         addKeyEventButton.setOnAction(_ -> {
             mfxToggleButton.setSelected(true);
-            boolean success = NativeFXWindow.registerHotKey(nativeFXWindow.getHWnd(), 1, 0x0002 | 0x0001, 0x54);
+            boolean success = nativeFXWindow.registerHotKey(1, 0x0002 | 0x0001, 0x54);
             if (!success) {
                 LOGGER.error("[RegisterHotKey]注册快捷键失败");
             }
@@ -86,7 +88,7 @@ public class MainApp extends Application {
         removeKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("remove-global-key-event-listening"));
         removeKeyEventButton.setOnAction(_ -> {
             mfxToggleButton.setSelected(false);
-            boolean success = NativeFXWindow.unregisterHotKey(nativeFXWindow.getHWnd(), 1);
+            boolean success = nativeFXWindow.unregisterHotKey(1);
             if (!success) {
                 LOGGER.error("[UnregisterHotKey]注销快捷键失败");
             }
@@ -129,6 +131,21 @@ public class MainApp extends Application {
                 )));
         unsetTransparencyButton.setOnAction(_ -> nativeFXWindow.unsetWindowTransparency());
 
+        MFXSlider slider = new MFXSlider();
+        slider.setMin(10);
+        slider.setMax(100);
+        slider.setValue(100);
+        slider.setPrefWidth(360);
+        slider.setTickUnit(10);
+        slider.setMinorTicksCount(5);
+        slider.setShowMajorTicks(true);
+        slider.setShowMinorTicks(true);
+        slider.setSliderMode(SliderEnums.SliderMode.SNAP_TO_TICKS);
+        slider.setOnMouseReleased(_ -> {
+            System.out.println(slider.getValue());
+            nativeFXWindow.setWindowTransparencyAlpha((int) slider.getValue());
+        });
+
         MFXButton loginButton = createButton("登录");
         loginButton.setOnAction(_ -> {
             // 测试 OAuth 2.0 登录逻辑
@@ -148,7 +165,7 @@ public class MainApp extends Application {
                 mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton,
-                loginButton
+                slider, loginButton
         );
 
         HeaderBar headerBar = new HeaderBar();
@@ -217,6 +234,8 @@ public class MainApp extends Application {
 
         nativeFXWindow.initialize();
 
+        // 更改显示语言时，windowName 也会改变，需要更新，但目前不做处理
+        // FindWindow 的第二个参数 lpWindowName 可以为 NULL
         Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
         if (!applicationDataPath.toFile().exists()) {
             Files.createDirectory(applicationDataPath);

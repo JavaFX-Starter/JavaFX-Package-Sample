@@ -55,8 +55,20 @@ public class NativeFXWindow {
         return getClassName(hWnd);
     }
 
+    public boolean registerHotKey(int id, int fsModifiers, int vk) {
+        return registerHotKey(hWnd, id, fsModifiers, vk);
+    }
+
+    public boolean unregisterHotKey(int id) {
+        return unregisterHotKey(hWnd, id);
+    }
+
     public void setWindowTransparency() {
         setWindowTransparency(hWnd);
+    }
+
+    public void setWindowTransparencyAlpha(int alpha) {
+        setWindowTransparencyAlpha(hWnd, alpha);
     }
 
     public void unsetWindowTransparency() {
@@ -84,11 +96,13 @@ public class NativeFXWindow {
 
     private static native String getClassName(long hWnd);
 
-    public static native boolean registerHotKey(long hWnd, int id, int fsModifiers, int vk);
+    private static native boolean registerHotKey(long hWnd, int id, int fsModifiers, int vk);
 
-    public static native boolean unregisterHotKey(long hWnd, int id);
+    private static native boolean unregisterHotKey(long hWnd, int id);
 
     private static native void setWindowTransparency(long hWnd);
+
+    private static native void setWindowTransparencyAlpha(long hWnd, int alpha);
 
     private static native void unsetWindowTransparency(long hWnd);
 
