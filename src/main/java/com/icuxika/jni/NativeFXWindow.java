@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.function.Consumer;
 
 /**
  * mvn -Pjni clean compile
@@ -20,6 +21,8 @@ public class NativeFXWindow {
     private static final String LIB_NAME = "NativeFXWindow.dll";
 
     private long hWnd;
+
+    private Consumer<String> prevInstanceCallConsumer;
 
     public NativeFXWindow() {
     }
@@ -80,12 +83,21 @@ public class NativeFXWindow {
     }
 
     // ------------------------------------------------------------
+
+    public void setPrevInstanceCallConsumer(Consumer<String> prevInstanceCallConsumer) {
+        this.prevInstanceCallConsumer = prevInstanceCallConsumer;
+    }
+
+    // ------------------------------------------------------------
     public void callbackHotKey(int id) {
         LOGGER.info("callbackHotKey {}", id);
     }
 
     public void callPrevInstance(String message) {
         LOGGER.info("callPrevInstance {}", message);
+        if (prevInstanceCallConsumer != null) {
+            prevInstanceCallConsumer.accept(message);
+        }
     }
 
     // ------------------------------------------------------------

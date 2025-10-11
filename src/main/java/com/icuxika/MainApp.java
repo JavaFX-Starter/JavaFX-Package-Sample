@@ -17,6 +17,7 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -231,6 +232,12 @@ public class MainApp extends Application {
                 windowNameProperty.set(nativeFXWindow.getWindowName());
             }
         });
+
+        // 目前实现方式是通过发送 WM_COPYDATA 消息实现，程序如果以管理员模式启动，新实例以普通用户权限启动话，则无法接收消息
+        nativeFXWindow.setPrevInstanceCallConsumer(message -> FXUtil.runInFX(() -> {
+            // 展示新实例传递过来的参数
+            new Alert(Alert.AlertType.INFORMATION, message).showAndWait();
+        }));
 
         nativeFXWindow.initialize();
 

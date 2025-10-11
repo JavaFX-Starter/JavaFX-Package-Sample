@@ -57,7 +57,6 @@ LRESULT CALLBACK NativeWindowProc::MainWndProc(HWND hWnd, UINT uMsg,
   case WM_APP + 1: {
     ShowWindow(hWnd, SW_RESTORE);
     SetForegroundWindow(hWnd);
-    MessageBox(hWnd, copyMessage.c_str(), L"浏览器唤起", MB_OK);
 
     boolean detached = false;
     GetOperateEnv(detached);
