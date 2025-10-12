@@ -198,7 +198,8 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function LaunchLink
-  ExecShell "" "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk"
+  ;ExecShell "" "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk"
+  Exec '"$WINDIR\explorer.exe" "$INSTDIR\${PRODUCT_FILE}.exe"'
 FunctionEnd
 
 Function addLicense
