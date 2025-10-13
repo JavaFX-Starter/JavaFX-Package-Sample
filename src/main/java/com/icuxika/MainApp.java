@@ -349,6 +349,7 @@ public class MainApp extends Application {
 
         // 启用 HeaderBar 预览功能
         System.setProperty("javafx.enablePreview", "true");
+        System.setProperty("javafx.suppressPreviewWarning", "true");
         launch(args);
     }
 }

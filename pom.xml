@@ -215,6 +215,8 @@
                                 <argument>-XX:+UseZGC</argument>
                                 <argument>--java-options</argument>
                                 <argument>-Dprism.allowhidpi=true</argument>
+                                <argument>--java-options</argument>
+                                <argument>-XX:AOTCache=app.aot</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -238,6 +240,7 @@
                         <option>--enable-native-access=javafx.graphics</option>
                         <option>-Dsun.stdout.encoding=UTF-8</option>
                         <option>-Djavafx.enablePreview=true</option>
+                        <option>-Djavafx.suppressPreviewWarning=true</option>
                     </options>
                 </configuration>
             </plugin>

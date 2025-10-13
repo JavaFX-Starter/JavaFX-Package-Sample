@@ -8,10 +8,22 @@ mvn clean package
 java -jar .\target\jars\JavaFX-Package-Sample-1.0.0-shade.jar
 ```
 
+## 生成 AOT 文件
+
+```
+java -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+java -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+
+java --enable-native-access=ALL-UNNAMED -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+java --enable-native-access=ALL-UNNAMED -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+```
+
 ## 生成 exe
 
 ```
 mvn -Pwin exec:exec@image
+
+cp .\app.aot .\target\buildImage\JavaFXSample\
 ```
 
 ## 生成安装包
