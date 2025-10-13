@@ -212,11 +212,13 @@
                                 <argument>--app-version</argument>
                                 <argument>${project.version}</argument>
                                 <argument>--java-options</argument>
+                                <argument>-XX:+PrintCommandLineFlags</argument>
+                                <argument>--java-options</argument>
                                 <argument>-XX:+UseZGC</argument>
                                 <argument>--java-options</argument>
                                 <argument>-Dprism.allowhidpi=true</argument>
                                 <argument>--java-options</argument>
-                                <argument>-XX:AOTCache=app.aot</argument>
+                                <argument>--enable-native-access=ALL-UNNAMED</argument>
                             </arguments>
                         </configuration>
                     </execution>

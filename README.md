@@ -8,22 +8,10 @@ mvn clean package
 java -jar .\target\jars\JavaFX-Package-Sample-1.0.0-shade.jar
 ```
 
-## 生成 AOT 文件
-
-```
-java -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
-java -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
-
-java --enable-native-access=ALL-UNNAMED -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
-java --enable-native-access=ALL-UNNAMED -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
-```
-
 ## 生成 exe
 
 ```
 mvn -Pwin exec:exec@image
-
-cp .\app.aot .\target\buildImage\JavaFXSample\
 ```
 
 ## 生成安装包
@@ -53,4 +41,16 @@ mvn -Pjni clean compile
 
 ```
 java -D"sun.stdout.encoding"=UTF-8 -D"sun.stderr.encoding"=UTF-8 -jar .\target\jars\JavaFX-Package-Sample-1.0.0-shade.jar
+```
+
+## 生成 AOT 文件
+
+> AOT 与 jpackage 还不能很好的一起使用，jvm 参数不同，AOT 文件就不可用，目前只通过 jar 的方式试一试
+
+```
+java -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+java -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+
+java --enable-native-access=ALL-UNNAMED -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
+java --enable-native-access=ALL-UNNAMED -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
 ```
