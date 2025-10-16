@@ -51,7 +51,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         textRect.bottom = rc.bottom / 2;
 
         HFONT hFontOriginal, hFont;
-        hFont = CreateFont(48, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+        auto nHeight = -MulDiv(16, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+        hFont = CreateFont(nHeight, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
                            CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Microsoft YaHei UI"));
         hFontOriginal = (HFONT)SelectObject(hdc, hFont);
 
@@ -130,7 +131,6 @@ int main(int argc, char *argv[]) {
     HWND hWnd = CreateWindowEx(0, L"AutoUpdateHelperClass", L"AutoUpdateHelper", WS_OVERLAPPEDWINDOW, x, y, windowWidth,
                                windowHeight, nullptr, nullptr, hInstance, nullptr);
 
-
     ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
 
@@ -161,7 +161,8 @@ int main(int argc, char *argv[]) {
         shellExecuteInfo.fMask = SEE_MASK_DEFAULT;
         shellExecuteInfo.hwnd = nullptr;
         shellExecuteInfo.lpVerb = L"open";
-        shellExecuteInfo.lpFile = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
+        shellExecuteInfo.lpFile = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-"
+                                  L"Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
         shellExecuteInfo.lpParameters = nullptr;
         shellExecuteInfo.lpDirectory = nullptr;
         shellExecuteInfo.nShow = SW_SHOWNORMAL;
