@@ -12,6 +12,9 @@ module sample {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.ikonli.fontawesome5;
     requires org.kordamp.ikonli.fluentui;
+    requires com.google.gson;
+
+    opens com.icuxika to com.google.gson;
 
     exports com.icuxika;
 }
