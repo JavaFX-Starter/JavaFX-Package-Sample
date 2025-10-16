@@ -1,0 +1,12 @@
+.cache/
+out/
+third-party/webui
+compile_commands.json
+cmake-build-*/
+.idea/
+build/
+*.zip
+_CPack_Packages/
+*.cab
+logs/
+.vscode/
