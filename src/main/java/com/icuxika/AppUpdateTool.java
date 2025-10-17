@@ -1,26 +1,28 @@
 package com.icuxika;
 
 import com.google.gson.Gson;
+import com.icuxika.model.FileInfo;
+import com.icuxika.model.UpdateIndex;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class AppUpdateTool {
 
     static void main(String[] args) {
         Path target;
+        String appVersion;
         try {
             Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             if (jarPath.toString().contains("classes")) {
@@ -29,7 +31,16 @@ public class AppUpdateTool {
                 target = Path.of(jarPath.toFile().getParentFile().getParent());
             }
             System.out.println(target);
-        } catch (URISyntaxException e) {
+
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
+            DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+            Document document = builder.parse(target.resolve("app").resolve(".jpackage.xml").toFile());
+
+            XPathFactory xPathFactory = XPathFactory.newInstance();
+            XPath xPath = xPathFactory.newXPath();
+            appVersion = xPath.evaluate("/jpackage-state/app-version", document);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         try (var files = Files.walk(target)) {
@@ -42,7 +53,7 @@ public class AppUpdateTool {
                     })
                     .toList();
 
-            UpdateIndex updateIndex = new UpdateIndex("1.0.0", fileInfoList);
+            UpdateIndex updateIndex = new UpdateIndex(appVersion, fileInfoList);
 
             Gson gson = new Gson();
             String json = gson.toJson(updateIndex);
@@ -79,59 +90,4 @@ public class AppUpdateTool {
         }
     }
 
-    private UpdateResult compareUpdateIndex(UpdateIndex local, UpdateIndex remote) {
-        List<FileInfo> added = new ArrayList<>();
-        List<FileInfo> updated = new ArrayList<>();
-        List<FileInfo> deleted = new ArrayList<>();
-
-        int result = compareVersion(local.version, remote.version);
-        if (result >= 0) {
-            return new UpdateResult(added, updated, deleted);
-        }
-
-        Map<String, FileInfo> localMap = local.files().stream().collect(Collectors.toMap(FileInfo::path, Function.identity()));
-        Map<String, FileInfo> remoteMap = remote.files().stream().collect(Collectors.toMap(FileInfo::path, Function.identity()));
-
-        for (var entry : remoteMap.entrySet()) {
-            String path = entry.getKey();
-            FileInfo remoteFileInfo = entry.getValue();
-            FileInfo localFileInfo = localMap.get(path);
-            if (localFileInfo == null) {
-                added.add(remoteFileInfo);
-            } else if (!Objects.equals(localFileInfo.hash, remoteFileInfo.hash)) {
-                updated.add(remoteFileInfo);
-            }
-        }
-
-        for (var entry : localMap.entrySet()) {
-            if (!remoteMap.containsKey(entry.getKey())) {
-                deleted.add(entry.getValue());
-            }
-        }
-
-        return new UpdateResult(added, updated, deleted);
-    }
-
-    private int compareVersion(String v1, String v2) {
-        String[] v1Parts = v1.split("\\.");
-        String[] v2Parts = v2.split("\\.");
-        int length = Math.max(v1Parts.length, v2Parts.length);
-        for (int i = 0; i < length; i++) {
-            int v1Part = i < v1Parts.length ? Integer.parseInt(v1Parts[i]) : 0;
-            int v2Part = i < v2Parts.length ? Integer.parseInt(v2Parts[i]) : 0;
-            if (v1Part != v2Part) {
-                return Integer.compare(v1Part, v2Part);
-            }
-        }
-        return 0;
-    }
-
-    private record FileInfo(String path, String hash, long size) {
-    }
-
-    private record UpdateIndex(String version, List<FileInfo> files) {
-    }
-
-    private record UpdateResult(List<FileInfo> added, List<FileInfo> updated, List<FileInfo> deleted) {
-    }
 }

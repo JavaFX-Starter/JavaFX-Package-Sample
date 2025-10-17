@@ -14,7 +14,7 @@ module sample {
     requires org.kordamp.ikonli.fluentui;
     requires com.google.gson;
 
-    opens com.icuxika to com.google.gson;
+    opens com.icuxika.model to com.google.gson;
 
     exports com.icuxika;
 }

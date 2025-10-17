@@ -1,10 +1,20 @@
 package com.icuxika;
 
 import com.icuxika.jni.NativeFXWindow;
+import com.icuxika.model.FileInfo;
+import com.icuxika.model.UpdateResult;
+import com.icuxika.task.FileListDownloadTask;
+import com.icuxika.task.UpdateResultDownloadTask;
+import com.icuxika.util.FormatUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.controls.MFXProgressBar;
 import io.github.palexdev.materialfx.controls.MFXSlider;
 import io.github.palexdev.materialfx.controls.MFXToggleButton;
+import io.github.palexdev.materialfx.dialogs.MFXGenericDialog;
+import io.github.palexdev.materialfx.dialogs.MFXGenericDialogBuilder;
+import io.github.palexdev.materialfx.dialogs.MFXStageDialog;
 import io.github.palexdev.materialfx.enums.ButtonType;
+import io.github.palexdev.materialfx.enums.ScrimPriority;
 import io.github.palexdev.materialfx.enums.SliderEnums;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
@@ -15,6 +25,7 @@ import javafx.beans.binding.When;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -27,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
@@ -44,9 +56,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MainApp extends Application {
 
@@ -159,8 +172,138 @@ public class MainApp extends Application {
             }
         });
 
-        MFXButton updateButton = createButton("重启以更新应用");
-        updateButton.setOnAction(_ -> {
+        VBox vBox = new VBox();
+
+        MFXButton checkUpdateButton = createButton("检查更新");
+        checkUpdateButton.setOnAction(_ -> {
+            checkUpdateButton.setDisable(true);
+            Task<UpdateResult> task = new UpdateResultDownloadTask("http://127.0.0.1:8080/JavaFXSample/1.0.2/update-index.json");
+            task.setOnSucceeded(_ -> {
+                UpdateResult updateResult = task.getValue();
+                long totalSize = Stream.concat(updateResult.added().stream(), updateResult.updated().stream())
+                        .mapToLong(FileInfo::size)
+                        .sum();
+                System.out.println(updateResult);
+                System.out.println("需要下载的文件大小: " + FormatUtil.fileSize2String(totalSize));
+                checkUpdateButton.setDisable(false);
+
+                String addedFiles = updateResult.added().stream()
+                        .map(FileInfo::path)
+                        .map(path -> "  + " + path)
+                        .collect(Collectors.joining("\n"));
+
+                String updatedFiles = updateResult.updated().stream()
+                        .map(FileInfo::path)
+                        .map(path -> "  * " + path)
+                        .collect(Collectors.joining("\n"));
+
+                String deletedFiles = updateResult.deleted().stream()
+                        .map(FileInfo::path)
+                        .map(path -> "  - " + path)
+                        .collect(Collectors.joining("\n"));
+
+                MFXGenericDialog dialogContent = MFXGenericDialogBuilder.build()
+                        .setContentText("""
+                                发现新的更新:
+                                新增文件: %d 个
+                                更新文件: %d 个
+                                删除文件: %d 个
+                                总大小: %s
+                                
+                                【新增文件】
+                                %s
+                                
+                                【更新文件】
+                                %s
+                                
+                                【删除文件】
+                                %s
+                                """.formatted(
+                                updateResult.added().size(),
+                                updateResult.updated().size(),
+                                updateResult.deleted().size(),
+                                FormatUtil.fileSize2String(totalSize),
+                                addedFiles.isEmpty() ? "(无)" : addedFiles,
+                                updatedFiles.isEmpty() ? "(无)" : updatedFiles,
+                                deletedFiles.isEmpty() ? "(无)" : deletedFiles
+                        ))
+                        .makeScrollable(true)
+                        .get();
+                MFXStageDialog dialog = MFXGenericDialogBuilder.build(dialogContent)
+                        .toStageDialogBuilder()
+                        .initOwner(checkUpdateButton.getScene().getWindow())
+                        .initModality(Modality.APPLICATION_MODAL)
+                        .setDraggable(true)
+                        .setTitle("Dialogs Preview")
+                        .setOwnerNode(vBox)
+                        .setScrimPriority(ScrimPriority.WINDOW)
+                        .setScrimOwner(true)
+                        .get();
+                dialogContent.addActions(
+                        Map.entry(new MFXButton("立即更新"), _ -> {
+                            List<String> fileUrlList = Stream.concat(updateResult.added().stream(), updateResult.updated().stream())
+                                    .map(FileInfo::path)
+                                    .collect(Collectors.toList());
+                            System.out.println(fileUrlList);
+                            dialog.close();
+                        }),
+                        Map.entry(new MFXButton(""), _ -> {
+                            dialog.close();
+                        })
+                );
+                dialogContent.setMaxSize(400, 200);
+                var icon = new FontIcon(FluentUiRegularMZ.SEARCH_INFO_24);
+                icon.setIconSize(16);
+                icon.setIconColor(Color.DODGERBLUE);
+                dialogContent.setHeaderIcon(icon);
+                dialogContent.setHeaderText("发现新的更新");
+                dialog.showDialog();
+            });
+            task.setOnFailed(_ -> {
+                task.getException().printStackTrace();
+                checkUpdateButton.setDisable(false);
+            });
+            new Thread(task).start();
+        });
+
+        MFXProgressBar progressBar = new MFXProgressBar();
+        progressBar.setPrefWidth(360);
+        progressBar.setProgress(0.0);
+        Label progressLabel = createLabel();
+        MFXButton downloadUpdateButton = createButton("下载更新");
+        downloadUpdateButton.setOnAction(_ -> {
+            downloadUpdateButton.setDisable(true);
+
+            Task<Void> task = new FileListDownloadTask(
+                    "http://127.0.0.1:8080/JavaFXSample",
+                    "1.0.2",
+                    List.of(
+                            "JavaFXSample.exe",
+                            "update-index.json",
+                            "app/javafx-controls-25-win.jar"
+                    ),
+                    Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample").resolve("update"));
+            progressBar.progressProperty().bind(task.progressProperty());
+            progressLabel.textProperty().bind(task.messageProperty());
+
+            task.setOnSucceeded(_ -> {
+                progressLabel.textProperty().unbind();
+                progressLabel.setText("下载完成");
+                downloadUpdateButton.setDisable(false);
+            });
+
+            task.setOnFailed(_ -> {
+                progressLabel.textProperty().unbind();
+                progressLabel.setText("下载失败: " + task.getException().getMessage());
+                task.getException().printStackTrace();
+                downloadUpdateButton.setDisable(false);
+            });
+
+            new Thread(task).start();
+        });
+
+        MFXButton restartButton = createButton("重启以更新应用");
+        restartButton.setOnAction(_ -> {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 LOGGER.info("ShutdownHook 执行");
                 Path target;
@@ -184,7 +327,6 @@ public class MainApp extends Application {
             Platform.exit();
         });
 
-        VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
         vBox.getChildren().addAll(
@@ -193,7 +335,9 @@ public class MainApp extends Application {
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton,
                 slider, loginButton,
-                updateButton
+                checkUpdateButton,
+                progressBar, progressLabel, downloadUpdateButton,
+                restartButton
         );
 
         HeaderBar headerBar = new HeaderBar();
@@ -242,7 +386,7 @@ public class MainApp extends Application {
         root.setTop(headerBar);
         root.setCenter(vBox);
 
-        Scene scene = new Scene(root, 400, 600);
+        Scene scene = new Scene(root, 400, 800);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/main.css")).toExternalForm());
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(scene);
@@ -271,7 +415,7 @@ public class MainApp extends Application {
         // 更改显示语言时，windowName 也会改变，需要更新，但目前不做处理
         // FindWindow 的第二个参数 lpWindowName 可以为 NULL
         Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
-        if (!applicationDataPath.toFile().exists()) {
+        if (!Files.exists(applicationDataPath)) {
             Files.createDirectory(applicationDataPath);
         }
         Path configFilePath = applicationDataPath.resolve("config.properties");
