@@ -7,6 +7,12 @@
 #include <string>
 #include <thread>
 
+#ifdef NDEBUG
+constexpr bool isReleaseMode = true;
+#else
+constexpr bool isReleaseMode = false;
+#endif
+
 HWND progressBar;
 std::wstring statusMsg = L"准备更新...";
 
@@ -144,7 +150,7 @@ int main(int argc, char *argv[]) {
     }
     std::wcout << "程序目录: " << exeDir << std::endl;
 
-    std::thread update([hWnd]() {
+    std::thread update([hWnd, exeDir]() {
         const wchar_t *statusMessages[] = {L"正在检查更新...", L"正在下载文件...", L"正在验证文件...",
                                            L"正在安装更新...", L"更新完成!"};
         for (int i = 0; i < 5; i++) {
@@ -156,19 +162,31 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        std::wstring targetExePath;
+        std::wstring workingDir;
+        if (isReleaseMode) {
+            // targetExePath = exeDir + L"\\JavaFXSample.exe";
+            targetExePath = exeDir;
+            targetExePath += L"\\";
+            targetExePath += L"JavaFXSample.exe";
+            workingDir = exeDir;
+        } else {
+            targetExePath = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-"
+                            L"Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
+        }
+
         SHELLEXECUTEINFO shellExecuteInfo = {};
         shellExecuteInfo.cbSize = sizeof(shellExecuteInfo);
         shellExecuteInfo.fMask = SEE_MASK_DEFAULT;
         shellExecuteInfo.hwnd = nullptr;
         shellExecuteInfo.lpVerb = L"open";
-        shellExecuteInfo.lpFile = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-"
-                                  L"Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
+        shellExecuteInfo.lpFile = targetExePath.c_str();
         shellExecuteInfo.lpParameters = nullptr;
-        shellExecuteInfo.lpDirectory = nullptr;
+        shellExecuteInfo.lpDirectory = workingDir.c_str();
         shellExecuteInfo.nShow = SW_SHOWNORMAL;
-        ShellExecuteEx(&shellExecuteInfo);
-
-        PostMessage(hWnd, WM_CLOSE, 0, 0);
+        if (ShellExecuteEx(&shellExecuteInfo)) {
+            PostMessage(hWnd, WM_CLOSE, 0, 0);
+        }
     });
     update.detach();
 

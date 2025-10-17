@@ -10,6 +10,7 @@ import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -158,6 +159,31 @@ public class MainApp extends Application {
             }
         });
 
+        MFXButton updateButton = createButton("重启以更新应用");
+        updateButton.setOnAction(_ -> {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                LOGGER.info("ShutdownHook 执行");
+                Path target;
+                try {
+                    Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    if (jarPath.toString().contains("classes")) {
+                        target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve("JavaFXSample");
+                    } else {
+                        target = Path.of(jarPath.toFile().getParentFile().getParent());
+                    }
+                    System.out.println(target);
+                    Path autoUpdateHelperExePath = target.resolve("auto-update-helper.exe");
+                    LOGGER.info("auto-update-helper.exe 路径: {}", autoUpdateHelperExePath);
+                    ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString());
+                    processBuilder.start();
+                } catch (URISyntaxException | IOException e) {
+                    LOGGER.error(e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }));
+            Platform.exit();
+        });
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
@@ -166,7 +192,8 @@ public class MainApp extends Application {
                 mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton,
-                slider, loginButton
+                slider, loginButton,
+                updateButton
         );
 
         HeaderBar headerBar = new HeaderBar();
