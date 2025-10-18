@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ public class AppUpdateTool {
                     .filter(Files::isRegularFile)
                     .map(path -> {
                         Path relativePath = target.relativize(path);
-                        return new FileInfo(relativePath.toString(), getFileHash(path), getFileSize(path));
+                        return new FileInfo(relativePath.toString().replace(File.separator, "/"), getFileHash(path), getFileSize(path));
                     })
                     .toList();
 

@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public record UpdateResult(List<FileInfo> added, List<FileInfo> updated, List<FileInfo> deleted) {
+public record UpdateResult(List<FileInfo> added, List<FileInfo> updated, List<FileInfo> deleted, String version) {
 
     public static UpdateResult compareUpdateIndex(UpdateIndex local, UpdateIndex remote) {
         List<FileInfo> added = new ArrayList<>();
@@ -16,7 +16,7 @@ public record UpdateResult(List<FileInfo> added, List<FileInfo> updated, List<Fi
 
         int result = compareVersion(local.version(), remote.version());
         if (result >= 0) {
-            return new UpdateResult(added, updated, deleted);
+            return new UpdateResult(added, updated, deleted, remote.version());
         }
 
         Map<String, FileInfo> localMap = local.files().stream().collect(Collectors.toMap(FileInfo::path, Function.identity()));
@@ -39,7 +39,7 @@ public record UpdateResult(List<FileInfo> added, List<FileInfo> updated, List<Fi
             }
         }
 
-        return new UpdateResult(added, updated, deleted);
+        return new UpdateResult(added, updated, deleted, remote.version());
     }
 
     private static int compareVersion(String v1, String v2) {

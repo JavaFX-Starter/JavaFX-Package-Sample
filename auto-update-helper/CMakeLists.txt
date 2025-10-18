@@ -13,3 +13,5 @@ target_link_options(auto-update-helper PRIVATE
     $<$<CONFIG:Debug>:/SUBSYSTEM:CONSOLE>
     $<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup>
 )
+
+target_include_directories(auto-update-helper PRIVATE third-party\\include)

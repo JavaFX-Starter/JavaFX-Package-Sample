@@ -1,11 +1,16 @@
 #include <Windows.h>
 #include <CommCtrl.h>
+#include <ShlObj.h>
 #include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <thread>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <vector>
 
 #ifdef NDEBUG
 constexpr bool isReleaseMode = true;
@@ -15,6 +20,72 @@ constexpr bool isReleaseMode = false;
 
 HWND progressBar;
 std::wstring statusMsg = L"准备更新...";
+
+std::wstring Str2WStr(const std::string &str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size(), nullptr, 0);
+    std::wstring wStr(len, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size(), &wStr[0], len);
+    return wStr;
+}
+
+struct FileInfo {
+    std::string path;
+    std::string hash;
+    int64_t size;
+};
+
+struct UpdateResult {
+    std::vector<FileInfo> added;
+    std::vector<FileInfo> updated;
+    std::vector<FileInfo> deleted;
+};
+
+enum class UpateTaskType { ADD_FILE, UPDATE_FILE, DELETE_FILE };
+
+struct UpdateTask {
+    UpateTaskType type;
+    FileInfo file;
+};
+
+void HandleAdd(const FileInfo &f, const std::filesystem::path &sourceDir, const std::filesystem::path &targetDir) {
+    std::filesystem::path src = sourceDir / f.path;
+    std::filesystem::path dst = targetDir / f.path;
+
+    std::filesystem::create_directories(dst.parent_path());
+    std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
+}
+
+void HandleUpdate(const FileInfo &f, const std::filesystem::path &sourceDir, const std::filesystem::path &targetDir) {
+    std::filesystem::path src = sourceDir / f.path;
+    std::filesystem::path dst = targetDir / f.path;
+
+    if (std::filesystem::exists(dst)) {
+        std::filesystem::remove(dst);
+    }
+    std::filesystem::create_directories(dst.parent_path());
+    std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
+}
+
+void HandleDelete(const FileInfo &f, const std::filesystem::path &sourceDir, const std::filesystem::path &targetDir) {
+    std::filesystem::path dst = targetDir / f.path;
+    if (std::filesystem::exists(dst)) {
+        std::filesystem::remove(dst);
+    }
+}
+
+void ExecuteTask(UpdateTask task, const std::filesystem::path &sourceDir, const std::filesystem::path &targetDir) {
+    switch (task.type) {
+    case UpateTaskType::ADD_FILE:
+        HandleAdd(task.file, sourceDir, targetDir);
+        break;
+    case UpateTaskType::UPDATE_FILE:
+        HandleUpdate(task.file, sourceDir, targetDir);
+        break;
+    case UpateTaskType::DELETE_FILE:
+        HandleDelete(task.file, sourceDir, targetDir);
+        break;
+    }
+}
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
@@ -97,6 +168,12 @@ int main(int argc, char *argv[]) {
         std::cout << "argv[" << ndx << "] == " << std::quoted(argv[ndx]) << '\n';
     std::cout << "argv[" << argc << "] == " << static_cast<void *>(argv[argc]) << '\n';
 
+    // --launch
+    std::string launch = "";
+    if (argc >= 2) {
+        launch = argv[1];
+    }
+
     SetProcessDPIAware();
 
     InitCommonControls();
@@ -125,7 +202,7 @@ int main(int argc, char *argv[]) {
     const int logicalWidth = static_cast<int>(physicalWidth / scale);
     const int logicalHeight = static_cast<int>(physicalHeight / scale);
 
-    const int windowWidth = 400 * scale;
+    const int windowWidth = 480 * scale;
     const int windowHeight = 240 * scale;
     const int x = (physicalWidth - windowWidth) / 2;
     const int y = (physicalHeight - windowHeight) / 2;
@@ -150,42 +227,94 @@ int main(int argc, char *argv[]) {
     }
     std::wcout << "程序目录: " << exeDir << std::endl;
 
-    std::thread update([hWnd, exeDir]() {
-        const wchar_t *statusMessages[] = {L"正在检查更新...", L"正在下载文件...", L"正在验证文件...",
-                                           L"正在安装更新...", L"更新完成!"};
-        for (int i = 0; i < 5; i++) {
-            std::wstring *copy = new std::wstring(statusMessages[i]);
+    std::thread update([hWnd, exeDir, launch]() {
+        wchar_t *localAppDataPath = nullptr;
+        SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppDataPath);
+        std::filesystem::path updatePath = std::filesystem::path(localAppDataPath) / L"JavaFXPackageSample" / L"update";
+        CoTaskMemFree(localAppDataPath);
+
+        std::filesystem::path jsonPath = updatePath / L"latest.json";
+        std::ifstream f(jsonPath);
+        nlohmann::json data = nlohmann::json::parse(f);
+
+        std::filesystem::path sourceDir = updatePath / data["version"];
+        std::filesystem::path targetDir = exeDir;
+
+        UpdateResult updateResult;
+        for (auto &f : data["added"]) {
+            updateResult.added.push_back({f["path"], f["hash"], f["size"]});
+        }
+        for (auto &f : data["updated"]) {
+            updateResult.updated.push_back({f["path"], f["hash"], f["size"]});
+        }
+        for (auto &f : data["deleted"]) {
+            updateResult.deleted.push_back({f["path"], f["hash"], f["size"]});
+        }
+
+        int count = updateResult.added.size() + updateResult.updated.size() + updateResult.deleted.size();
+        if (progressBar) {
+            SendMessage(progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, count * 20));
+            SendMessage(progressBar, PBM_SETSTEP, (WPARAM)20, 0);
+        }
+
+        std::vector<UpdateTask> updateTaskList;
+        for (auto &f : updateResult.added) {
+            updateTaskList.push_back({UpateTaskType::ADD_FILE, f});
+        }
+        for (auto &f : updateResult.updated) {
+            updateTaskList.push_back({UpateTaskType::UPDATE_FILE, f});
+        }
+        for (auto &f : updateResult.deleted) {
+            updateTaskList.push_back({UpateTaskType::DELETE_FILE, f});
+        }
+        for (auto &task : updateTaskList) {
+            std::wstring description;
+            switch (task.type) {
+            case UpateTaskType::ADD_FILE:
+                description = L"新增: ";
+                break;
+            case UpateTaskType::UPDATE_FILE:
+                description = L"更新: ";
+                break;
+            case UpateTaskType::DELETE_FILE:
+                description = L"删除: ";
+                break;
+            }
+            std::wstring *copy = new std::wstring(description + Str2WStr(task.file.path));
             if (progressBar) {
                 PostMessage(hWnd, WM_USER + 1, 0, 0);
                 PostMessage(hWnd, WM_USER + 2, 0, (LPARAM)copy);
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                ExecuteTask(task, sourceDir, targetDir);
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         }
 
-        std::wstring targetExePath;
-        std::wstring workingDir;
-        if (isReleaseMode) {
-            // targetExePath = exeDir + L"\\JavaFXSample.exe";
-            targetExePath = exeDir;
-            targetExePath += L"\\";
-            targetExePath += L"JavaFXSample.exe";
-            workingDir = exeDir;
-        } else {
-            targetExePath = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-"
-                            L"Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
-        }
+        if (launch == "--launch") {
+            std::wstring targetExePath;
+            std::wstring workingDir;
+            if (isReleaseMode) {
+                // targetExePath = exeDir + L"\\JavaFXSample.exe";
+                targetExePath = exeDir;
+                targetExePath += L"\\";
+                targetExePath += L"JavaFXSample.exe";
+                workingDir = exeDir;
+            } else {
+                targetExePath = L"C:\\Users\\icuxika\\VSCodeProjects\\JavaFX-Package-"
+                                L"Sample\\target\\buildImage\\JavaFXSample\\JavaFXSample.exe";
+            }
 
-        SHELLEXECUTEINFO shellExecuteInfo = {};
-        shellExecuteInfo.cbSize = sizeof(shellExecuteInfo);
-        shellExecuteInfo.fMask = SEE_MASK_DEFAULT;
-        shellExecuteInfo.hwnd = nullptr;
-        shellExecuteInfo.lpVerb = L"open";
-        shellExecuteInfo.lpFile = targetExePath.c_str();
-        shellExecuteInfo.lpParameters = nullptr;
-        shellExecuteInfo.lpDirectory = workingDir.c_str();
-        shellExecuteInfo.nShow = SW_SHOWNORMAL;
-        if (ShellExecuteEx(&shellExecuteInfo)) {
-            PostMessage(hWnd, WM_CLOSE, 0, 0);
+            SHELLEXECUTEINFO shellExecuteInfo = {};
+            shellExecuteInfo.cbSize = sizeof(shellExecuteInfo);
+            shellExecuteInfo.fMask = SEE_MASK_DEFAULT;
+            shellExecuteInfo.hwnd = nullptr;
+            shellExecuteInfo.lpVerb = L"open";
+            shellExecuteInfo.lpFile = targetExePath.c_str();
+            shellExecuteInfo.lpParameters = nullptr;
+            shellExecuteInfo.lpDirectory = workingDir.c_str();
+            shellExecuteInfo.nShow = SW_SHOWNORMAL;
+            if (ShellExecuteEx(&shellExecuteInfo)) {
+                PostMessage(hWnd, WM_CLOSE, 0, 0);
+            }
         }
     });
     update.detach();

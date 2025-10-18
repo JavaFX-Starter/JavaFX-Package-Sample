@@ -2,6 +2,7 @@ package com.icuxika.task;
 
 import com.google.gson.Gson;
 import com.icuxika.AppUpdateTool;
+import com.icuxika.model.Latest;
 import com.icuxika.model.UpdateIndex;
 import com.icuxika.model.UpdateResult;
 import javafx.concurrent.Task;
@@ -19,16 +20,24 @@ public class UpdateResultDownloadTask extends Task<UpdateResult> {
 
     private final Gson gson = new Gson();
 
-    private final String updateIndexUrl;
+    private final String baseUrl;
 
-    public UpdateResultDownloadTask(String updateIndexUrl) {
-        this.updateIndexUrl = updateIndexUrl;
+    public UpdateResultDownloadTask(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     @Override
     protected UpdateResult call() throws Exception {
+        URL latestUrl = URI.create(baseUrl + "/latest.json").toURL();
+        Latest latest;
+        try (InputStream inputStream = latestUrl.openStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        ) {
+            latest = gson.fromJson(inputStreamReader, Latest.class);
+        }
+
         UpdateIndex remoteUpdateIndex;
-        URL url = URI.create(updateIndexUrl).toURL();
+        URL url = URI.create(baseUrl + "/" + latest.version() + "/update-index.json").toURL();
         Path target;
         try {
             Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());

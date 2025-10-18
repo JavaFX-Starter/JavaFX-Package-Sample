@@ -28,7 +28,7 @@ public class FileListDownloadTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         if (!Files.exists(targetPath)) {
-            Files.createDirectory(targetPath);
+            Files.createDirectories(targetPath);
         }
         int size = fileUrlList.size();
         int index = 0;
@@ -41,7 +41,7 @@ public class FileListDownloadTask extends Task<Void> {
             Path localFile = targetPath.resolve(version).resolve(fileUrl);
             System.out.printf("下载文件 %s[%s] 到 %s%n", fileName, url, localFile);
             if (!Files.exists(localFile.getParent())) {
-                Files.createDirectory(localFile.getParent());
+                Files.createDirectories(localFile.getParent());
             }
             try (InputStream inputStream = url.openStream();
                  OutputStream outputStream = Files.newOutputStream(localFile)) {
