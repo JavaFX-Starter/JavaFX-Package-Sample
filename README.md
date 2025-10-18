@@ -54,3 +54,50 @@ java -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.j
 java --enable-native-access=ALL-UNNAMED -XX:AOTCacheOutput=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
 java --enable-native-access=ALL-UNNAMED -XX:AOTCache=app.aot -jar .\target\jars\JavaFX-Package-Sample-1.0.1-shade.jar
 ```
+
+## 程序更新功能
+
+### 简单的更新服务器
+
+jdk 17 以上版本自带的 `jwebserver` 可以作为简单的测试更新服务器
+
+```
+jwebserver.exe -p 8080 -d .
+```
+
+目录结构如下，在`D:\Server`目录下执行上述命令
+
+```
+D:\Server
+└───JavaFXSample
+    │   latest.json
+    └───1.0.4
+        │   AppUpdateTool.exe
+        │   auto-update-helper.exe 
+        │   JavaFXSample.exe
+        │   update-index.json
+        ├───app
+        └───runtime
+            ├───bin
+            ├───conf
+            ├───legal
+            └───lib
+```
+
+其中`latest.json`存储最新版本信息
+
+```
+{
+    "version": "1.0.4",
+    "updateIndexUrl": "1.0.4/update-index.json"
+}
+```
+
+程序检查更新时，会先获取`latest.json`文件，判断是否有新版本。如果有新版本，会根据`updateIndexUrl`(由于目前文件名称固定，实际代码只看
+`version`)获取更新索引文件`update-index.json`，
+同时本地也会生成一份`update-index.json`，将两份文件进行比较得到需要新增、更新或删除的文件集合，`update-index.json`
+存储了所有被观察是否需要更新的文件的信息，包括文件名、文件大小、文件校验值等，但不包括`runtime(Java运行时)`，
+`auto-update-helper.exe(Windows程序更新助手)`，
+之后如果用户点击`一键升级`，会将上述结果保存到`$env:LOCALAPPDATA\JavaFXPackageSample\update\latest.json`
+，同时下载所有需要的新版本文件，之后退出程序同时启动`auto-update-helper.exe`，
+`auto-update-helper.exe`会读取`$env:LOCALAPPDATA\JavaFXPackageSample\update\latest.json`来执行文件的复制或删除操作完成更新然后重新启动程序。
