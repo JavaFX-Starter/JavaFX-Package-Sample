@@ -8,6 +8,7 @@ import com.icuxika.model.UpdateResult;
 import javafx.concurrent.Task;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -28,6 +29,23 @@ public class UpdateResultDownloadTask extends Task<UpdateResult> {
 
     @Override
     protected UpdateResult call() throws Exception {
+        Path target;
+        try {
+            Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (jarPath.toString().contains("classes")) {
+                target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve("JavaFXSample");
+            } else {
+                target = Path.of(jarPath.toFile().getParentFile().getParent());
+            }
+            System.out.println(target);
+            Path autoUpdateHelperExePath = target.resolve("AppUpdateTool.exe");
+            ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString());
+            Process process = processBuilder.start();
+            process.waitFor();
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
         URL latestUrl = URI.create(baseUrl + "/latest.json").toURL();
         Latest latest;
         try (InputStream inputStream = latestUrl.openStream();
@@ -38,18 +56,7 @@ public class UpdateResultDownloadTask extends Task<UpdateResult> {
 
         UpdateIndex remoteUpdateIndex;
         URL url = URI.create(baseUrl + "/" + latest.version() + "/update-index.json").toURL();
-        Path target;
-        try {
-            Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (jarPath.toString().contains("classes")) {
-                target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve("JavaFXSample");
-            } else {
-                target = Path.of(jarPath.toFile().getParentFile().getParent());
-            }
-            System.out.println(target);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+
         Path localUpdateIndexPath = target.resolve("update-index.json");
         try (InputStream inputStream = url.openStream();
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);

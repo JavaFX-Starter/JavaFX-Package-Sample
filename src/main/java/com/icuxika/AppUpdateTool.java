@@ -46,7 +46,7 @@ public class AppUpdateTool {
         }
         try (var files = Files.walk(target)) {
             List<FileInfo> fileInfoList = files
-                    .filter(p -> !p.toString().contains("runtime"))
+                    .filter(p -> !p.toString().contains("runtime") && !p.toString().contains("auto-update-helper.exe"))
                     .filter(Files::isRegularFile)
                     .map(path -> {
                         Path relativePath = target.relativize(path);
