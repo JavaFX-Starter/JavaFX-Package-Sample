@@ -11,6 +11,9 @@ ManifestDPIAware true
 NAME "${PRODUCT_NAME}"
 OutFile "Install ${PRODUCT_NAME}.exe"
 
+;--------------------------------
+!define MUI_ICON icon.ico
+!define MUI_UNICON icon.ico
 ;-------------------------------- 
 !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
 !define MULTIUSER_INSTALLMODE_DEFAULT_REGISTRY_KEY "${UNINSTKEY}"

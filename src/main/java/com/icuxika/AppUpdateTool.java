@@ -21,6 +21,14 @@ import java.util.List;
 
 public class AppUpdateTool {
 
+    private static final List<String> excludePath = List.of(
+            "runtime", // Java运行时
+            "auto-update-helper.exe", // 程序更新助手
+            "index.html", // NSIS
+            "readme.txt", // NSIS
+            "Uninstall.exe" // NSIS
+    );
+
     static void main(String[] args) {
         Path target;
         String appVersion;
@@ -46,7 +54,7 @@ public class AppUpdateTool {
         }
         try (var files = Files.walk(target)) {
             List<FileInfo> fileInfoList = files
-                    .filter(p -> !p.toString().contains("runtime") && !p.toString().contains("auto-update-helper.exe"))
+                    .filter(p -> excludePath.stream().noneMatch(k -> p.toString().contains(k)))
                     .filter(Files::isRegularFile)
                     .map(path -> {
                         Path relativePath = target.relativize(path);
