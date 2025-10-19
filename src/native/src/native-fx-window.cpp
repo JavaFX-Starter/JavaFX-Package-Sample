@@ -5,6 +5,7 @@
 #include "native-util.h"
 #include "native-window-proc.h"
 #include <Windows.h>
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -144,6 +145,34 @@ JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
     SendMessage(hWnd, WM_COPYDATA, 0, reinterpret_cast<LPARAM>(&cds));
   }
 }
+
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_runAsAdmin(
+    JNIEnv *env, jclass clazz, jstring exePath, jstring parameters,
+    jstring workingDir, jboolean waitForExit) {
+  std::wstring e = NativeUtil::jstr2wstr(env, exePath);
+  std::wstring p = NativeUtil::jstr2wstr(env, parameters);
+  std::wstring w = NativeUtil::jstr2wstr(env, workingDir);
+
+  SHELLEXECUTEINFO shellExecuteInfo = {};
+  shellExecuteInfo.cbSize = sizeof(shellExecuteInfo);
+  shellExecuteInfo.fMask =
+      waitForExit ? SEE_MASK_NOCLOSEPROCESS : SEE_MASK_DEFAULT;
+  shellExecuteInfo.hwnd = nullptr;
+  shellExecuteInfo.lpVerb = L"runas";
+  shellExecuteInfo.lpFile = e.c_str();
+  shellExecuteInfo.lpParameters = p.c_str();
+  shellExecuteInfo.lpDirectory = w.c_str();
+  shellExecuteInfo.nShow = SW_SHOWNORMAL;
+  if (ShellExecuteEx(&shellExecuteInfo)) {
+    if (waitForExit) {
+      if (shellExecuteInfo.hProcess) {
+        WaitForSingleObject(shellExecuteInfo.hProcess, INFINITY);
+        CloseHandle(shellExecuteInfo.hProcess);
+      }
+    }
+  }
+}
+
 #ifdef __cplusplus
 }
 #endif

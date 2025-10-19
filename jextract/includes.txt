@@ -12,6 +12,7 @@
 --include-function GetCurrentThreadId
 --include-function TranslateMessage
 --include-function DispatchMessageW
+--include-function ShellExecuteExW
 --include-typedef HOOKPROC
 --include-typedef HINSTANCE
 --include-typedef HHOOK
@@ -22,9 +23,11 @@
 --include-typedef ULONG_PTR
 --include-typedef LPWSTR
 --include-typedef WCHAR
+--include-typedef SHELLEXECUTEINFOW
 --include-struct tagKBDLLHOOKSTRUCT
 --include-struct tagMSG
 --include-struct tagPOINT
+--include-struct _SHELLEXECUTEINFOW
 --include-constant WH_KEYBOARD_LL
 --include-constant WH_MOUSE_LL
 --include-constant WM_KEYDOWN

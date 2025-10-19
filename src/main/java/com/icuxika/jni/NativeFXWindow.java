@@ -123,4 +123,6 @@ public class NativeFXWindow {
     public static native boolean isApplicationRunning(String mutexName);
 
     public static native void callPrevInstance(String message, String className, String windowName);
+
+    public static native void runAsAdmin(String exePath, String parameters, String workingDir, boolean waitForExit);
 }

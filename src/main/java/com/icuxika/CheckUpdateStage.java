@@ -1,11 +1,13 @@
 package com.icuxika;
 
 import com.google.gson.Gson;
+import com.icuxika.jni.NativeFXWindow;
 import com.icuxika.model.FileInfo;
 import com.icuxika.model.UpdateResult;
 import com.icuxika.task.FileListDownloadTask;
 import com.icuxika.task.UpdateResultDownloadTask;
 import com.icuxika.util.FormatUtil;
+import com.icuxika.util.SystemUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXProgressSpinner;
 import io.github.palexdev.materialfx.controls.MFXScrollPane;
@@ -92,11 +94,15 @@ public class CheckUpdateStage extends Stage {
                         } else {
                             target = Path.of(jarPath.toFile().getParentFile().getParent());
                         }
-                        System.out.println(target);
                         Path autoUpdateHelperExePath = target.resolve("auto-update-helper.exe");
                         LOGGER.info("auto-update-helper.exe 路径: {}", autoUpdateHelperExePath);
-                        ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString(), "--launch");
-                        processBuilder.start();
+                        String parameters = "--launch";
+                        if (SystemUtil.isSystemPath(target)) {
+                            NativeFXWindow.runAsAdmin(autoUpdateHelperExePath.toString(), parameters, target.toString(), false);
+                        } else {
+                            ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString(), parameters);
+                            processBuilder.start();
+                        }
                     } catch (URISyntaxException | IOException e) {
                         LOGGER.error(e.getMessage());
                         throw new RuntimeException(e);

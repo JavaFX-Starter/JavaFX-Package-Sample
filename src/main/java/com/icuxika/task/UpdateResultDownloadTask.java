@@ -2,9 +2,11 @@ package com.icuxika.task;
 
 import com.google.gson.Gson;
 import com.icuxika.AppUpdateTool;
+import com.icuxika.jni.NativeFXWindow;
 import com.icuxika.model.Latest;
 import com.icuxika.model.UpdateIndex;
 import com.icuxika.model.UpdateResult;
+import com.icuxika.util.SystemUtil;
 import javafx.concurrent.Task;
 
 import java.io.FileInputStream;
@@ -39,9 +41,13 @@ public class UpdateResultDownloadTask extends Task<UpdateResult> {
             }
             System.out.println(target);
             Path autoUpdateHelperExePath = target.resolve("AppUpdateTool.exe");
-            ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString());
-            Process process = processBuilder.start();
-            process.waitFor();
+            if (SystemUtil.isSystemPath(target)) {
+                NativeFXWindow.runAsAdmin(autoUpdateHelperExePath.toString(), "", target.toString(), true);
+            } else {
+                ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString());
+                Process process = processBuilder.start();
+                process.waitFor();
+            }
         } catch (URISyntaxException | IOException e) {
             throw new RuntimeException(e);
         }

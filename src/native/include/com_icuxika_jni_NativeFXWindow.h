@@ -101,6 +101,14 @@ Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning(JNIEnv *, jclass,
 JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
     JNIEnv *, jclass, jstring, jstring, jstring);
 
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    runAsAdmin
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+ */
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_runAsAdmin(
+    JNIEnv *, jclass, jstring, jstring, jstring, jboolean);
+
 #ifdef __cplusplus
 }
 #endif
