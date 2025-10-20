@@ -101,3 +101,16 @@ D:\Server
 之后如果用户点击`一键升级`，会将上述结果保存到`$env:LOCALAPPDATA\JavaFXPackageSample\update\latest.json`
 ，同时下载所有需要的新版本文件，之后退出程序同时启动`auto-update-helper.exe`，
 `auto-update-helper.exe`会读取`$env:LOCALAPPDATA\JavaFXPackageSample\update\latest.json`来执行文件的复制或删除操作完成更新然后重新启动程序。
+
+## 模块化构建
+
+模块化应用程序构建结果占用空间相比非模块化应用程序小很多，210 MB -> 135 MB
+MB，但模块化应用程序打包时目录结构与非模块化应用程序不一致，所有模块都被写入一个单独的特别大(110 MB)的
+`.\target\buildImage\JavaFXSample\runtime\lib\modules`文件中，部分更新时需要替换的文件尺寸占比太大。
+因此，本项目的应用程序更新逻辑对于模块化应用程序不那么适用了，相关代码也并未适配，
+但依旧可以基于此使用制作一个不那么大的应用程序安装包，新版本直接发布最新安装包重新安装即可。
+
+```
+.\BuildModular.ps1
+.\BuildInstaller.ps1
+```

@@ -19,13 +19,19 @@ public class SystemUtil {
         try {
             Path target;
             Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            System.out.println("============================================");
+            System.out.println(jarPath);
             if (jarPath.toString().contains("classes")) {
                 // 开发路径，应用程序映像已经生成，但依旧在 idea 中运行源码
                 target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve(SystemConstant.APP_IMAGE_NAME);
+            } else if (jarPath.startsWith("/modules/")) {
+                // 模块化打包
+                target = Path.of(System.getProperty("java.home")).getParent();
             } else {
-                // 执行应用程序映像中的程序
+                // 非模块化打包
                 target = Path.of(jarPath.toFile().getParentFile().getParent());
             }
+            System.out.println(target);
             return target;
         } catch (Exception e) {
             throw new RuntimeException(e);
