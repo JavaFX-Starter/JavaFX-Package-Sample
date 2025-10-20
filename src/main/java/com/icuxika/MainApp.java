@@ -2,6 +2,7 @@ package com.icuxika;
 
 import com.google.gson.Gson;
 import com.icuxika.jni.NativeFXWindow;
+import com.icuxika.util.SystemUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXSlider;
 import io.github.palexdev.materialfx.controls.MFXToggleButton;
@@ -43,7 +44,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
@@ -253,7 +253,7 @@ public class MainApp extends Application {
 
         // 更改显示语言时，windowName 也会改变，需要更新，但目前不做处理
         // FindWindow 的第二个参数 lpWindowName 可以为 NULL
-        Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
+        Path applicationDataPath = SystemUtil.getLocalAppData();
         if (!Files.exists(applicationDataPath)) {
             Files.createDirectories(applicationDataPath);
         }
@@ -342,8 +342,7 @@ public class MainApp extends Application {
 
     public static void main(String[] args) {
         if (NativeFXWindow.isApplicationRunning("JavaFXPackageSample")) {
-            Path applicationDataPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample");
-            Path configFilePath = applicationDataPath.resolve("config.properties");
+            Path configFilePath = SystemUtil.getLocalAppData().resolve("config.properties");
             Properties properties = new Properties();
             try (FileInputStream inputStream = new FileInputStream(configFilePath.toFile())) {
                 properties.load(inputStream);

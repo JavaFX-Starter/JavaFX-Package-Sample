@@ -1,6 +1,7 @@
 package com.icuxika;
 
 import com.google.gson.Gson;
+import com.icuxika.constant.SystemConstant;
 import com.icuxika.jni.NativeFXWindow;
 import com.icuxika.model.FileInfo;
 import com.icuxika.model.UpdateResult;
@@ -27,10 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -69,7 +68,7 @@ public class CheckUpdateStage extends Stage {
                     .map(FileInfo::path)
                     .collect(Collectors.toList());
             System.out.println(fileUrlList);
-            Path latestJsonPath = Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample").resolve("update").resolve("latest.json");
+            Path latestJsonPath = SystemUtil.getLocalAppDataUpdate().resolve("latest.json");
             try {
                 Files.writeString(latestJsonPath, gson.toJson(cacheUpdateResult));
             } catch (IOException e) {
@@ -77,24 +76,19 @@ public class CheckUpdateStage extends Stage {
             }
             // 下载
             Task<Void> task = new FileListDownloadTask(
-                    "http://127.0.0.1:8080/JavaFXSample",
+                    SystemConstant.UPDATE_SERVER,
                     cacheUpdateResult.version(),
                     fileUrlList,
-                    Paths.get(System.getenv("LOCALAPPDATA"), "JavaFXPackageSample").resolve("update"));
+                    SystemUtil.getLocalAppDataUpdate()
+            );
             task.setOnSucceeded(_ -> {
                 updateButton.setDisable(false);
                 // 重启
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     LOGGER.info("ShutdownHook 执行");
-                    Path target;
                     try {
-                        Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                        if (jarPath.toString().contains("classes")) {
-                            target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve("JavaFXSample");
-                        } else {
-                            target = Path.of(jarPath.toFile().getParentFile().getParent());
-                        }
-                        Path autoUpdateHelperExePath = target.resolve("auto-update-helper.exe");
+                        Path target = SystemUtil.getExePath();
+                        Path autoUpdateHelperExePath = SystemUtil.getAutoUpdateHelperExePath();
                         LOGGER.info("auto-update-helper.exe 路径: {}", autoUpdateHelperExePath);
                         String parameters = "--launch";
                         if (SystemUtil.isSystemPath(target)) {
@@ -103,7 +97,7 @@ public class CheckUpdateStage extends Stage {
                             ProcessBuilder processBuilder = new ProcessBuilder(autoUpdateHelperExePath.toString(), parameters);
                             processBuilder.start();
                         }
-                    } catch (URISyntaxException | IOException e) {
+                    } catch (IOException e) {
                         LOGGER.error(e.getMessage());
                         throw new RuntimeException(e);
                     }
@@ -137,7 +131,7 @@ public class CheckUpdateStage extends Stage {
         initModality(Modality.WINDOW_MODAL);
         initOwner(owner);
 
-        Task<UpdateResult> task = new UpdateResultDownloadTask("http://127.0.0.1:8080/JavaFXSample");
+        Task<UpdateResult> task = new UpdateResultDownloadTask(SystemConstant.UPDATE_SERVER);
         task.setOnSucceeded(_ -> {
             UpdateResult updateResult = task.getValue();
             cacheUpdateResult = updateResult;

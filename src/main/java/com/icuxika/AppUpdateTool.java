@@ -1,8 +1,10 @@
 package com.icuxika;
 
 import com.google.gson.Gson;
+import com.icuxika.constant.SystemConstant;
 import com.icuxika.model.FileInfo;
 import com.icuxika.model.UpdateIndex;
+import com.icuxika.util.SystemUtil;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -30,17 +32,20 @@ public class AppUpdateTool {
     );
 
     static void main(String[] args) {
-        Path target;
-        String appVersion;
+        Path target = SystemUtil.getExePath();
+        UpdateIndex updateIndex = generateUpdateIndex();
+        Gson gson = new Gson();
+        String json = gson.toJson(updateIndex);
         try {
-            Path jarPath = Path.of(AppUpdateTool.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (jarPath.toString().contains("classes")) {
-                target = Path.of(jarPath.toFile().getParent()).resolve("buildImage").resolve("JavaFXSample");
-            } else {
-                target = Path.of(jarPath.toFile().getParentFile().getParent());
-            }
-            System.out.println(target);
+            Files.writeString(target.resolve(SystemConstant.UPDATE_INDEX_FILE), json, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public static UpdateIndex generateUpdateIndex() {
+        Path target = SystemUtil.getExePath();
+        try (var files = Files.walk(target)) {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setNamespaceAware(true);
             DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
@@ -48,11 +53,8 @@ public class AppUpdateTool {
 
             XPathFactory xPathFactory = XPathFactory.newInstance();
             XPath xPath = xPathFactory.newXPath();
-            appVersion = xPath.evaluate("/jpackage-state/app-version", document);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        try (var files = Files.walk(target)) {
+            String appVersion = xPath.evaluate("/jpackage-state/app-version", document);
+
             List<FileInfo> fileInfoList = files
                     .filter(p -> excludePath.stream().noneMatch(k -> p.toString().contains(k)))
                     .filter(Files::isRegularFile)
@@ -61,13 +63,8 @@ public class AppUpdateTool {
                         return new FileInfo(relativePath.toString().replace(File.separator, "/"), getFileHash(path), getFileSize(path));
                     })
                     .toList();
-
-            UpdateIndex updateIndex = new UpdateIndex(appVersion, fileInfoList);
-
-            Gson gson = new Gson();
-            String json = gson.toJson(updateIndex);
-            Files.writeString(target.resolve("update-index.json"), json, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException e) {
+            return new UpdateIndex(appVersion, fileInfoList);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
