@@ -319,16 +319,10 @@ int main(int argc, char *argv[]) {
     });
     update.detach();
 
-    bool quit = false;
     MSG msg;
-    while (!quit) {
-        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            if (msg.message == WM_QUIT) {
-                quit = true;
-            }
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+    while (GetMessage(&msg, nullptr, 0, 0) > 0) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
     }
     return msg.wParam;
 }
