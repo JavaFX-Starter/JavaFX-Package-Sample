@@ -6,7 +6,7 @@
 
     <groupId>com.icuxika</groupId>
     <artifactId>JavaFX-Package-Sample</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,6 +95,11 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>tm4javafx</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 

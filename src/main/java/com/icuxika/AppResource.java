@@ -5,7 +5,10 @@ import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -78,5 +81,21 @@ public class AppResource {
      */
     public static URL load(String path) {
         return AppResource.class.getResource(path);
+    }
+
+    /**
+     * 从资源文件中读取字符串
+     * @param resource 资源文件相对路径
+     * @return 资源文件内容字符串
+     */
+    public static String readStringFromResource(String resource) {
+        try (InputStream inputStream = AppResource.class.getResourceAsStream(resource)) {
+            if (inputStream != null) {
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }

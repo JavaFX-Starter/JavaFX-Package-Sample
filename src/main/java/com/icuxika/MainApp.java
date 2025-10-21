@@ -1,6 +1,5 @@
 package com.icuxika;
 
-import com.google.gson.Gson;
 import com.icuxika.jni.NativeFXWindow;
 import com.icuxika.util.SystemUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -28,13 +27,22 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
+import jfx.incubator.scene.control.richtext.CodeArea;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tm4java.grammar.IGrammarSource;
+import tm4java.parser.ContentType;
+import tm4java.theme.IThemeSource;
+import tm4javafx.richtext.StatelessSyntaxDecorator;
+import tm4javafx.richtext.StyleHelper;
+import tm4javafx.richtext.StyleProvider;
+import tm4javafx.richtext.TextFlowModel;
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -51,8 +59,6 @@ import java.util.Properties;
 public class MainApp extends Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
-
-    private final Gson gson = new Gson();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -176,7 +182,8 @@ public class MainApp extends Application {
                 mfxToggleButton, addKeyEventButton, removeKeyEventButton,
                 hWndLabel, classNameLabel, windowNameLabel,
                 setTransparencyButton, unsetTransparencyButton,
-                slider, loginButton, checkUpdateButton
+                slider, loginButton, checkUpdateButton,
+                createTextFlow()
         );
 
         HeaderBar headerBar = new HeaderBar();
@@ -327,6 +334,58 @@ public class MainApp extends Application {
         label.setTextFill(Color.WHITE);
         label.setAlignment(Pos.CENTER);
         return label;
+    }
+
+    private StyleProvider createStyleProvider() {
+        String syntaxJson = AppResource.readStringFromResource("/richtext/syntaxes/java.tmLanguage.json");
+        String themeJson = AppResource.readStringFromResource("/richtext/themes/one-dark-pro.json");
+        // https://github.com/microsoft/vscode/tree/main/extensions/java/syntaxes
+        // https://github.com/mkpaz/tm4javafx
+        StyleProvider styleProvider = new StyleProvider();
+        styleProvider.setGrammar(IGrammarSource.fromString(ContentType.JSON, Objects.requireNonNull(syntaxJson)));
+        styleProvider.setTheme(IThemeSource.fromString(ContentType.JSON, Objects.requireNonNull(themeJson)));
+        return styleProvider;
+    }
+
+    private CodeArea createCodeArea() {
+        StyleProvider styleProvider = createStyleProvider();
+
+        StatelessSyntaxDecorator syntaxDecorator = new StatelessSyntaxDecorator();
+        syntaxDecorator.setStyleProvider(styleProvider);
+
+        CodeArea codeArea = new CodeArea();
+        codeArea.setLineNumbersEnabled(true);
+        codeArea.setContentPadding(new Insets(4));
+        codeArea.setBorder(new Border(new BorderStroke(Color.DODGERBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
+        codeArea.setSyntaxDecorator(syntaxDecorator);
+        codeArea.setText("""
+                public class Launcher {
+                    static void main(String[] args) {
+                        MainApp.main(args);
+                    }
+                }
+                """);
+        StyleHelper.applyThemeSettings(codeArea, styleProvider.getThemeSettings());
+        return codeArea;
+    }
+
+    private TextFlow createTextFlow() {
+        StyleProvider styleProvider = createStyleProvider();
+
+        TextFlow textFlow = new TextFlow();
+
+        TextFlowModel textFlowModel = new TextFlowModel();
+        textFlowModel.setTextFlow(textFlow);
+        textFlowModel.setStyleProvider(styleProvider);
+        textFlowModel.setText("""
+                public class Launcher {
+                    static void main(String[] args) {
+                        MainApp.main(args);
+                    }
+                }
+                """);
+        StyleHelper.applyThemeSettings(textFlow, styleProvider.getThemeSettings());
+        return textFlow;
     }
 
     /**

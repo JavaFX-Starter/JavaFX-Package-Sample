@@ -13,6 +13,8 @@ module sample {
     requires org.kordamp.ikonli.fontawesome5;
     requires org.kordamp.ikonli.fluentui;
     requires com.google.gson;
+    requires jfx.incubator.richtext;
+    requires tm4javafx;
 
     opens com.icuxika.model to com.google.gson;
 
