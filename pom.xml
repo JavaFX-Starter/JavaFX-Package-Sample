@@ -20,6 +20,20 @@
         <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>tm4e-snapshots</id>
+            <name>tm4e-snapshots</name>
+            <url>https://repo.eclipse.org/content/repositories/tm4e-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -97,9 +111,14 @@
             <version>2.13.2</version>
         </dependency>
         <dependency>
-            <groupId>io.github.mkpaz</groupId>
-            <artifactId>tm4javafx</artifactId>
-            <version>0.1.0</version>
+            <groupId>org.jruby.joni</groupId>
+            <artifactId>joni</artifactId>
+            <version>2.2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>org.eclipse.tm4e.core</artifactId>
+            <version>0.16.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

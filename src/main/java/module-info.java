@@ -14,7 +14,7 @@ module sample {
     requires org.kordamp.ikonli.fluentui;
     requires com.google.gson;
     requires jfx.incubator.richtext;
-    requires tm4javafx;
+    requires org.eclipse.tm4e.core;
 
     opens com.icuxika.model to com.google.gson;
 
