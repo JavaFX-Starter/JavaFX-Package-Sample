@@ -1,33 +1,21 @@
 package com.icuxika;
 
-import com.icuxika.jni.NativeFXWindow;
+import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import com.icuxika.richtext.TextMateSyntaxDecorator;
-import com.icuxika.util.SystemUtil;
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXSlider;
-import io.github.palexdev.materialfx.controls.MFXToggleButton;
-import io.github.palexdev.materialfx.enums.ButtonType;
-import io.github.palexdev.materialfx.enums.SliderEnums;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
-import javafx.beans.binding.When;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
@@ -37,17 +25,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Properties;
 
 public class MainApp extends Application {
 
@@ -70,113 +49,13 @@ public class MainApp extends Application {
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
-        MFXToggleButton mfxToggleButton = new MFXToggleButton();
-        mfxToggleButton.textProperty().bind(new When(mfxToggleButton.selectedProperty().isEqualTo(new SimpleBooleanProperty(true))).then("监听 Ctrl + Alt + T").otherwise("取消监听 Ctrl + Alt + T"));
-        mfxToggleButton.setDisable(true);
-
-        NativeFXWindow nativeFXWindow = new NativeFXWindow();
-
-        MFXButton addKeyEventButton = createButton("添加全局键盘事件");
-        addKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("add-global-key-event-listening"));
-        addKeyEventButton.setOnAction(_ -> {
-            mfxToggleButton.setSelected(true);
-            boolean success = nativeFXWindow.registerHotKey(1, 0x0002 | 0x0001, 0x54);
-            if (!success) {
-                LOGGER.error("[RegisterHotKey]注册快捷键失败");
-            }
-            LOGGER.info("注册快捷键成功: {}", success);
-        });
-
-        MFXButton removeKeyEventButton = createButton("移除全局键盘事件");
-        removeKeyEventButton.textProperty().bind(AppResource.getLanguageBinding("remove-global-key-event-listening"));
-        removeKeyEventButton.setOnAction(_ -> {
-            mfxToggleButton.setSelected(false);
-            boolean success = nativeFXWindow.unregisterHotKey(1);
-            if (!success) {
-                LOGGER.error("[UnregisterHotKey]注销快捷键失败");
-            }
-            LOGGER.info("注销快捷键成功: {}", success);
-        });
-
-        SimpleStringProperty hWndProperty = new SimpleStringProperty();
-        Label hWndLabel = createLabel();
-        hWndLabel.textProperty().bind(new SimpleStringProperty("Win32 hWnd: ").concat(hWndProperty));
-
-        SimpleStringProperty classNameProperty = new SimpleStringProperty();
-        Label classNameLabel = createLabel();
-        classNameLabel.textProperty().bind(new SimpleStringProperty("Win32 lpClassName: ").concat(classNameProperty));
-
-        SimpleStringProperty windowNameProperty = new SimpleStringProperty();
-        Label windowNameLabel = createLabel();
-        windowNameLabel.textProperty().bind(new SimpleStringProperty("Win32 lpWindowName: ").concat(windowNameProperty));
-
-        MFXButton setTransparencyButton = createButton("设置窗口半透明");
-        setTransparencyButton.textProperty().bind(AppResource.getLanguageBinding("set-window-transparency"));
-        setTransparencyButton.setBackground(new Background(
-                new BackgroundFill(
-                        new LinearGradient(
-                                0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
-                                new Stop(0.0, new Color(0.83, 0.85, 0.87, 1.0)),
-                                new Stop(1.0, new Color(0.24, 0.33, 0.41, 1.0))
-                        ), CornerRadii.EMPTY, Insets.EMPTY
-                )));
-        setTransparencyButton.setOnAction(_ -> nativeFXWindow.setWindowTransparency());
-
-        MFXButton unsetTransparencyButton = createButton("设置窗口不透明");
-        unsetTransparencyButton.textProperty().bind(AppResource.getLanguageBinding("unset-window-transparency"));
-        unsetTransparencyButton.setBackground(new Background(
-                new BackgroundFill(
-                        new LinearGradient(
-                                0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
-                                new Stop(0.0, new Color(0.83, 0.85, 0.87, 1.0)),
-                                new Stop(1.0, new Color(0.24, 0.33, 0.41, 1.0))
-                        ), CornerRadii.EMPTY, Insets.EMPTY
-                )));
-        unsetTransparencyButton.setOnAction(_ -> nativeFXWindow.unsetWindowTransparency());
-
-        MFXSlider slider = new MFXSlider();
-        slider.setMin(10);
-        slider.setMax(100);
-        slider.setValue(100);
-        slider.setPrefWidth(360);
-        slider.setTickUnit(10);
-        slider.setMinorTicksCount(5);
-        slider.setShowMajorTicks(true);
-        slider.setShowMinorTicks(true);
-        slider.setSliderMode(SliderEnums.SliderMode.SNAP_TO_TICKS);
-        slider.setOnMouseReleased(_ -> {
-            System.out.println(slider.getValue());
-            nativeFXWindow.setWindowTransparencyAlpha((int) slider.getValue());
-        });
-
-        MFXButton loginButton = createButton("登录");
-        loginButton.setOnAction(_ -> {
-            // 测试 OAuth 2.0 登录逻辑
-            // 服务端代码 https://github.com/icuxika/driftwood-cloud
-            try {
-                Desktop.getDesktop().browse(new URI("https://www.aprillie.com/driftwood-cloud/auth/oauth2/authorize?response_type=code&client_id=id_desktop_authorization_code"));
-            } catch (IOException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
         VBox vBox = new VBox();
-
-        MFXButton checkUpdateButton = createButton("检查更新");
-        checkUpdateButton.setOnAction(_ -> {
-            CheckUpdateStage checkUpdateStage = new CheckUpdateStage(primaryStage);
-            checkUpdateStage.showAndWait();
-        });
-
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(10);
         vBox.getChildren().addAll(
                 label, createComboBox(),
-                mfxToggleButton, addKeyEventButton, removeKeyEventButton,
-                hWndLabel, classNameLabel, windowNameLabel,
-                setTransparencyButton, unsetTransparencyButton,
-                slider, loginButton, checkUpdateButton,
-                createCodeArea()
+                createCodeArea(true), createCodeArea(false),
+                createTextFlow(true), createTextFlow(false)
         );
 
         HeaderBar headerBar = new HeaderBar();
@@ -232,39 +111,6 @@ public class MainApp extends Application {
         primaryStage.initStyle(StageStyle.EXTENDED);
         primaryStage.show();
 
-        nativeFXWindow.initialize(primaryStage);
-        hWndProperty.set(String.valueOf(nativeFXWindow.getHWnd()));
-        classNameProperty.set(nativeFXWindow.getClassName());
-        windowNameProperty.set(nativeFXWindow.getWindowName());
-
-        primaryStage.titleProperty().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                windowNameProperty.set(nativeFXWindow.getWindowName());
-            }
-        });
-
-        // 目前实现方式是通过发送 WM_COPYDATA 消息实现，程序如果以管理员模式启动，新实例以普通用户权限启动话，则无法接收消息
-        nativeFXWindow.setPrevInstanceCallConsumer(message -> FXUtil.runInFX(() -> {
-            // 展示新实例传递过来的参数
-            new Alert(Alert.AlertType.INFORMATION, message).showAndWait();
-        }));
-
-        nativeFXWindow.initialize();
-
-        // 更改显示语言时，windowName 也会改变，需要更新，但目前不做处理
-        // FindWindow 的第二个参数 lpWindowName 可以为 NULL
-        Path applicationDataPath = SystemUtil.getLocalAppData();
-        if (!Files.exists(applicationDataPath)) {
-            Files.createDirectories(applicationDataPath);
-        }
-        Path configFilePath = applicationDataPath.resolve("config.properties");
-        Properties properties = new Properties();
-        properties.setProperty("windowName", nativeFXWindow.getWindowName());
-        properties.setProperty("className", nativeFXWindow.getClassName());
-        try (FileOutputStream outputStream = new FileOutputStream(configFilePath.toFile())) {
-            properties.store(outputStream, "");
-        }
-
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
         LOGGER.info("[info]日志记录到logs/application.log中");
@@ -310,32 +156,18 @@ public class MainApp extends Application {
         return comboBox;
     }
 
-    private MFXButton createButton(String text) {
-        MFXButton mfxButton = new MFXButton(text);
-        mfxButton.setPrefHeight(40);
-        mfxButton.setButtonType(ButtonType.FLAT);
-        mfxButton.setTextFill(Color.WHITE);
-        mfxButton.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(4), Insets.EMPTY)));
-        return mfxButton;
-    }
-
-    private Label createLabel() {
-        Label label = new Label();
-        label.setPrefHeight(40);
-        label.setPadding(new Insets(0, 4, 0, 4));
-        label.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        label.setTextFill(Color.WHITE);
-        label.setAlignment(Pos.CENTER);
-        return label;
-    }
-
-    private CodeArea createCodeArea() {
+    private CodeArea createCodeArea(boolean isLight) {
         CodeArea codeArea = new CodeArea();
         codeArea.setLineNumbersEnabled(true);
         codeArea.setContentPadding(new Insets(4));
         codeArea.setBorder(new Border(new BorderStroke(Color.DODGERBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
         // https://github.com/microsoft/vscode/tree/main/extensions/java/syntaxes
-        codeArea.setSyntaxDecorator(new TextMateSyntaxDecorator("/richtext/syntaxes/java.tmLanguage.json"));
+        // https://github.com/microsoft/vscode/tree/main/extensions/theme-defaults/themes
+        codeArea.setSyntaxDecorator(new TextMateSyntaxDecorator(
+                codeArea,
+                "/richtext/syntaxes/java.tmLanguage.json",
+                isLight ? "/richtext/themes/light_vs.json" : "/richtext/themes/dark_vs.json"
+        ));
         codeArea.setText("""
                 package com.icuxika;
                 
@@ -347,6 +179,23 @@ public class MainApp extends Application {
                 }
                 """);
         return codeArea;
+    }
+
+    private TextFlow createTextFlow(boolean isLight) {
+        TextFlowSyntaxDecorator textFlowSyntaxDecorator = new TextFlowSyntaxDecorator(
+                "/richtext/syntaxes/java.tmLanguage.json",
+                isLight ? "/richtext/themes/light_vs.json" : "/richtext/themes/dark_vs.json"
+        );
+        return textFlowSyntaxDecorator.highlight("""
+                package com.icuxika;
+                
+                public class Launcher {
+                
+                    static void main(String[] args) {
+                        MainApp.main(args);
+                    }
+                }
+                """);
     }
 
     /**
@@ -361,21 +210,6 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
-        if (NativeFXWindow.isApplicationRunning("JavaFXPackageSample")) {
-            Path configFilePath = SystemUtil.getLocalAppData().resolve("config.properties");
-            Properties properties = new Properties();
-            try (FileInputStream inputStream = new FileInputStream(configFilePath.toFile())) {
-                properties.load(inputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            LOGGER.info("已存在实例，窗口名称: {}", properties.getProperty("windowName"));
-            LOGGER.info("已存在实例，类名: {}", properties.getProperty("className"));
-            NativeFXWindow.callPrevInstance("参数", properties.getProperty("className"), properties.getProperty("windowName"));
-            LOGGER.info("已有实例运行，本进程退出");
-            System.exit(0);
-        }
-
         // 启用 HeaderBar 预览功能
         System.setProperty("javafx.enablePreview", "true");
         System.setProperty("javafx.suppressPreviewWarning", "true");

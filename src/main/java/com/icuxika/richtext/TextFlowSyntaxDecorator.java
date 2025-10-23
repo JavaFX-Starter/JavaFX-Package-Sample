@@ -6,12 +6,8 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
-import jfx.incubator.scene.control.richtext.CodeArea;
-import jfx.incubator.scene.control.richtext.SyntaxDecorator;
-import jfx.incubator.scene.control.richtext.TextPos;
-import jfx.incubator.scene.control.richtext.model.CodeTextModel;
-import jfx.incubator.scene.control.richtext.model.RichParagraph;
-import jfx.incubator.scene.control.richtext.model.StyleAttributeMap;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.eclipse.tm4e.core.grammar.IGrammar;
 import org.eclipse.tm4e.core.grammar.IStateStack;
 import org.eclipse.tm4e.core.internal.grammar.ScopeStack;
@@ -22,33 +18,27 @@ import org.eclipse.tm4e.core.registry.IGrammarSource;
 import org.eclipse.tm4e.core.registry.IThemeSource;
 import org.eclipse.tm4e.core.registry.Registry;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextMateSyntaxDecorator implements SyntaxDecorator {
-
-    private final AtomicReference<IStateStack> prevStack = new AtomicReference<>();
-
-    private final Map<String, StyleAttributeMap> styleMap = new HashMap<>();
+public class TextFlowSyntaxDecorator {
 
     private final IGrammar grammar;
 
     private final Theme theme;
 
+    String editorBackgroundString = "#FFFFFF";
     String editorForegroundString = "#FFFFFF";
 
-    public TextMateSyntaxDecorator(CodeArea codeArea, String syntaxResource, String themeResource) {
+    public TextFlowSyntaxDecorator(String syntaxResource, String themeResource) {
         final var registry = new Registry();
         grammar = registry.addGrammar(IGrammarSource.fromString(
                 IGrammarSource.ContentType.JSON,
                 Objects.requireNonNull(AppResource.readStringFromResource(syntaxResource)))
         );
 
-        String editorBackgroundString = "#FFFFFF";
         try {
             String themeJson = Objects.requireNonNull(AppResource.readStringFromResource(themeResource));
 
@@ -71,50 +61,46 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        codeArea.setBackground(new Background(new BackgroundFill(Color.web(editorBackgroundString), CornerRadii.EMPTY, Insets.EMPTY)));
     }
 
-    @Override
-    public RichParagraph createRichParagraph(CodeTextModel model, int index) {
-        String text = model.getPlainText(index);
-        RichParagraph.Builder builder = RichParagraph.builder();
-        if (text.isEmpty()) {
-            return builder.build();
-        }
-        final var result = grammar.tokenizeLine(text, prevStack.get(), null);
-        prevStack.set(result.getRuleStack());
+    public TextFlow highlight(String code) {
+        TextFlow textFlow = new TextFlow();
 
-        int lastEnd = 0;
-        for (var token : result.getTokens()) {
-            int start = token.getStartIndex();
-            int end = token.getEndIndex();
+        final var prevStack = new AtomicReference<IStateStack>();
 
-            if (start > lastEnd) {
-                builder.addSegment(text, lastEnd, start, null);
+        Pattern.compile("\\r?\\n").splitAsStream(code).forEach(line -> {
+            final var tokenized = grammar.tokenizeLine(line, prevStack.get(), null);
+            prevStack.set(tokenized.getRuleStack());
+            if (!line.isEmpty()) {
+                int lastEnd = 0;
+                for (var token : tokenized.getTokens()) {
+                    int start = token.getStartIndex();
+                    int end = token.getEndIndex();
+
+                    if (start > lastEnd) {
+                        Text text = new Text(line.substring(lastEnd, start));
+                        text.setFill(Color.web(editorForegroundString));
+                        textFlow.getChildren().add(text);
+                    }
+
+                    String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
+                    Text text = new Text(line.substring(start, end));
+                    System.out.println(text);
+                    text.setFill(getColor(scope));
+                    textFlow.getChildren().add(text);
+                    lastEnd = end;
+                }
+                if (lastEnd < line.length()) {
+                    Text text = new Text(line.substring(lastEnd));
+                    text.setFill(Color.web(editorForegroundString));
+                    textFlow.getChildren().add(text);
+                }
             }
-            String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
-            builder.addSegment(text, start, end, getStyle(scope));
+            textFlow.getChildren().add(new Text(System.lineSeparator()));
+        });
 
-            lastEnd = end;
-        }
-
-        if (lastEnd < text.length()) {
-            builder.addSegment(text, lastEnd, text.length(), null);
-        }
-        return builder.build();
-    }
-
-    @Override
-    public void handleChange(CodeTextModel m, TextPos start, TextPos end, int charsTop, int linesAdded, int charsBottom) {
-
-    }
-
-    public IGrammar getGrammar() {
-        return grammar;
-    }
-
-    private StyleAttributeMap getStyle(String scope) {
-        return styleMap.computeIfAbsent(scope, s -> StyleAttributeMap.builder().setTextColor(getColor(s)).build());
+        textFlow.setBackground(new Background(new BackgroundFill(Color.web(editorBackgroundString), CornerRadii.EMPTY, Insets.EMPTY)));
+        return textFlow;
     }
 
     private Color getColor(String scope) {
