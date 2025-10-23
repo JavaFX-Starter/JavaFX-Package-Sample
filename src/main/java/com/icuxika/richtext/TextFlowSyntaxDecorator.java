@@ -85,7 +85,6 @@ public class TextFlowSyntaxDecorator {
 
                     String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
                     Text text = new Text(line.substring(start, end));
-                    System.out.println(text);
                     text.setFill(getColor(scope));
                     textFlow.getChildren().add(text);
                     lastEnd = end;

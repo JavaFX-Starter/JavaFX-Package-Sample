@@ -25,13 +25,12 @@ import org.eclipse.tm4e.core.registry.Registry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextMateSyntaxDecorator implements SyntaxDecorator {
 
-    private final AtomicReference<IStateStack> prevStack = new AtomicReference<>();
+    private final Map<Integer, IStateStack> stateStackMap = new HashMap<>();
 
     private final Map<String, StyleAttributeMap> styleMap = new HashMap<>();
 
@@ -81,17 +80,25 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         if (text.isEmpty()) {
             return builder.build();
         }
-        final var result = grammar.tokenizeLine(text, prevStack.get(), null);
-        prevStack.set(result.getRuleStack());
+        IStateStack prevStack = index > 0 ? stateStackMap.get(index - 1) : null;
+        final var result = grammar.tokenizeLine(text, prevStack, null);
+        stateStackMap.put(index, result.getRuleStack());
+
+        int textLength = text.length();
 
         int lastEnd = 0;
         for (var token : result.getTokens()) {
-            int start = token.getStartIndex();
-            int end = token.getEndIndex();
+            int start = Math.min(token.getStartIndex(), token.getStartIndex());
+            int end = Math.min(token.getEndIndex(), textLength);
+
+            if (start >= textLength || end <= start) {
+                continue;
+            }
 
             if (start > lastEnd) {
                 builder.addSegment(text, lastEnd, start, null);
             }
+
             String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
             builder.addSegment(text, start, end, getStyle(scope));
 
@@ -99,14 +106,27 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         }
 
         if (lastEnd < text.length()) {
-            builder.addSegment(text, lastEnd, text.length(), null);
+            builder.addSegment(text, lastEnd, textLength, null);
         }
         return builder.build();
     }
 
     @Override
     public void handleChange(CodeTextModel m, TextPos start, TextPos end, int charsTop, int linesAdded, int charsBottom) {
-
+        int startLine = start.index();
+        if (linesAdded != 0) {
+            Map<Integer, IStateStack> newStateStackMap = new HashMap<>();
+            for (Map.Entry<Integer, IStateStack> entry : stateStackMap.entrySet()) {
+                int lineNum = entry.getKey();
+                if (lineNum < startLine) {
+                    newStateStackMap.put(lineNum, entry.getValue());
+                }
+            }
+            stateStackMap.clear();
+            stateStackMap.putAll(newStateStackMap);
+        } else {
+            stateStackMap.keySet().removeIf(p -> p >= startLine);
+        }
     }
 
     public IGrammar getGrammar() {
