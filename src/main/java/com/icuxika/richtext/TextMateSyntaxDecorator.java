@@ -9,6 +9,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
+import javafx.scene.text.Font;
 import jfx.incubator.scene.control.richtext.CodeArea;
 import jfx.incubator.scene.control.richtext.SyntaxDecorator;
 import jfx.incubator.scene.control.richtext.TextPos;
@@ -93,6 +94,7 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
                 });
             }
         });
+        codeArea.setFont(new Font("HarmonyOS Sans SC", 14));
     }
 
     @Override

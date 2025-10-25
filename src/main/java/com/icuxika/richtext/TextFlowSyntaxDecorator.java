@@ -99,6 +99,10 @@ public class TextFlowSyntaxDecorator {
         });
 
         textFlow.setBackground(new Background(new BackgroundFill(Color.web(editorBackgroundString), CornerRadii.EMPTY, Insets.EMPTY)));
+        textFlow.setStyle("""
+                -fx-font-family: "HarmonyOS Sans SC";
+                -fx-font-size: 14;
+                """);
         return textFlow;
     }
 
