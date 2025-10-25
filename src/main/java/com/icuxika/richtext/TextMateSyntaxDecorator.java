@@ -44,6 +44,7 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
 
     String editorForegroundString = "#FFFFFF";
     String editorSelectionHighlightBackgroundString = "#ADD6FF80";
+    String editorInactiveSelectionBackgroundString = "#ADD6FF80";
 
     public TextMateSyntaxDecorator(CodeArea codeArea, String syntaxResource, String themeResource) {
         final var registry = new Registry();
@@ -74,6 +75,12 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
                 editorSelectionHighlightBackgroundString = selectionHighlightBackgroundMatcher.group(1);
             }
 
+            Pattern inactiveSelectionBackgroundPattern = Pattern.compile("\"editor\\.inactiveSelectionBackground\"\\s*:\\s*\"(#[0-9a-fA-F]{3,8})\"");
+            Matcher inactiveSelectionBackgroundMatcher = inactiveSelectionBackgroundPattern.matcher(themeJson);
+            if (inactiveSelectionBackgroundMatcher.find()) {
+                editorInactiveSelectionBackgroundString = inactiveSelectionBackgroundMatcher.group(1);
+            }
+
             theme = Theme.createFromRawTheme(RawThemeReader.readTheme(IThemeSource.fromString(
                     IThemeSource.ContentType.JSON,
                     themeJson)
@@ -99,9 +106,20 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
                         path.setStroke(Color.web(editorForegroundString));
                         path.setFill(Color.web(editorForegroundString));
                     }
+
+                    // 光标所在行颜色
+                    Node caretLineNode = codeArea.lookup(".caret-line");
+                    if (caretLineNode instanceof Path path) {
+                        path.setStroke(Color.web(editorInactiveSelectionBackgroundString));
+                        path.setFill(Color.web(editorInactiveSelectionBackgroundString));
+                    }
+
                 });
             }
         });
+        // 开启高亮当前行
+        codeArea.setHighlightCurrentParagraph(true);
+        // 设置字体
         codeArea.setFont(new Font("HarmonyOS Sans SC", 14));
     }
 
