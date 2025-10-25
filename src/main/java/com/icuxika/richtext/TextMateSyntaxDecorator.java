@@ -86,10 +86,18 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
             if (newValue != null) {
                 FXUtil.runInFX(() -> {
                     // com.sun.jfx.incubator.scene.control.richtext.VFlow
-                    Node pathNode = codeArea.lookup(".selection-highlight");
-                    if (pathNode instanceof Path path) {
+                    // 文本选中区颜色
+                    Node selectionHighlightNode = codeArea.lookup(".selection-highlight");
+                    if (selectionHighlightNode instanceof Path path) {
                         path.setStroke(Color.web(editorSelectionHighlightBackgroundString));
                         path.setFill(Color.web(editorSelectionHighlightBackgroundString));
+                    }
+
+                    // 光标颜色
+                    Node caretNode = codeArea.lookup(".caret");
+                    if (caretNode instanceof Path path) {
+                        path.setStroke(Color.web(editorForegroundString));
+                        path.setFill(Color.web(editorForegroundString));
                     }
                 });
             }
