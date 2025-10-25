@@ -139,6 +139,7 @@
                                 <manifest>
                                     <mainClass>${mainClass}</mainClass>
                                     <addClasspath>true</addClasspath>
+                                    <useUniqueVersions>false</useUniqueVersions>
                                 </manifest>
                             </archive>
                             <excludes>
