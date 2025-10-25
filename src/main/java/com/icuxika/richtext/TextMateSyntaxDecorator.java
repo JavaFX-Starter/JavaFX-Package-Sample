@@ -1,11 +1,14 @@
 package com.icuxika.richtext;
 
 import com.icuxika.AppResource;
+import com.icuxika.FXUtil;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
 import jfx.incubator.scene.control.richtext.CodeArea;
 import jfx.incubator.scene.control.richtext.SyntaxDecorator;
 import jfx.incubator.scene.control.richtext.TextPos;
@@ -39,6 +42,7 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
     private final Theme theme;
 
     String editorForegroundString = "#FFFFFF";
+    String editorSelectionHighlightBackgroundString = "#ADD6FF80";
 
     public TextMateSyntaxDecorator(CodeArea codeArea, String syntaxResource, String themeResource) {
         final var registry = new Registry();
@@ -63,6 +67,12 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
                 editorForegroundString = foregroundMatcher.group(1);
             }
 
+            Pattern selectionHighlightBackgroundPattern = Pattern.compile("\"editor\\.selectionHighlightBackground\"\\s*:\\s*\"(#[0-9a-fA-F]{3,8})\"");
+            Matcher selectionHighlightBackgroundMatcher = selectionHighlightBackgroundPattern.matcher(themeJson);
+            if (selectionHighlightBackgroundMatcher.find()) {
+                editorSelectionHighlightBackgroundString = selectionHighlightBackgroundMatcher.group(1);
+            }
+
             theme = Theme.createFromRawTheme(RawThemeReader.readTheme(IThemeSource.fromString(
                     IThemeSource.ContentType.JSON,
                     themeJson)
@@ -71,6 +81,18 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
             throw new RuntimeException(e);
         }
         codeArea.setBackground(new Background(new BackgroundFill(Color.web(editorBackgroundString), CornerRadii.EMPTY, Insets.EMPTY)));
+        codeArea.skinProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                FXUtil.runInFX(() -> {
+                    // com.sun.jfx.incubator.scene.control.richtext.VFlow
+                    Node pathNode = codeArea.lookup(".selection-highlight");
+                    if (pathNode instanceof Path path) {
+                        path.setStroke(Color.web(editorSelectionHighlightBackgroundString));
+                        path.setFill(Color.web(editorSelectionHighlightBackgroundString));
+                    }
+                });
+            }
+        });
     }
 
     @Override
