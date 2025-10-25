@@ -1,5 +1,6 @@
 package com.icuxika;
 
+import com.icuxika.constant.Theme;
 import com.icuxika.i18n.ObservableResourceBundleFactory;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -97,5 +98,19 @@ public class AppResource {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    private static final ObjectProperty<Theme> theme = new SimpleObjectProperty<>();
+
+    public static ObjectProperty<Theme> themeProperty() {
+        return theme;
+    }
+
+    public static void setTheme(Theme value) {
+        theme.set(value);
+    }
+
+    public static Theme getTheme() {
+        return theme.get();
     }
 }

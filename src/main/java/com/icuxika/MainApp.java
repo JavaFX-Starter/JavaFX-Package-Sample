@@ -1,11 +1,13 @@
 package com.icuxika;
 
+import com.icuxika.constant.Theme;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import com.icuxika.richtext.TextMateSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
+import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -37,6 +39,7 @@ public class MainApp extends Application {
         // 需要创建一份内容与LanguageResource.properties一致的LanguageResource_zh_CN.properties文件，否则在不是中文作为系统语言的操作系统上，中文语言绑定将无法正常运行
         // 同时最好准备一份字体用来渲染文字，沙盒中测试缺少字体的情况中文文字无法显示
         AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE);
+        AppResource.setTheme(Theme.LIGHT);
 
         UserAgentBuilder.builder()
                 .themes(JavaFXThemes.MODENA)
@@ -75,6 +78,33 @@ public class MainApp extends Application {
         trailing.setPrefWidth(36);
         headerBar.setTrailing(trailing);
 
+        HBox trailingWrapper = new HBox();
+        trailingWrapper.setAlignment(Pos.CENTER);
+
+        Button themeButton = new Button();
+        var sunnyIcon = new FontIcon(FluentUiRegularMZ.WEATHER_SUNNY_24);
+        sunnyIcon.setIconSize(16);
+        sunnyIcon.setIconColor(Color.RED);
+        var moonIcon = new FontIcon(FluentUiRegularMZ.WEATHER_MOON_24);
+        moonIcon.setIconSize(16);
+        moonIcon.setIconColor(Color.YELLOW);
+        themeButton.setStyle("-fx-background-color: transparent;");
+        themeButton.graphicProperty().bind(new When(AppResource.themeProperty().isEqualTo(Theme.LIGHT)).then(sunnyIcon).otherwise(moonIcon));
+        themeButton.hoverProperty().addListener((_, _, newValue) -> {
+            if (newValue) {
+                themeButton.setStyle("-fx-background-color: rgba(0,0,0,0.1);");
+            } else {
+                themeButton.setStyle("-fx-background-color: transparent;");
+            }
+        });
+        themeButton.setOnAction(_ -> {
+            if (AppResource.getTheme() == Theme.LIGHT) {
+                AppResource.setTheme(Theme.DARK);
+            } else {
+                AppResource.setTheme(Theme.LIGHT);
+            }
+        });
+
         Button pinToTopBtn = new Button();
         var icon = new FontIcon(FluentUiRegularMZ.PIN_12);
         icon.setIconSize(16);
@@ -95,7 +125,8 @@ public class MainApp extends Application {
                 icon.setIconColor(Color.BLACK);
             }
         });
-        trailing.getChildren().add(pinToTopBtn);
+        trailingWrapper.getChildren().addAll(themeButton, pinToTopBtn);
+        trailing.getChildren().add(trailingWrapper);
 
         HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
         HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
