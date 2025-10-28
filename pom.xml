@@ -297,7 +297,7 @@
                                         </argument>
                                         <argument>--add-modules</argument>
                                         <argument>
-                                            MaterialFX,com.google.gson,java.base,java.xml,javafx.base,javafx.controls,javafx.graphics,jfx.incubator.richtext,org.eclipse.tm4e.core,org.kordamp.ikonli.core,org.kordamp.ikonli.fluentui,org.kordamp.ikonli.javafx,org.slf4j
+                                            MaterialFX,com.google.gson,java.base,jfx.incubator.richtext,org.eclipse.tm4e.core,org.kordamp.ikonli.fluentui,org.kordamp.ikonli.javafx,org.slf4j
                                         </argument>
                                         <argument>--add-modules</argument>
                                         <argument>org.jruby.joni</argument>
