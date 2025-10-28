@@ -211,6 +211,67 @@
                         </configuration>
                     </plugin>
                     <plugin>
+                        <groupId>org.moditect</groupId>
+                        <artifactId>moditect-maven-plugin</artifactId>
+                        <version>1.0.0.Final</version>
+                        <executions>
+                            <execution>
+                                <id>add-module-infos</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>add-module-info</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                                    <modules>
+                                        <module>
+                                            <artifact>
+                                                <groupId>org.eclipse</groupId>
+                                                <artifactId>org.eclipse.tm4e.core</artifactId>
+                                                <version>0.16.0-SNAPSHOT</version>
+                                            </artifact>
+                                            <moduleInfoSource>
+                                                module org.eclipse.tm4e.core {
+                                                requires org.jruby.joni;
+                                                requires com.google.gson;
+                                                requires org.snakeyaml.engine.v2;
+                                                requires java.xml;
+                                                requires jdk.xml.dom;
+                                                exports org.eclipse.tm4e.core;
+                                                exports org.eclipse.tm4e.core.grammar;
+                                                exports org.eclipse.tm4e.core.internal.grammar;
+                                                exports org.eclipse.tm4e.core.internal.grammar.dependencies;
+                                                exports org.eclipse.tm4e.core.internal.grammar.raw;
+                                                exports org.eclipse.tm4e.core.internal.grammar.tokenattrs;
+                                                exports org.eclipse.tm4e.core.internal.matcher;
+                                                exports org.eclipse.tm4e.core.internal.oniguruma;
+                                                exports org.eclipse.tm4e.core.internal.parser;
+                                                exports org.eclipse.tm4e.core.internal.registry;
+                                                exports org.eclipse.tm4e.core.internal.rule;
+                                                exports org.eclipse.tm4e.core.internal.theme;
+                                                exports org.eclipse.tm4e.core.internal.theme.css;
+                                                exports org.eclipse.tm4e.core.internal.theme.css.sac;
+                                                exports org.eclipse.tm4e.core.internal.theme.css.util;
+                                                exports org.eclipse.tm4e.core.internal.theme.raw;
+                                                exports org.eclipse.tm4e.core.internal.utils;
+                                                exports org.eclipse.tm4e.core.model;
+                                                exports org.eclipse.tm4e.core.registry;
+                                                exports org.eclipse.tm4e.core.theme;
+                                                exports org.eclipse.tm4e.core.theme.css;
+                                                }
+                                            </moduleInfoSource>
+                                        </module>
+                                    </modules>
+                                    <jdepsExtraArgs>
+                                        <arg>--ignore-missing-deps</arg>
+                                        <arg>--multi-release</arg>
+                                        <arg>9</arg>
+                                    </jdepsExtraArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>3.0.0</version>
@@ -232,12 +293,14 @@
                                         <argument>app-image</argument>
                                         <argument>-p</argument>
                                         <argument>
-                                            ${project.build.directory}/jars
+                                            ${project.build.directory}/jars${path.separator}${project.build.directory}/modules
                                         </argument>
                                         <argument>--add-modules</argument>
                                         <argument>
-                                            MaterialFX,com.google.gson,java.base,org.kordamp.ikonli.fluentui,org.kordamp.ikonli.javafx,org.slf4j
+                                            MaterialFX,com.google.gson,java.base,java.xml,javafx.base,javafx.controls,javafx.graphics,jfx.incubator.richtext,org.eclipse.tm4e.core,org.kordamp.ikonli.core,org.kordamp.ikonli.fluentui,org.kordamp.ikonli.javafx,org.slf4j
                                         </argument>
+                                        <argument>--add-modules</argument>
+                                        <argument>org.jruby.joni</argument>
                                         <argument>-m</argument>
                                         <argument>${moduleName}/${mainClass}</argument>
                                         <argument>--dest</argument>
@@ -264,6 +327,8 @@
                                         <argument>--no-man-pages</argument>
                                         <argument>--jlink-options</argument>
                                         <argument>--strip-debug</argument>
+                                        <argument>--jlink-options</argument>
+                                        <argument>--ignore-signing-information</argument>
                                         <argument>--verbose</argument>
                                     </arguments>
                                 </configuration>
@@ -320,11 +385,11 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeArtifactIds>org.eclipse.tm4e.core</excludeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>
