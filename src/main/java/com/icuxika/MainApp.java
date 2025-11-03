@@ -1,8 +1,9 @@
 package com.icuxika;
 
 import com.icuxika.constant.Theme;
+import com.icuxika.lsp.DiagnosticMessage;
+import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
-import com.icuxika.richtext.TextMateSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
@@ -21,7 +22,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
-import jfx.incubator.scene.control.richtext.CodeArea;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
@@ -52,12 +52,26 @@ public class MainApp extends Application {
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
+        String code = """
+                package com.icuxika;
+                
+                public class Launcher {
+                
+                    static void main(String[] args) {
+                        MainApp.main(args);
+                    }
+                }
+                """;
+        LSPCodeArea lspCodeArea = new LSPCodeArea(true, code);
+        Button testButton = new Button("测试");
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
-        vBox.setSpacing(10);
+        vBox.setSpacing(8);
         vBox.getChildren().addAll(
                 label, createComboBox(),
-                createCodeArea(true), createCodeArea(false),
+                testButton, lspCodeArea,
+                new LSPCodeArea(false, code),
                 createTextFlow(true), createTextFlow(false)
         );
 
@@ -142,6 +156,22 @@ public class MainApp extends Application {
         primaryStage.initStyle(StageStyle.EXTENDED);
         primaryStage.show();
 
+        testButton.setOnAction(event -> {
+            lspCodeArea.applyChange(new DiagnosticMessage(
+                    5, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
+            ));
+            new Thread(() -> {
+                try {
+                    Thread.sleep(2000);
+                    FXUtil.runInFX(lspCodeArea::clearLastChange);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
+        });
+        lspCodeArea.startLanguageServer();
+        primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
+
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
         LOGGER.info("[info]日志记录到logs/application.log中");
@@ -185,31 +215,6 @@ public class MainApp extends Application {
             }
         });
         return comboBox;
-    }
-
-    private CodeArea createCodeArea(boolean isLight) {
-        CodeArea codeArea = new CodeArea();
-        codeArea.setLineNumbersEnabled(true);
-        codeArea.setContentPadding(new Insets(4));
-        codeArea.setBorder(new Border(new BorderStroke(Color.DODGERBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
-        // https://github.com/microsoft/vscode/tree/main/extensions/java/syntaxes
-        // https://github.com/microsoft/vscode/tree/main/extensions/theme-defaults/themes
-        codeArea.setSyntaxDecorator(new TextMateSyntaxDecorator(
-                codeArea,
-                "/richtext/syntaxes/java.tmLanguage.json",
-                isLight ? "/richtext/themes/light_vs.json" : "/richtext/themes/dark_vs.json"
-        ));
-        codeArea.setText("""
-                package com.icuxika;
-                
-                public class Launcher {
-                
-                    static void main(String[] args) {
-                        MainApp.main(args);
-                    }
-                }
-                """);
-        return codeArea;
     }
 
     private TextFlow createTextFlow(boolean isLight) {

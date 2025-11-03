@@ -2,6 +2,7 @@ package com.icuxika.richtext;
 
 import com.icuxika.AppResource;
 import com.icuxika.FXUtil;
+import com.icuxika.lsp.DiagnosticMessage;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.Background;
@@ -25,14 +26,16 @@ import org.eclipse.tm4e.core.internal.theme.raw.RawThemeReader;
 import org.eclipse.tm4e.core.registry.IGrammarSource;
 import org.eclipse.tm4e.core.registry.IThemeSource;
 import org.eclipse.tm4e.core.registry.Registry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextMateSyntaxDecorator implements SyntaxDecorator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TextMateSyntaxDecorator.class);
 
     private final Map<Integer, IStateStack> stateStackMap = new HashMap<>();
 
@@ -45,6 +48,8 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
     String editorForegroundString = "#FFFFFF";
     String editorSelectionHighlightBackgroundString = "#ADD6FF80";
     String editorInactiveSelectionBackgroundString = "#ADD6FF80";
+
+    private final List<DiagnosticMessage> diagnosticMessageList = new ArrayList<>();
 
     public TextMateSyntaxDecorator(CodeArea codeArea, String syntaxResource, String themeResource) {
         final var registry = new Registry();
@@ -134,23 +139,32 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         final var result = grammar.tokenizeLine(text, prevStack, null);
         stateStackMap.put(index, result.getRuleStack());
 
+        DiagnosticMessage diagnosticMessage = diagnosticMessageList.stream().filter(p -> p.startLine() == index).findFirst().orElse(null);
+
         int textLength = text.length();
 
         int lastEnd = 0;
         for (var token : result.getTokens()) {
-            int start = Math.min(token.getStartIndex(), token.getStartIndex());
+            int start = Math.min(token.getStartIndex(), textLength);
             int end = Math.min(token.getEndIndex(), textLength);
 
-            if (start >= textLength || end <= start) {
-                continue;
-            }
+            if (diagnosticMessage != null &&
+                    (diagnosticMessage.startCharacter() >= start && diagnosticMessage.startCharacter() <= end) &&
+                    (diagnosticMessage.endCharacter() > start && diagnosticMessage.endCharacter() >= lastEnd && diagnosticMessage.endCharacter() <= end)) {
+                LOGGER.trace("[{},{}] of [{}], {}", start, end, text, diagnosticMessage);
+                builder.addSegment(text, start, end, StyleAttributeMap.builder().setUnderline(true).setTextColor(Color.RED).build());
+            } else {
+                if (start >= textLength || end <= start) {
+                    continue;
+                }
 
-            if (start > lastEnd) {
-                builder.addSegment(text, lastEnd, start, null);
-            }
+                if (start > lastEnd) {
+                    builder.addSegment(text, lastEnd, start, null);
+                }
 
-            String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
-            builder.addSegment(text, start, end, getStyle(scope));
+                String scope = token.getScopes().isEmpty() ? "" : token.getScopes().getLast();
+                builder.addSegment(text, start, end, getStyle(scope));
+            }
 
             lastEnd = end;
         }
@@ -158,6 +172,7 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         if (lastEnd < text.length()) {
             builder.addSegment(text, lastEnd, textLength, null);
         }
+
         return builder.build();
     }
 
@@ -196,5 +211,10 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
             }
         }
         return Color.web(editorForegroundString);
+    }
+
+    public void updateDiagnosticMessage(List<DiagnosticMessage> list) {
+        diagnosticMessageList.clear();
+        diagnosticMessageList.addAll(list);
     }
 }
