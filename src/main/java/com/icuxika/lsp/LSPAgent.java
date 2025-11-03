@@ -9,13 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,6 +26,7 @@ public class LSPAgent {
     private static final Logger LOGGER = LoggerFactory.getLogger(LSPAgent.class);
 
     private static final String JDT_HOME = "C:\\CommandLineTools\\Java\\jdt-language-server-1.9.0";
+    private static final String JAVA_HOME = "C:\\CommandLineTools\\Java\\jdk-21";
 
     private Path tempWorkspace;
     private Process process;
@@ -41,17 +38,63 @@ public class LSPAgent {
 
     private Consumer<DiagnosticMessage> diagnosticMessageConsumer;
 
+    public static final String DEMO_CODE = """
+            package com.example;
+            
+            /**
+             * Hello world!
+             *
+             */
+            public class App {
+                public static void main(String[] args) {
+                    System.out.println("Hello World!");
+                }
+            }
+            
+            """;
+
+    private final String POM_XML = """
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                <modelVersion>4.0.0</modelVersion>
+            
+                <groupId>com.oracle.demo.richtext</groupId>
+                <artifactId>lsp-demo</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <packaging>jar</packaging>
+            
+                <name>lsp-demo</name>
+            
+                <properties>
+                    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                    <maven.compiler.release>21</maven.compiler.release>
+                    <maven.compiler.source>21</maven.compiler.source>
+                    <maven.compiler.target>21</maven.compiler.target>
+                </properties>
+            
+                <dependencies>
+                </dependencies>
+            </project>
+            """;
+
     public void initialize() {
         try {
             LOGGER.info("启动LSP服务器");
             tempWorkspace = Files.createTempDirectory("JavaFX-Package-Sample-LSP_");
             LOGGER.info("LSP服务器工作目录: {}", tempWorkspace);
 
-            Path project = tempWorkspace.resolve(UUID.randomUUID().toString());
-            Path src = project.resolve("src");
+            String projectName = UUID.randomUUID().toString();
+            Path project = tempWorkspace.resolve(projectName);
+            Files.createDirectories(project);
+
+            Path pom = project.resolve("pom.xml");
+            Files.writeString(pom, POM_XML);
+
+            Path src = project.resolve("src/main/java/com/example");
             Files.createDirectories(src);
 
-            codeFile = src.resolve("Launcher.java");
+            codeFile = src.resolve("App.java");
+            Files.writeString(codeFile, DEMO_CODE);
             uri = codeFile.toUri().toString();
 
             String jar;
@@ -84,22 +127,48 @@ public class LSPAgent {
             languageServer = launcher.getRemoteProxy();
             listening = launcher.startListening();
 
-            InitializeParams initializedParams = new InitializeParams();
-            initializedParams.setCapabilities(new ClientCapabilities());
-            languageServer.initialize(initializedParams).get();
+            InitializeParams initializeParams = new InitializeParams();
+            initializeParams.setWorkspaceFolders(List.of(new WorkspaceFolder(project.toUri().toString(), projectName)));
+            Map<String, Object> initializationOptions = Map.of(
+                    "settings", Map.of(
+                            "java", Map.of(
+                                    "home", JAVA_HOME,
+                                    "configuration", Map.of(
+                                            "runtimes", List.of(
+                                                    Map.of("name", "JavaSE-21", "path", JAVA_HOME, "default", true)
+                                            ),
+                                            "updateBuildConfiguration", "automatic"
+                                    )
+                            )
+                    )
+            );
+            // https://github.com/eclipse-jdtls/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line
+            initializeParams.setInitializationOptions(initializationOptions);
+
+            ClientCapabilities clientCapabilities = new ClientCapabilities();
+
+            WorkspaceClientCapabilities workspaceClientCapabilities = new WorkspaceClientCapabilities();
+            workspaceClientCapabilities.setWorkspaceFolders(true);
+            workspaceClientCapabilities.setDidChangeConfiguration(new DidChangeConfigurationCapabilities(true));
+            clientCapabilities.setWorkspace(workspaceClientCapabilities);
+
+            TextDocumentClientCapabilities textDocumentClientCapabilities = new TextDocumentClientCapabilities();
+            CompletionCapabilities completionCapabilities = new CompletionCapabilities();
+            completionCapabilities.setCompletionItem(new CompletionItemCapabilities(true));
+            textDocumentClientCapabilities.setCompletion(completionCapabilities);
+//            clientCapabilities.setTextDocument(textDocumentClientCapabilities);
+
+            initializeParams.setCapabilities(clientCapabilities);
+            languageServer.initialize(initializeParams).get();
             languageServer.initialized(new InitializedParams());
+
+            Thread.sleep(2000);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public void sendOpenTextDocument(String text) {
-        try {
-            Files.writeString(codeFile, text);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
         DidOpenTextDocumentParams didOpenTextDocumentParams = new DidOpenTextDocumentParams();
         TextDocumentItem textDocumentItem = new TextDocumentItem();
         textDocumentItem.setUri(uri);
@@ -162,18 +231,22 @@ public class LSPAgent {
             publishDiagnosticsParams.getDiagnostics().forEach(new Consumer<Diagnostic>() {
                 @Override
                 public void accept(Diagnostic diagnostic) {
+                    LOGGER.error(diagnostic.getMessage());
                     if (!diagnostic.getMessage().contains("only syntax errors are reported")) {
-                        LOGGER.error(diagnostic.getMessage());
                         LOGGER.trace(diagnostic.getRange().toString());
-                        if (diagnosticMessageConsumer != null) {
-                            diagnosticMessageConsumer.accept(new DiagnosticMessage(
-                                    diagnostic.getRange().getStart().getLine(),
-                                    diagnostic.getRange().getStart().getCharacter(),
-                                    diagnostic.getRange().getEnd().getLine(),
-                                    diagnostic.getRange().getEnd().getCharacter(),
-                                    diagnostic.getMessage()
-                            ));
-                        }
+                        if (diagnostic.getRange().getStart().getLine() != 0 &&
+                                diagnostic.getRange().getStart().getCharacter() != 0 &&
+                                diagnostic.getRange().getEnd().getLine() != 0 &&
+                                diagnostic.getRange().getEnd().getCharacter() != 0)
+                            if (diagnosticMessageConsumer != null) {
+                                diagnosticMessageConsumer.accept(new DiagnosticMessage(
+                                        diagnostic.getRange().getStart().getLine(),
+                                        diagnostic.getRange().getStart().getCharacter(),
+                                        diagnostic.getRange().getEnd().getLine(),
+                                        diagnostic.getRange().getEnd().getCharacter(),
+                                        diagnostic.getMessage()
+                                ));
+                            }
                     }
                 }
             });
@@ -197,6 +270,11 @@ public class LSPAgent {
         @JsonRequest("language/status")
         public CompletableFuture<Void> languageStatus(Object object) {
             LOGGER.trace(object.toString());
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletableFuture<Void> registerCapability(RegistrationParams params) {
             return CompletableFuture.completedFuture(null);
         }
     }

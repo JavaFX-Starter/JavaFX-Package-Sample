@@ -2,6 +2,7 @@ package com.icuxika;
 
 import com.icuxika.constant.Theme;
 import com.icuxika.lsp.DiagnosticMessage;
+import com.icuxika.lsp.LSPAgent;
 import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
@@ -52,17 +53,7 @@ public class MainApp extends Application {
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
-        String code = """
-                package com.icuxika;
-                
-                public class Launcher {
-                
-                    static void main(String[] args) {
-                        MainApp.main(args);
-                    }
-                }
-                """;
-        LSPCodeArea lspCodeArea = new LSPCodeArea(true, code);
+        LSPCodeArea lspCodeArea = new LSPCodeArea(true, LSPAgent.DEMO_CODE);
         Button testButton = new Button("测试");
 
         VBox vBox = new VBox();
@@ -71,7 +62,7 @@ public class MainApp extends Application {
         vBox.getChildren().addAll(
                 label, createComboBox(),
                 testButton, lspCodeArea,
-                new LSPCodeArea(false, code),
+                new LSPCodeArea(false, LSPAgent.DEMO_CODE),
                 createTextFlow(true), createTextFlow(false)
         );
 
