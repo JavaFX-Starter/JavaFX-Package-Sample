@@ -9,6 +9,7 @@ import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -163,7 +164,11 @@ public class MainApp extends Application {
         });
         // 启动语言服务器
         lspCodeArea.startLanguageServer();
-        primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
+        primaryStage.setOnCloseRequest(_ -> {
+            lspCodeArea.stopLanguageServer();
+            Platform.exit();
+            System.exit(0);
+        });
 
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
