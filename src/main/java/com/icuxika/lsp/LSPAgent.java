@@ -12,10 +12,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -33,6 +30,7 @@ public class LSPAgent {
     private Path data;
     private Path tempWorkspace;
     private Process process;
+    private ExecutorService executorService;
     private Future<Void> listening;
     private LanguageServer languageServer;
     private Path codeFile;
@@ -145,7 +143,14 @@ public class LSPAgent {
             ProcessBuilder processBuilder = new ProcessBuilder(command);
 //            processBuilder.inheritIO();
             process = processBuilder.start();
-            var launcher = LSPLauncher.createClientLauncher(new JavaLanguageClient(), process.getInputStream(), process.getOutputStream());
+            executorService = Executors.newCachedThreadPool();
+            var launcher = new LSPLauncher.Builder<LanguageServer>()
+                    .setLocalService(new JavaLanguageClient())
+                    .setRemoteInterface(LanguageServer.class)
+                    .setInput(process.getInputStream())
+                    .setOutput(process.getOutputStream())
+                    .setExecutorService(executorService)
+                    .create();
             languageServer = launcher.getRemoteProxy();
             listening = launcher.startListening();
 
@@ -269,6 +274,18 @@ public class LSPAgent {
             }
             if (process != null && process.isAlive()) {
                 process.destroy();
+            }
+            if (executorService != null && !executorService.isShutdown()) {
+                executorService.shutdown();
+                try {
+                    if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                        LOGGER.warn("ExecutorService 未在5秒内终止，强制终止");
+                        executorService.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    executorService.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
             }
             if (data != null) {
                 try (Stream<Path> stream = Files.walk(data)) {
