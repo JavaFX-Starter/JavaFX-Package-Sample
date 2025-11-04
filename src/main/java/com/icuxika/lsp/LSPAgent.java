@@ -13,7 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -26,8 +28,9 @@ public class LSPAgent {
     private static final Logger LOGGER = LoggerFactory.getLogger(LSPAgent.class);
 
     private static final String JDT_HOME = "C:\\CommandLineTools\\Java\\jdt-language-server-1.9.0";
-    private static final String JAVA_HOME = "C:\\CommandLineTools\\Java\\jdk-21";
+    private static final String JAVA_HOME = "C:\\CommandLineTools\\Java\\jdk-17.0.2";
 
+    private Path data;
     private Path tempWorkspace;
     private Process process;
     private Future<Void> listening;
@@ -35,6 +38,7 @@ public class LSPAgent {
     private Path codeFile;
     private String uri;
     private final AtomicInteger version = new AtomicInteger(1);
+    private final CountDownLatch projectInitialized = new CountDownLatch(1);
 
     private Consumer<DiagnosticMessage> diagnosticMessageConsumer;
 
@@ -54,36 +58,53 @@ public class LSPAgent {
             """;
 
     private final String POM_XML = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            
             <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <modelVersion>4.0.0</modelVersion>
             
-                <groupId>com.oracle.demo.richtext</groupId>
+                <groupId>com.example</groupId>
                 <artifactId>lsp-demo</artifactId>
-                <version>1.0-SNAPSHOT</version>
-                <packaging>jar</packaging>
+                <version>1.0.0</version>
             
                 <name>lsp-demo</name>
             
                 <properties>
                     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                    <maven.compiler.release>21</maven.compiler.release>
-                    <maven.compiler.source>21</maven.compiler.source>
-                    <maven.compiler.target>21</maven.compiler.target>
+                    <maven.compiler.release>17</maven.compiler.release>
+                    <maven.compiler.source>17</maven.compiler.source>
+                    <maven.compiler.target>17</maven.compiler.target>
                 </properties>
             
                 <dependencies>
                 </dependencies>
+            
+                <build>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.14.1</version>
+                            <configuration>
+                                <release>${maven.compiler.release}</release>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </build>
+            
             </project>
             """;
 
     public void initialize() {
         try {
             LOGGER.info("启动LSP服务器");
+            data = Files.createTempDirectory("JavaFX-Package-Sample-LSP_");
+            LOGGER.info("LSP服务器工作目录: {}", data);
             tempWorkspace = Files.createTempDirectory("JavaFX-Package-Sample-LSP_");
-            LOGGER.info("LSP服务器工作目录: {}", tempWorkspace);
+            LOGGER.info("临时项目目录: {}", tempWorkspace);
 
-            String projectName = UUID.randomUUID().toString();
+            String projectName = "lsp-demo";
             Path project = tempWorkspace.resolve(projectName);
             Files.createDirectories(project);
 
@@ -118,7 +139,7 @@ public class LSPAgent {
                     "--add-opens", "java.base/java.lang=ALL-UNNAMED",
                     "-jar", jar,
                     "-configuration", Path.of(JDT_HOME).resolve("config_win").toString(),
-                    "-data", tempWorkspace.toString()
+                    "-data", data.toString()
             );
             ProcessBuilder processBuilder = new ProcessBuilder(command);
 //            processBuilder.inheritIO();
@@ -128,6 +149,7 @@ public class LSPAgent {
             listening = launcher.startListening();
 
             InitializeParams initializeParams = new InitializeParams();
+            initializeParams.setRootUri(project.toUri().toString());
             initializeParams.setWorkspaceFolders(List.of(new WorkspaceFolder(project.toUri().toString(), projectName)));
             Map<String, Object> initializationOptions = Map.of(
                     "settings", Map.of(
@@ -135,9 +157,14 @@ public class LSPAgent {
                                     "home", JAVA_HOME,
                                     "configuration", Map.of(
                                             "runtimes", List.of(
-                                                    Map.of("name", "JavaSE-21", "path", JAVA_HOME, "default", true)
+                                                    Map.of("name", "JavaSE-17", "path", JAVA_HOME, "default", true)
                                             ),
                                             "updateBuildConfiguration", "automatic"
+                                    ),
+                                    "import", Map.of(
+                                            "maven", Map.of(
+                                                    "enabled", true
+                                            )
                                     )
                             )
                     )
@@ -156,13 +183,20 @@ public class LSPAgent {
             CompletionCapabilities completionCapabilities = new CompletionCapabilities();
             completionCapabilities.setCompletionItem(new CompletionItemCapabilities(true));
             textDocumentClientCapabilities.setCompletion(completionCapabilities);
-//            clientCapabilities.setTextDocument(textDocumentClientCapabilities);
+            PublishDiagnosticsCapabilities publishDiagnosticsCapabilities = new PublishDiagnosticsCapabilities();
+            publishDiagnosticsCapabilities.setRelatedInformation(true);
+            publishDiagnosticsCapabilities.setTagSupport(new DiagnosticsTagSupport(List.of(DiagnosticTag.Unnecessary, DiagnosticTag.Deprecated)));
+            textDocumentClientCapabilities.setPublishDiagnostics(publishDiagnosticsCapabilities);
+            clientCapabilities.setTextDocument(textDocumentClientCapabilities);
 
             initializeParams.setCapabilities(clientCapabilities);
             languageServer.initialize(initializeParams).get();
             languageServer.initialized(new InitializedParams());
 
-            Thread.sleep(2000);
+            if (!projectInitialized.await(30, TimeUnit.SECONDS)) {
+                LOGGER.warn("Eclipse JDT Language Server 初始化超时");
+            }
+            LOGGER.info("Eclipse JDT Language Server 初始化完成");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -206,6 +240,11 @@ public class LSPAgent {
             if (process != null && process.isAlive()) {
                 process.destroy();
             }
+            if (data != null) {
+                try (Stream<Path> stream = Files.walk(data)) {
+                    stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                }
+            }
             if (tempWorkspace != null) {
                 try (Stream<Path> stream = Files.walk(tempWorkspace)) {
                     stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
@@ -228,26 +267,24 @@ public class LSPAgent {
 
         @Override
         public void publishDiagnostics(PublishDiagnosticsParams publishDiagnosticsParams) {
-            publishDiagnosticsParams.getDiagnostics().forEach(new Consumer<Diagnostic>() {
-                @Override
-                public void accept(Diagnostic diagnostic) {
-                    LOGGER.error(diagnostic.getMessage());
-                    if (!diagnostic.getMessage().contains("only syntax errors are reported")) {
-                        LOGGER.trace(diagnostic.getRange().toString());
-                        if (diagnostic.getRange().getStart().getLine() != 0 &&
-                                diagnostic.getRange().getStart().getCharacter() != 0 &&
-                                diagnostic.getRange().getEnd().getLine() != 0 &&
-                                diagnostic.getRange().getEnd().getCharacter() != 0)
-                            if (diagnosticMessageConsumer != null) {
-                                diagnosticMessageConsumer.accept(new DiagnosticMessage(
-                                        diagnostic.getRange().getStart().getLine(),
-                                        diagnostic.getRange().getStart().getCharacter(),
-                                        diagnostic.getRange().getEnd().getLine(),
-                                        diagnostic.getRange().getEnd().getCharacter(),
-                                        diagnostic.getMessage()
-                                ));
-                            }
-                    }
+            LOGGER.trace("uri: {}", publishDiagnosticsParams.getUri());
+            publishDiagnosticsParams.getDiagnostics().forEach(diagnostic -> {
+                LOGGER.error(diagnostic.getMessage());
+                if (!diagnostic.getMessage().contains("only syntax errors are reported")) {
+//                    LOGGER.trace(diagnostic.getRange().toString());
+                    if (!(diagnostic.getRange().getStart().getLine() == 0 &&
+                            diagnostic.getRange().getStart().getCharacter() == 0 &&
+                            diagnostic.getRange().getEnd().getLine() == 0 &&
+                            diagnostic.getRange().getEnd().getCharacter() == 0))
+                        if (diagnosticMessageConsumer != null) {
+                            diagnosticMessageConsumer.accept(new DiagnosticMessage(
+                                    diagnostic.getRange().getStart().getLine(),
+                                    diagnostic.getRange().getStart().getCharacter(),
+                                    diagnostic.getRange().getEnd().getLine(),
+                                    diagnostic.getRange().getEnd().getCharacter(),
+                                    diagnostic.getMessage()
+                            ));
+                        }
                 }
             });
         }
@@ -270,6 +307,9 @@ public class LSPAgent {
         @JsonRequest("language/status")
         public CompletableFuture<Void> languageStatus(Object object) {
             LOGGER.trace(object.toString());
+            if (object.toString().contains("ServiceReady")) {
+                projectInitialized.countDown();
+            }
             return CompletableFuture.completedFuture(null);
         }
 

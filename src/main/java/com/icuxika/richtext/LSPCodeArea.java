@@ -2,9 +2,12 @@ package com.icuxika.richtext;
 
 import com.icuxika.lsp.DiagnosticMessage;
 import com.icuxika.lsp.LSPAgent;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import jfx.incubator.scene.control.richtext.CodeArea;
 import jfx.incubator.scene.control.richtext.TextPos;
 import jfx.incubator.scene.control.richtext.model.CodeTextModel;
@@ -17,6 +20,7 @@ public class LSPCodeArea extends CodeArea {
     private LSPAgent lspAgent;
     private volatile boolean shouldListen = true;
     private int lastChangeIndex = 0;
+    private Timeline debounceTimeline;
 
     public LSPCodeArea(boolean isLight, String text) {
         setLineNumbersEnabled(true);
@@ -44,12 +48,26 @@ public class LSPCodeArea extends CodeArea {
             lspAgent.initialize();
             lspAgent.sendOpenTextDocument(getText());
             getModel().addListener(_ -> {
-                if (shouldListen) {
-                    if (syntaxDecorator != null) {
-                        syntaxDecorator.updateDiagnosticMessage(List.of());
-                        lspAgent.sendChangeTextDocument(getText());
-                    }
+                if (!shouldListen) {
+                    return;
                 }
+
+                if (debounceTimeline != null) {
+                    debounceTimeline.stop();
+                }
+
+                debounceTimeline = new Timeline(new KeyFrame(
+                        Duration.millis(300),
+                        _ -> {
+                            if (syntaxDecorator != null) {
+                                syntaxDecorator.updateDiagnosticMessage(List.of());
+                                lspAgent.sendChangeTextDocument(getText());
+                            }
+                        }
+                ));
+
+                debounceTimeline.setCycleCount(1);
+                debounceTimeline.play();
             });
         });
         thread.setDaemon(true);
