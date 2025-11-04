@@ -1,6 +1,8 @@
 package com.icuxika.richtext;
 
+import com.icuxika.AppResource;
 import com.icuxika.FXUtil;
+import com.icuxika.constant.Theme;
 import com.icuxika.lsp.DiagnosticMessage;
 import com.icuxika.lsp.LSPAgent;
 import javafx.animation.KeyFrame;
@@ -20,7 +22,6 @@ import jfx.incubator.scene.control.richtext.model.CodeTextModel;
 import org.eclipse.lsp4j.CompletionItem;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class LSPCodeArea extends CodeArea {
 
@@ -31,6 +32,7 @@ public class LSPCodeArea extends CodeArea {
     private Timeline debounceTimeline;
 
     public LSPCodeArea(boolean isLight, String text) {
+        setPrefHeight(240);
         setLineNumbersEnabled(true);
         setContentPadding(new Insets(4));
         setBorder(new Border(new BorderStroke(Color.DODGERBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
@@ -43,6 +45,21 @@ public class LSPCodeArea extends CodeArea {
         );
         setSyntaxDecorator(syntaxDecorator);
         setText(text);
+
+        AppResource.themeProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                if (newValue == Theme.LIGHT) {
+                    syntaxDecorator.readTheme("/richtext/themes/light_vs.json");
+                } else {
+                    syntaxDecorator.readTheme("/richtext/themes/dark_vs.json");
+                }
+                syntaxDecorator.applyTheme();
+
+                shouldListen = false;
+                syntaxDecorator.refresh();
+                shouldListen = true;
+            }
+        });
     }
 
     public void startLanguageServer() {
@@ -52,17 +69,7 @@ public class LSPCodeArea extends CodeArea {
             applyChange(diagnosticMessage);
             shouldListen = true;
         });
-        lspAgent.setCompletionConsumer(new Consumer<List<CompletionItem>>() {
-            @Override
-            public void accept(List<CompletionItem> completionItems) {
-                FXUtil.runInFX(new Runnable() {
-                    @Override
-                    public void run() {
-                        showCompletion(getCaretPosition(), completionItems);
-                    }
-                });
-            }
-        });
+        lspAgent.setCompletionConsumer(completionItems -> FXUtil.runInFX(() -> showCompletion(getCaretPosition(), completionItems)));
         Thread thread = new Thread(() -> {
             lspAgent.initialize();
             lspAgent.sendOpenTextDocument(getText());
@@ -128,8 +135,6 @@ public class LSPCodeArea extends CodeArea {
     public void showCompletion(TextPos caretPosition, List<CompletionItem> completionItems) {
         Node node = lookup(".caret");
         if (node instanceof Path path) {
-            System.out.println(path.getBoundsInLocal());
-            System.out.println(path.localToScreen(path.getBoundsInLocal()));
             Bounds bounds = path.localToScreen(path.getBoundsInLocal());
             ContextMenu contextMenu = new ContextMenu();
             contextMenu.getItems().addAll(completionItems.stream().map(completionItem -> {

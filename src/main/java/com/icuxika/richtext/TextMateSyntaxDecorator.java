@@ -37,14 +37,17 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TextMateSyntaxDecorator.class);
 
+    private final CodeArea codeArea;
+
     private final Map<Integer, IStateStack> stateStackMap = new HashMap<>();
 
     private final Map<String, StyleAttributeMap> styleMap = new HashMap<>();
 
     private final IGrammar grammar;
 
-    private final Theme theme;
+    private Theme theme;
 
+    String editorBackgroundString = "#FFFFFF";
     String editorForegroundString = "#FFFFFF";
     String editorSelectionHighlightBackgroundString = "#ADD6FF80";
     String editorInactiveSelectionBackgroundString = "#ADD6FF80";
@@ -52,13 +55,29 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
     private final List<DiagnosticMessage> diagnosticMessageList = new ArrayList<>();
 
     public TextMateSyntaxDecorator(CodeArea codeArea, String syntaxResource, String themeResource) {
+        this.codeArea = codeArea;
+
         final var registry = new Registry();
         grammar = registry.addGrammar(IGrammarSource.fromString(
                 IGrammarSource.ContentType.JSON,
                 Objects.requireNonNull(AppResource.readStringFromResource(syntaxResource)))
         );
 
-        String editorBackgroundString = "#FFFFFF";
+        readTheme(themeResource);
+        applyTheme();
+        codeArea.skinProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                applyLookupTheme();
+            }
+        });
+
+        // 开启高亮当前行
+        codeArea.setHighlightCurrentParagraph(true);
+        // 设置字体
+        codeArea.setFont(new Font("HarmonyOS Sans SC", 14));
+    }
+
+    public void readTheme(String themeResource) {
         try {
             String themeJson = Objects.requireNonNull(AppResource.readStringFromResource(themeResource));
 
@@ -93,39 +112,39 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void applyTheme() {
         codeArea.setBackground(new Background(new BackgroundFill(Color.web(editorBackgroundString), CornerRadii.EMPTY, Insets.EMPTY)));
-        codeArea.skinProperty().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                FXUtil.runInFX(() -> {
-                    // com.sun.jfx.incubator.scene.control.richtext.VFlow
-                    // 文本选中区颜色
-                    Node selectionHighlightNode = codeArea.lookup(".selection-highlight");
-                    if (selectionHighlightNode instanceof Path path) {
-                        path.setStroke(Color.web(editorSelectionHighlightBackgroundString));
-                        path.setFill(Color.web(editorSelectionHighlightBackgroundString));
-                    }
+        if (codeArea.getSkin() != null) {
+            applyLookupTheme();
+        }
+    }
 
-                    // 光标颜色
-                    Node caretNode = codeArea.lookup(".caret");
-                    if (caretNode instanceof Path path) {
-                        path.setStroke(Color.web(editorForegroundString));
-                        path.setFill(Color.web(editorForegroundString));
-                    }
+    private void applyLookupTheme() {
+        FXUtil.runInFX(() -> {
+            // com.sun.jfx.incubator.scene.control.richtext.VFlow
+            // 文本选中区颜色
+            Node selectionHighlightNode = codeArea.lookup(".selection-highlight");
+            if (selectionHighlightNode instanceof Path path) {
+                path.setStroke(Color.web(editorSelectionHighlightBackgroundString));
+                path.setFill(Color.web(editorSelectionHighlightBackgroundString));
+            }
 
-                    // 光标所在行颜色
-                    Node caretLineNode = codeArea.lookup(".caret-line");
-                    if (caretLineNode instanceof Path path) {
-                        path.setStroke(Color.web(editorInactiveSelectionBackgroundString));
-                        path.setFill(Color.web(editorInactiveSelectionBackgroundString));
-                    }
+            // 光标颜色
+            Node caretNode = codeArea.lookup(".caret");
+            if (caretNode instanceof Path path) {
+                path.setStroke(Color.web(editorForegroundString));
+                path.setFill(Color.web(editorForegroundString));
+            }
 
-                });
+            // 光标所在行颜色
+            Node caretLineNode = codeArea.lookup(".caret-line");
+            if (caretLineNode instanceof Path path) {
+                path.setStroke(Color.web(editorInactiveSelectionBackgroundString));
+                path.setFill(Color.web(editorInactiveSelectionBackgroundString));
             }
         });
-        // 开启高亮当前行
-        codeArea.setHighlightCurrentParagraph(true);
-        // 设置字体
-        codeArea.setFont(new Font("HarmonyOS Sans SC", 14));
     }
 
     @Override
@@ -216,5 +235,11 @@ public class TextMateSyntaxDecorator implements SyntaxDecorator {
     public void updateDiagnosticMessage(List<DiagnosticMessage> list) {
         diagnosticMessageList.clear();
         diagnosticMessageList.addAll(list);
+    }
+
+    public void refresh() {
+        stateStackMap.clear();
+        styleMap.clear();
+        codeArea.getModel().fireStyleChangeEvent(TextPos.ZERO, codeArea.getModel().getDocumentEnd());
     }
 }

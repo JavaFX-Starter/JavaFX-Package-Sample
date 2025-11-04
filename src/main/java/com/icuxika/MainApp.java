@@ -28,6 +28,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -40,7 +41,7 @@ public class MainApp extends Application {
         // 需要创建一份内容与LanguageResource.properties一致的LanguageResource_zh_CN.properties文件，否则在不是中文作为系统语言的操作系统上，中文语言绑定将无法正常运行
         // 同时最好准备一份字体用来渲染文字，沙盒中测试缺少字体的情况中文文字无法显示
         AppResource.setLanguage(Locale.SIMPLIFIED_CHINESE);
-        AppResource.setTheme(Theme.LIGHT);
+        AppResource.setAvailableTheme(Theme.LIGHT);
 
         UserAgentBuilder.builder()
                 .themes(JavaFXThemes.MODENA)
@@ -53,16 +54,15 @@ public class MainApp extends Application {
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
-        LSPCodeArea lspCodeArea = new LSPCodeArea(true, LSPAgent.DEMO_CODE);
+        LSPCodeArea lspCodeArea = new LSPCodeArea(AppResource.getTheme() == Theme.LIGHT, LSPAgent.DEMO_CODE);
         Button testButton = new Button("测试");
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(8);
         vBox.getChildren().addAll(
-                label, createComboBox(),
+                label, createThemeComboBox(), createLanguageComboBox(),
                 testButton, lspCodeArea,
-                new LSPCodeArea(false, LSPAgent.DEMO_CODE),
                 createTextFlow(true), createTextFlow(false)
         );
 
@@ -94,7 +94,7 @@ public class MainApp extends Application {
         moonIcon.setIconSize(16);
         moonIcon.setIconColor(Color.YELLOW);
         themeButton.setStyle("-fx-background-color: transparent;");
-        themeButton.graphicProperty().bind(new When(AppResource.themeProperty().isEqualTo(Theme.LIGHT)).then(sunnyIcon).otherwise(moonIcon));
+        themeButton.graphicProperty().bind(new When(AppResource.availableThemeProperty().isEqualTo(Theme.LIGHT)).then(sunnyIcon).otherwise(moonIcon));
         themeButton.hoverProperty().addListener((_, _, newValue) -> {
             if (newValue) {
                 themeButton.setStyle("-fx-background-color: rgba(0,0,0,0.1);");
@@ -103,10 +103,10 @@ public class MainApp extends Application {
             }
         });
         themeButton.setOnAction(_ -> {
-            if (AppResource.getTheme() == Theme.LIGHT) {
-                AppResource.setTheme(Theme.DARK);
+            if (AppResource.getAvailableTheme() == Theme.LIGHT) {
+                AppResource.setAvailableTheme(Theme.DARK);
             } else {
-                AppResource.setTheme(Theme.LIGHT);
+                AppResource.setAvailableTheme(Theme.LIGHT);
             }
         });
 
@@ -130,6 +130,7 @@ public class MainApp extends Application {
                 icon.setIconColor(Color.BLACK);
             }
         });
+
         trailingWrapper.getChildren().addAll(themeButton, pinToTopBtn);
         trailing.getChildren().add(trailingWrapper);
 
@@ -149,7 +150,7 @@ public class MainApp extends Application {
 
         testButton.setOnAction(event -> {
             lspCodeArea.applyChange(new DiagnosticMessage(
-                    5, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
+                    8, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
             ));
             new Thread(() -> {
                 try {
@@ -160,6 +161,7 @@ public class MainApp extends Application {
                 }
             }).start();
         });
+        // 启动语言服务器
         lspCodeArea.startLanguageServer();
         primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
 
@@ -170,7 +172,7 @@ public class MainApp extends Application {
         LOGGER.error("[error]日志记录到logs/application.log中");
     }
 
-    private ComboBox<Locale> createComboBox() {
+    private ComboBox<Locale> createLanguageComboBox() {
         ComboBox<Locale> comboBox = new ComboBox<>(FXCollections.observableList(AppResource.SUPPORT_LANGUAGE_LIST));
         comboBox.valueProperty().subscribe(locale -> {
             if (locale != null) {
@@ -203,6 +205,42 @@ public class MainApp extends Application {
                     default -> throw new IllegalStateException("暂不支持此区域: " + s);
                 }
                 return locale;
+            }
+        });
+        return comboBox;
+    }
+
+    private ComboBox<Theme> createThemeComboBox() {
+        ComboBox<Theme> comboBox = new ComboBox<>(FXCollections.observableList(List.of(Theme.SYSTEM, Theme.LIGHT, Theme.DARK)));
+        comboBox.valueProperty().subscribe(theme -> {
+            if (theme != null) {
+                AppResource.setAvailableTheme(theme);
+            }
+        });
+        comboBox.valueProperty().bindBidirectional(AppResource.availableThemeProperty());
+        comboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Theme theme) {
+                String text;
+                switch (theme) {
+                    case Theme t when t.equals(Theme.SYSTEM) -> text = "系统";
+                    case Theme t when t.equals(Theme.LIGHT) -> text = "明亮";
+                    case Theme t when t.equals(Theme.DARK) -> text = "暗黑";
+                    default -> throw new IllegalStateException("暂不支持: " + theme);
+                }
+                return text;
+            }
+
+            @Override
+            public Theme fromString(String s) {
+                Theme theme;
+                switch (s) {
+                    case String text when text.equals("系统") -> theme = Theme.SYSTEM;
+                    case String text when text.equals("明亮") -> theme = Theme.LIGHT;
+                    case String text when text.equals("暗黑") -> theme = Theme.LIGHT;
+                    default -> throw new IllegalStateException("暂不支持: " + s);
+                }
+                return theme;
             }
         });
         return comboBox;

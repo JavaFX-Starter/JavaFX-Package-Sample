@@ -2,6 +2,8 @@ package com.icuxika;
 
 import com.icuxika.constant.Theme;
 import com.icuxika.i18n.ObservableResourceBundleFactory;
+import javafx.application.ColorScheme;
+import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -86,6 +88,7 @@ public class AppResource {
 
     /**
      * 从资源文件中读取字符串
+     *
      * @param resource 资源文件相对路径
      * @return 资源文件内容字符串
      */
@@ -100,6 +103,9 @@ public class AppResource {
         return null;
     }
 
+    /**
+     * 应用程序根据此属性判断当前应用主题，{@link Theme#SYSTEM} 不属于可被选择的一项
+     */
     private static final ObjectProperty<Theme> theme = new SimpleObjectProperty<>();
 
     public static ObjectProperty<Theme> themeProperty() {
@@ -112,5 +118,55 @@ public class AppResource {
 
     public static Theme getTheme() {
         return theme.get();
+    }
+
+    /**
+     * 用于主题选择控件，{@link Theme#SYSTEM} 属于可被选择的一项
+     */
+    private static final ObjectProperty<Theme> availableTheme = new SimpleObjectProperty<>();
+
+    public static ObjectProperty<Theme> availableThemeProperty() {
+        return availableTheme;
+    }
+
+    public static void setAvailableTheme(Theme value) {
+        availableTheme.set(value);
+    }
+
+    public static Theme getAvailableTheme() {
+        return availableTheme.get();
+    }
+
+    static {
+        availableTheme.subscribe(theme -> {
+            if (theme != null) {
+                if (theme == Theme.SYSTEM) {
+                    if (Platform.getPreferences().getColorScheme() == ColorScheme.LIGHT) {
+                        setTheme(Theme.LIGHT);
+                    } else {
+                        setTheme(Theme.DARK);
+                    }
+                } else {
+                    setTheme(theme);
+                }
+            }
+        });
+
+        Platform.getPreferences().colorSchemeProperty().subscribe(colorScheme -> {
+            if (colorScheme != null) {
+                switch (colorScheme) {
+                    case ColorScheme.LIGHT -> {
+                        if (getAvailableTheme() == Theme.SYSTEM) {
+                            setTheme(Theme.LIGHT);
+                        }
+                    }
+                    case ColorScheme.DARK -> {
+                        if (getAvailableTheme() == Theme.SYSTEM) {
+                            setTheme(Theme.DARK);
+                        }
+                    }
+                }
+            }
+        });
     }
 }
