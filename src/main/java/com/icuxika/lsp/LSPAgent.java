@@ -1,7 +1,6 @@
 package com.icuxika.lsp;
 
 import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -42,6 +41,7 @@ public class LSPAgent {
     private final CountDownLatch projectInitialized = new CountDownLatch(1);
 
     private Consumer<DiagnosticMessage> diagnosticMessageConsumer;
+    private Consumer<List<CompletionItem>> completionConsumer;
 
     public static final String DEMO_CODE = """
             package com.example;
@@ -244,21 +244,15 @@ public class LSPAgent {
         completionContext.setTriggerKind(CompletionTriggerKind.Invoked);
         completionParams.setContext(completionContext);
 
-        languageServer.getTextDocumentService().completion(completionParams).thenAcceptAsync(new Consumer<Either<List<CompletionItem>, CompletionList>>() {
-            @Override
-            public void accept(Either<List<CompletionItem>, CompletionList> listCompletionListEither) {
-                List<CompletionItem> completionItemList;
-                if (listCompletionListEither.isLeft()) {
-                    completionItemList = listCompletionListEither.getLeft();
-                } else {
-                    completionItemList = listCompletionListEither.getRight().getItems();
-                }
-                completionItemList.forEach(new Consumer<CompletionItem>() {
-                    @Override
-                    public void accept(CompletionItem completionItem) {
-                        System.out.println(completionItem.getLabel());
-                    }
-                });
+        languageServer.getTextDocumentService().completion(completionParams).thenAcceptAsync(listCompletionListEither -> {
+            List<CompletionItem> completionItemList;
+            if (listCompletionListEither.isLeft()) {
+                completionItemList = listCompletionListEither.getLeft();
+            } else {
+                completionItemList = listCompletionListEither.getRight().getItems();
+            }
+            if (completionConsumer != null) {
+                completionConsumer.accept(completionItemList);
             }
         });
     }
@@ -293,6 +287,10 @@ public class LSPAgent {
 
     public void setDiagnosticMessageConsumer(Consumer<DiagnosticMessage> diagnosticMessageConsumer) {
         this.diagnosticMessageConsumer = diagnosticMessageConsumer;
+    }
+
+    public void setCompletionConsumer(Consumer<List<CompletionItem>> completionConsumer) {
+        this.completionConsumer = completionConsumer;
     }
 
     private class JavaLanguageClient implements LanguageClient {

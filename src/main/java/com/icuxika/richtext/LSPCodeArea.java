@@ -1,18 +1,26 @@
 package com.icuxika.richtext;
 
+import com.icuxika.FXUtil;
 import com.icuxika.lsp.DiagnosticMessage;
 import com.icuxika.lsp.LSPAgent;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import jfx.incubator.scene.control.richtext.CodeArea;
 import jfx.incubator.scene.control.richtext.TextPos;
 import jfx.incubator.scene.control.richtext.model.CodeTextModel;
+import org.eclipse.lsp4j.CompletionItem;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class LSPCodeArea extends CodeArea {
 
@@ -43,6 +51,17 @@ public class LSPCodeArea extends CodeArea {
             shouldListen = false;
             applyChange(diagnosticMessage);
             shouldListen = true;
+        });
+        lspAgent.setCompletionConsumer(new Consumer<List<CompletionItem>>() {
+            @Override
+            public void accept(List<CompletionItem> completionItems) {
+                FXUtil.runInFX(new Runnable() {
+                    @Override
+                    public void run() {
+                        showCompletion(getCaretPosition(), completionItems);
+                    }
+                });
+            }
         });
         Thread thread = new Thread(() -> {
             lspAgent.initialize();
@@ -104,5 +123,25 @@ public class LSPCodeArea extends CodeArea {
         int length = getModel().getPlainText(index).length();
         ((CodeTextModel) getModel()).insertText(TextPos.ofLeading(index, length), " ");
         replaceText(TextPos.ofLeading(index, length), TextPos.ofLeading(index, length + 1), "", false);
+    }
+
+    public void showCompletion(TextPos caretPosition, List<CompletionItem> completionItems) {
+        Node node = lookup(".caret");
+        if (node instanceof Path path) {
+            System.out.println(path.getBoundsInLocal());
+            System.out.println(path.localToScreen(path.getBoundsInLocal()));
+            Bounds bounds = path.localToScreen(path.getBoundsInLocal());
+            ContextMenu contextMenu = new ContextMenu();
+            contextMenu.getItems().addAll(completionItems.stream().map(completionItem -> {
+                MenuItem menuItem = new MenuItem();
+                menuItem.setText(completionItem.getLabel());
+                menuItem.setOnAction(_ -> {
+                    ((CodeTextModel) getModel()).insertText(caretPosition, completionItem.getInsertText());
+                    moveLineEnd();
+                });
+                return menuItem;
+            }).toList());
+            contextMenu.show(this, bounds.getMaxX(), bounds.getMaxY());
+        }
     }
 }
