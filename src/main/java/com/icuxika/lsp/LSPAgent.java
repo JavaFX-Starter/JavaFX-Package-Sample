@@ -1,5 +1,7 @@
 package com.icuxika.lsp;
 
+import com.icuxika.MainApp;
+import com.icuxika.util.SystemUtil;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.launch.LSPLauncher;
@@ -24,7 +26,7 @@ public class LSPAgent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LSPAgent.class);
 
-    private static final String JDT_HOME = "C:\\CommandLineTools\\Java\\jdt-language-server-1.9.0";
+    private static String JDT_HOME = "C:\\CommandLineTools\\Java\\jdt-language-server-1.9.0";
     private static final String JAVA_HOME = "C:\\CommandLineTools\\Java\\jdk-17.0.2";
 
     private Path data;
@@ -98,6 +100,10 @@ public class LSPAgent {
     public void initialize() {
         try {
             LOGGER.info("启动LSP服务器");
+            if (MainApp.isProductionMode()) {
+                JDT_HOME = SystemUtil.getExePath().resolve("jdt").toString();
+            }
+            LOGGER.info("JDT目录: {}", JDT_HOME);
             data = Files.createTempDirectory("JavaFX-Package-Sample-LSP_");
             LOGGER.info("LSP服务器工作目录: {}", data);
             tempWorkspace = Files.createTempDirectory("JavaFX-Package-Sample-LSP_");
@@ -204,6 +210,7 @@ public class LSPAgent {
             }
             LOGGER.info("Eclipse JDT Language Server 初始化完成");
         } catch (Exception e) {
+            LOGGER.error("Eclipse JDT Language Server 初始化失败", e);
             throw new RuntimeException(e);
         }
     }

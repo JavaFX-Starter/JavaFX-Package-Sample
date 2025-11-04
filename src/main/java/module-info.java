@@ -7,6 +7,8 @@ module sample {
     requires javafx.graphics;
     requires javafx.web;
 
+    requires java.naming;
+    requires ch.qos.logback.classic;
     requires MaterialFX;
     requires org.slf4j;
     requires org.kordamp.ikonli.javafx;

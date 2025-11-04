@@ -275,6 +275,10 @@ public class MainApp extends Application {
         return "开发版本";
     }
 
+    public static boolean isProductionMode() {
+        return System.getProperty("jpackage.app-version") != null;
+    }
+
     public static void main(String[] args) {
         // 启用 HeaderBar 预览功能
         System.setProperty("javafx.enablePreview", "true");
