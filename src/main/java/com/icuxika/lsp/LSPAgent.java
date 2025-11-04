@@ -1,6 +1,7 @@
 package com.icuxika.lsp;
 
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -225,6 +226,41 @@ public class LSPAgent {
         textDocumentContentChangeEvent.setText(text);
         didChangeTextDocumentParams.setContentChanges(Collections.singletonList(textDocumentContentChangeEvent));
         languageServer.getTextDocumentService().didChange(didChangeTextDocumentParams);
+    }
+
+    public void completion(int line, int character) {
+        CompletionParams completionParams = new CompletionParams();
+
+        TextDocumentIdentifier textDocumentIdentifier = new TextDocumentIdentifier();
+        textDocumentIdentifier.setUri(uri);
+        completionParams.setTextDocument(textDocumentIdentifier);
+
+        Position position = new Position();
+        position.setLine(line);
+        position.setCharacter(character);
+        completionParams.setPosition(position);
+
+        CompletionContext completionContext = new CompletionContext();
+        completionContext.setTriggerKind(CompletionTriggerKind.Invoked);
+        completionParams.setContext(completionContext);
+
+        languageServer.getTextDocumentService().completion(completionParams).thenAcceptAsync(new Consumer<Either<List<CompletionItem>, CompletionList>>() {
+            @Override
+            public void accept(Either<List<CompletionItem>, CompletionList> listCompletionListEither) {
+                List<CompletionItem> completionItemList;
+                if (listCompletionListEither.isLeft()) {
+                    completionItemList = listCompletionListEither.getLeft();
+                } else {
+                    completionItemList = listCompletionListEither.getRight().getItems();
+                }
+                completionItemList.forEach(new Consumer<CompletionItem>() {
+                    @Override
+                    public void accept(CompletionItem completionItem) {
+                        System.out.println(completionItem.getLabel());
+                    }
+                });
+            }
+        });
     }
 
     public void shutdown() {

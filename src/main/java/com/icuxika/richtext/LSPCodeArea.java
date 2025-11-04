@@ -47,7 +47,7 @@ public class LSPCodeArea extends CodeArea {
         Thread thread = new Thread(() -> {
             lspAgent.initialize();
             lspAgent.sendOpenTextDocument(getText());
-            getModel().addListener(_ -> {
+            getModel().addListener(ch -> {
                 if (!shouldListen) {
                     return;
                 }
@@ -62,6 +62,14 @@ public class LSPCodeArea extends CodeArea {
                             if (syntaxDecorator != null) {
                                 syntaxDecorator.updateDiagnosticMessage(List.of());
                                 lspAgent.sendChangeTextDocument(getText());
+
+                                if (ch.getLinesAdded() == 0) {
+                                    String plainText = getModel().getPlainText(ch.getStart().index());
+                                    String nextChar = plainText.substring(ch.getStart().charIndex() + ch.getCharsAddedTop());
+                                    if (nextChar.equals(".")) {
+                                        lspAgent.completion(ch.getStart().index(), ch.getStart().charIndex() + ch.getCharsAddedTop() + 1);
+                                    }
+                                }
                             }
                         }
                 ));
