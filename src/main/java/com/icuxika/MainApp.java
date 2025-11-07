@@ -3,6 +3,7 @@ package com.icuxika;
 import com.icuxika.constant.Theme;
 import com.icuxika.lsp.DiagnosticMessage;
 import com.icuxika.lsp.LSPAgent;
+import com.icuxika.richtext.ChatInputTextArea;
 import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
@@ -63,6 +64,7 @@ public class MainApp extends Application {
         vBox.getChildren().addAll(
                 label, createThemeComboBox(), createLanguageComboBox(),
                 testButton, lspCodeArea,
+                new ChatInputTextArea(),
                 createTextFlow(true), createTextFlow(false)
         );
 
@@ -162,9 +164,9 @@ public class MainApp extends Application {
             }).start();
         });
         // 启动语言服务器
-        lspCodeArea.startLanguageServer();
+//        lspCodeArea.startLanguageServer();
         // 程序退出时停止语言服务器
-        primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
+//        primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
 
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
