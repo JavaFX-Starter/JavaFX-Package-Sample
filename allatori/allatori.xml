@@ -1,0 +1,18 @@
+<config>
+    <!-- Maven properties could be used in Allatori configuration file. -->
+    <input basedir="jars">
+        <jar in="${project.artifactId}-${project.version}.jar"
+             out="${project.artifactId}-${project.version}-obfuscated.jar"/>
+    </input>
+
+    <classpath basedir="jars">
+        <jar name="*.jar"/>
+    </classpath>
+
+    <keep-names>
+        <!-- 未授权版本会使 JNI 反调 Java 函数失败 -->
+        <class template="class com.icuxika.jni.*"/>
+    </keep-names>
+
+    <property name="log-file" value="allatori-log.xml"/>
+</config>
