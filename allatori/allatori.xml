@@ -2,7 +2,7 @@
     <!-- Maven properties could be used in Allatori configuration file. -->
     <input basedir="jars">
         <jar in="${project.artifactId}-${project.version}.jar"
-             out="${project.artifactId}-${project.version}-obfuscated.jar"/>
+             out="${project.artifactId}-${project.version}-allatori.jar"/>
     </input>
 
     <classpath basedir="jars">
@@ -12,6 +12,7 @@
     <keep-names>
         <!-- 未授权版本会使 JNI 反调 Java 函数失败 -->
         <class template="class com.icuxika.jni.*"/>
+        <class template="class com.icuxika.Launcher"/>
     </keep-names>
 
     <property name="log-file" value="allatori-log.xml"/>
