@@ -108,9 +108,7 @@ public class ReadWriteTextModel extends StyledTextModel {
 
         // 将结束段落的剩余内容合并到起始段落
         if (!endSegments.isEmpty()) {
-            for (StyledSegment segment : endSegments) {
-                startParagraph.segments().add(segment);
-            }
+            startParagraph.addAll(endSegments);
         }
 
         if (paragraphs.isEmpty()) {
@@ -214,9 +212,14 @@ public class ReadWriteTextModel extends StyledTextModel {
 
     static class Paragraph {
         private List<StyledSegment> segments;
+        private String cachedPlainText = null;
 
         public String getPlainText() {
+            if (cachedPlainText != null) {
+                return cachedPlainText;
+            }
             if (segments == null) {
+                cachedPlainText = "";
                 return "";
             }
             StringBuilder sb = new StringBuilder();
@@ -228,7 +231,13 @@ public class ReadWriteTextModel extends StyledTextModel {
                     sb.append("<image>");
                 }
             }
-            return sb.toString();
+            cachedPlainText = sb.toString();
+            return cachedPlainText;
+        }
+
+        public void addAll(List<StyledSegment> segments) {
+            segments().addAll(segments);
+            cachedPlainText = null;
         }
 
         public RichParagraph toRichParagraph() {
@@ -253,10 +262,12 @@ public class ReadWriteTextModel extends StyledTextModel {
 
         void addText(String text) {
             segments().add(StyledSegment.of(text));
+            cachedPlainText = null;
         }
 
         void addInlineNode(Supplier<Node> generator) {
             segments().add(StyledSegment.ofInlineNode(generator));
+            cachedPlainText = null;
         }
 
         public void removeRangeInline(TextPos start, TextPos end) {
@@ -300,9 +311,11 @@ public class ReadWriteTextModel extends StyledTextModel {
                 offset = segmentEnd;
             }
             segments = newSegments;
+            cachedPlainText = null;
         }
 
         public void insertTextSegment(int offset, String text, StyleAttributeMap attrs) {
+            cachedPlainText = null;
             if (segments().isEmpty()) {
                 segments().add(StyledSegment.of(text));
                 return;
@@ -361,6 +374,7 @@ public class ReadWriteTextModel extends StyledTextModel {
         }
 
         public void insertNodeSegment(int offset, Supplier<Node> generator) {
+            cachedPlainText = null;
             if (segments().isEmpty()) {
                 segments().add(StyledSegment.ofInlineNode(generator));
                 return;
@@ -473,6 +487,7 @@ public class ReadWriteTextModel extends StyledTextModel {
 
             this.segments = currentSegments;
             paragraph.segments = newSegments.isEmpty() ? null : newSegments;
+            cachedPlainText = null;
             return paragraph;
         }
     }
