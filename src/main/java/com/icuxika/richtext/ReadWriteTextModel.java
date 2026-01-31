@@ -210,6 +210,36 @@ public class ReadWriteTextModel extends StyledTextModel {
         fireChangeEvent(TextPos.ofLeading(pos.index(), 0), TextPos.ofLeading(pos.index(), plainTextLength + "<image>".length()), plainTextLength + "<image>".length(), 0, 0);
     }
 
+    public List<ChatInputItem> getChatInputItems() {
+        List<ChatInputItem> items = new ArrayList<>();
+        for (int i = 0; i < paragraphs.size(); i++) {
+            Paragraph p = paragraphs.get(i);
+            for (StyledSegment segment : p.segments()) {
+                if (segment.getType() == StyledSegment.Type.TEXT) {
+                    String text = segment.getText();
+                    if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String text1)) {
+                        items.set(items.size() - 1, new ChatInputItem.Text(text1 + text));
+                    } else {
+                        items.add(new ChatInputItem.Text(text));
+                    }
+                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
+                    Node node = segment.getInlineNodeGenerator().get();
+                    if (node instanceof ImageView imageView) {
+                        items.add(new ChatInputItem.ImageItem(imageView.getImage()));
+                    }
+                }
+            }
+            if (i < paragraphs.size() - 1) {
+                if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String text)) {
+                    items.set(items.size() - 1, new ChatInputItem.Text(text + "\n"));
+                } else {
+                    items.add(new ChatInputItem.Text("\n"));
+                }
+            }
+        }
+        return items;
+    }
+
     static class Paragraph {
         private List<StyledSegment> segments;
         private String cachedPlainText = null;

@@ -1,8 +1,8 @@
 package com.icuxika;
 
 import com.icuxika.constant.Theme;
-import com.icuxika.lsp.DiagnosticMessage;
 import com.icuxika.lsp.LSPAgent;
+import com.icuxika.richtext.ChatInputItem;
 import com.icuxika.richtext.ChatInputTextArea;
 import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
@@ -12,6 +12,7 @@ import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
 import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,6 +30,10 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -58,13 +63,15 @@ public class MainApp extends Application {
         LSPCodeArea lspCodeArea = new LSPCodeArea(AppResource.getTheme() == Theme.LIGHT, LSPAgent.DEMO_CODE);
         Button testButton = new Button("测试");
 
+        ChatInputTextArea chatInputTextArea = new ChatInputTextArea();
+
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(8);
         vBox.getChildren().addAll(
                 label, createThemeComboBox(), createLanguageComboBox(),
                 testButton, lspCodeArea,
-                new ChatInputTextArea(),
+                chatInputTextArea,
                 createTextFlow(true), createTextFlow(false)
         );
 
@@ -151,17 +158,36 @@ public class MainApp extends Application {
         primaryStage.show();
 
         testButton.setOnAction(event -> {
-            lspCodeArea.applyChange(new DiagnosticMessage(
-                    8, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
-            ));
-            new Thread(() -> {
-                try {
-                    Thread.sleep(2000);
-                    FXUtil.runInFX(lspCodeArea::clearLastChange);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+//            lspCodeArea.applyChange(new DiagnosticMessage(
+//                    8, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
+//            ));
+//            new Thread(() -> {
+//                try {
+//                    Thread.sleep(2000);
+//                    FXUtil.runInFX(lspCodeArea::clearLastChange);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }).start();
+
+            List<ChatInputItem> items = chatInputTextArea.getChatInputItems();
+            int index = 1;
+            for (ChatInputItem item : items) {
+                if (item instanceof ChatInputItem.Text(String text)) {
+                    System.out.println("文本: " + text);
+                    // 发送文本消息...
+                } else if (item instanceof ChatInputItem.ImageItem(javafx.scene.image.Image image)) {
+                    System.out.println("图片: " + image);
+                    // 上传图片并发送...
+                    BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+                    try {
+                        ImageIO.write(bufferedImage, "png", new File("target\\" + index + ".png"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    index++;
                 }
-            }).start();
+            }
         });
         // 启动语言服务器
 //        lspCodeArea.startLanguageServer();

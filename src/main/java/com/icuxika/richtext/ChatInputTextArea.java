@@ -6,6 +6,8 @@ import javafx.scene.input.Clipboard;
 import jfx.incubator.scene.control.richtext.RichTextArea;
 import jfx.incubator.scene.control.richtext.TextPos;
 
+import java.util.List;
+
 public class ChatInputTextArea extends RichTextArea {
 
     private final ReadWriteTextModel readWriteTextModel = new ReadWriteTextModel();
@@ -40,5 +42,9 @@ public class ChatInputTextArea extends RichTextArea {
         readWriteTextModel.addSegment("xxx");
         readWriteTextModel.nl();
         readWriteTextModel.addSegment("yyy");
+    }
+
+    public List<ChatInputItem> getChatInputItems() {
+        return readWriteTextModel.getChatInputItems();
     }
 }
