@@ -221,13 +221,12 @@
                         <version>1.0.0.Final</version>
                         <executions>
                             <execution>
-                                <id>add-module-infos</id>
-                                <phase>generate-resources</phase>
+                                <id>generate-module-info</id>
+                                <phase>generate-sources</phase>
                                 <goals>
-                                    <goal>add-module-info</goal>
+                                    <goal>generate-module-info</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/modules</outputDirectory>
                                     <modules>
                                         <module>
                                             <artifact>
@@ -583,7 +582,6 @@
                 <executions>
                     <execution>
                         <id>run-allatori</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -617,7 +615,7 @@
                     <proguardVersion>7.8.1</proguardVersion>
                     <obfuscate>true</obfuscate>
                     <injar>${project.artifactId}-${project.version}.jar</injar>
-                    <outjar>${project.artifactId}-${project.version}-proguard.jar</outjar>
+                    <outjar>${project.artifactId}-${project.version}.jar</outjar>
                     <outputDirectory>${project.build.directory}/jars</outputDirectory>
                     <proguardInclude>${basedir}/proguard/proguard.conf</proguardInclude>
                     <libs>
