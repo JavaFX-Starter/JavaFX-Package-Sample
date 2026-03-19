@@ -5,6 +5,67 @@
     -fx-font-family: "HarmonyOS Sans SC Bold";
 }
 
+.header-bar {
+    -fx-background-color: #F5F5F5;
+}
+
+.header-bar.dark {
+    -fx-background-color: #121212;
+}
+
+.header-bar .theme-button {
+    -fx-background-color: transparent;
+}
+
+.header-bar .theme-button:hover {
+    -fx-background-color: #00000015;
+}
+
+.header-bar.dark .theme-button:hover {
+    -fx-background-color: #ffffff15;
+}
+
+.header-bar .theme-button .light-icon {
+    -fx-icon-color: #333333;
+    -fx-icon-size: 16;
+}
+
+.header-bar .theme-button .dark-icon {
+    -fx-icon-color: #EAEAEA;
+    -fx-icon-size: 16;
+}
+
+.header-bar .pin-to-top-button {
+    -fx-background-color: transparent;
+}
+
+.header-bar .pin-to-top-button:hover {
+    -fx-background-color: #00000015;
+}
+
+.header-bar.dark .pin-to-top-button:hover {
+    -fx-background-color: #ffffff15;
+}
+
+.header-bar .pin-to-top-button .pin-to-top-icon {
+    -fx-icon-color: #333333;
+    -fx-icon-size: 16;
+}
+
+.header-bar.dark .pin-to-top-button .pin-to-top-icon {
+    -fx-icon-color: #EAEAEA;
+}
+
+.header-bar .pin-to-top-button:pinned .pin-to-top-icon {
+    -fx-icon-color: dodgerblue;
+}
+
+.header-bar.dark .pin-to-top-button:pinned .pin-to-top-icon {
+    -fx-icon-color: dodgerblue;
+}
+
+
+
 .combo-box .arrow-button {
     -fx-background-color: dodgerblue;
     -fx-opacity: 1;

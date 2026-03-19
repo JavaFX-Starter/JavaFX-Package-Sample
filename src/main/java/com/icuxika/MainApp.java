@@ -12,13 +12,17 @@ import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
 import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
+import javafx.css.PseudoClass;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;
@@ -26,6 +30,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +46,8 @@ import java.util.Objects;
 public class MainApp extends Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
+
+    private static final String DARK_STYLE_CLASS = "dark";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -75,76 +82,7 @@ public class MainApp extends Application {
                 createTextFlow(true), createTextFlow(false)
         );
 
-        HeaderBar headerBar = new HeaderBar();
-        var leading = new Pane();
-        leading.setPrefWidth(36);
-        leading.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
-        headerBar.setLeading(leading);
-
-        var center = new StackPane();
-        center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
-        headerBar.setCenter(center);
-
-        var appVersionLabel = new Label(getAppVersion());
-        center.getChildren().add(appVersionLabel);
-
-        var trailing = new StackPane();
-        trailing.setPrefWidth(36);
-        headerBar.setTrailing(trailing);
-
-        HBox trailingWrapper = new HBox();
-        trailingWrapper.setAlignment(Pos.CENTER);
-
-        Button themeButton = new Button();
-        var sunnyIcon = new FontIcon(FluentUiRegularMZ.WEATHER_SUNNY_24);
-        sunnyIcon.setIconSize(16);
-        sunnyIcon.setIconColor(Color.RED);
-        var moonIcon = new FontIcon(FluentUiRegularMZ.WEATHER_MOON_24);
-        moonIcon.setIconSize(16);
-        moonIcon.setIconColor(Color.YELLOW);
-        themeButton.setStyle("-fx-background-color: transparent;");
-        themeButton.graphicProperty().bind(new When(AppResource.availableThemeProperty().isEqualTo(Theme.LIGHT)).then(sunnyIcon).otherwise(moonIcon));
-        themeButton.hoverProperty().addListener((_, _, newValue) -> {
-            if (newValue) {
-                themeButton.setStyle("-fx-background-color: rgba(0,0,0,0.1);");
-            } else {
-                themeButton.setStyle("-fx-background-color: transparent;");
-            }
-        });
-        themeButton.setOnAction(_ -> {
-            if (AppResource.getAvailableTheme() == Theme.LIGHT) {
-                AppResource.setAvailableTheme(Theme.DARK);
-            } else {
-                AppResource.setAvailableTheme(Theme.LIGHT);
-            }
-        });
-
-        Button pinToTopBtn = new Button();
-        var icon = new FontIcon(FluentUiRegularMZ.PIN_12);
-        icon.setIconSize(16);
-        pinToTopBtn.setStyle("-fx-background-color: transparent;");
-        pinToTopBtn.setGraphic(icon);
-        pinToTopBtn.hoverProperty().addListener((_, _, newValue) -> {
-            if (newValue) {
-                pinToTopBtn.setStyle("-fx-background-color: rgba(0,0,0,0.1);");
-            } else {
-                pinToTopBtn.setStyle("-fx-background-color: transparent;");
-            }
-        });
-        pinToTopBtn.setOnAction(_ -> {
-            primaryStage.setAlwaysOnTop(!primaryStage.isAlwaysOnTop());
-            if (primaryStage.isAlwaysOnTop()) {
-                icon.setIconColor(Color.DODGERBLUE);
-            } else {
-                icon.setIconColor(Color.BLACK);
-            }
-        });
-
-        trailingWrapper.getChildren().addAll(themeButton, pinToTopBtn);
-        trailing.getChildren().add(trailingWrapper);
-
-        HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
-        HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
+        HeaderBar headerBar = createHeaderBar(primaryStage);
 
         var root = new BorderPane();
         root.setTop(headerBar);
@@ -152,6 +90,20 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root, 400, 800);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/main.css")).toExternalForm());
+
+        // 使 iconify, maximize, close 三个 HeaderBar 标题栏按钮响应主题变化
+        AppResource.themeProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                if (newValue == Theme.LIGHT) {
+                    scene.setFill(Color.WHITE);
+                    toggleStyleClass(headerBar, DARK_STYLE_CLASS, false);
+                } else {
+                    scene.setFill(Color.BLACK);
+                    toggleStyleClass(headerBar, DARK_STYLE_CLASS, true);
+                }
+            }
+        });
+
         primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(scene);
         primaryStage.initStyle(StageStyle.EXTENDED);
@@ -199,6 +151,81 @@ public class MainApp extends Application {
         LOGGER.info("[info]日志记录到logs/application.log中");
         LOGGER.warn("[warn]日志记录到logs/application.log中");
         LOGGER.error("[error]日志记录到logs/application.log中");
+    }
+
+    private void toggleStyleClass(Node node, String styleClass, boolean enabled) {
+        if (enabled && !node.getStyleClass().contains(styleClass)) {
+            node.getStyleClass().add(styleClass);
+        } else if (!enabled) {
+            node.getStyleClass().remove(styleClass);
+        }
+    }
+
+    private HeaderBar createHeaderBar(Stage primaryStage) {
+        HeaderBar headerBar = new HeaderBar();
+        headerBar.getStyleClass().add("header-bar");
+        var leading = new HBox();
+        var center = new HBox();
+        var trailing = new HBox();
+
+        ImageView icon = new ImageView();
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+        icon.setImage(new Image("/application.png"));
+        leading.setPrefWidth(36);
+        leading.setPadding(new Insets(0, 0, 0, 8));
+        leading.setAlignment(Pos.CENTER_LEFT);
+        leading.getChildren().addAll(icon);
+
+        var appVersionLabel = new Label(getAppVersion());
+        center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
+        center.setAlignment(Pos.CENTER_LEFT);
+        center.getChildren().add(appVersionLabel);
+
+        Button themeButton = createThemeButton();
+        Button pinToTopBtn = createPinToTopBtn(primaryStage);
+        trailing.setPrefWidth(36);
+        trailing.setAlignment(Pos.CENTER);
+        trailing.getChildren().addAll(themeButton, pinToTopBtn);
+
+        headerBar.setLeading(leading);
+        headerBar.setCenter(center);
+        headerBar.setTrailing(trailing);
+        HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
+        HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
+        return headerBar;
+    }
+
+    private static Button createPinToTopBtn(Stage primaryStage) {
+        Button pinToTopBtn = new Button();
+        pinToTopBtn.getStyleClass().add("pin-to-top-button");
+        var icon = new FontIcon(FluentUiRegularMZ.PIN_12);
+        icon.getStyleClass().add("pin-to-top-icon");
+        pinToTopBtn.setGraphic(icon);
+        pinToTopBtn.setOnAction(_ -> primaryStage.setAlwaysOnTop(!primaryStage.isAlwaysOnTop()));
+        PseudoClass pinned = PseudoClass.getPseudoClass("pinned");
+        primaryStage.alwaysOnTopProperty().addListener((_, _, newValue) -> {
+            pinToTopBtn.pseudoClassStateChanged(pinned, newValue);
+        });
+        return pinToTopBtn;
+    }
+
+    private static Button createThemeButton() {
+        Button themeButton = new Button();
+        themeButton.getStyleClass().add("theme-button");
+        var sunnyIcon = new FontIcon(FontAwesomeSolid.SUN);
+        sunnyIcon.getStyleClass().add("light-icon");
+        var moonIcon = new FontIcon(FontAwesomeSolid.MOON);
+        moonIcon.getStyleClass().add("dark-icon");
+        themeButton.graphicProperty().bind(new When(AppResource.themeProperty().isEqualTo(Theme.LIGHT)).then(sunnyIcon).otherwise(moonIcon));
+        themeButton.setOnAction(_ -> {
+            if (AppResource.getAvailableTheme() == Theme.LIGHT) {
+                AppResource.setAvailableTheme(Theme.DARK);
+            } else {
+                AppResource.setAvailableTheme(Theme.LIGHT);
+            }
+        });
+        return themeButton;
     }
 
     private ComboBox<Locale> createLanguageComboBox() {
