@@ -10,6 +10,7 @@ import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
@@ -21,6 +22,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -28,7 +30,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.StringConverter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -228,6 +229,28 @@ public class MainApp extends Application {
         return themeButton;
     }
 
+    private static class LanguageCell extends ListCell<Locale> {
+        final StringBinding simplifiedChineseBinding = AppResource.getLanguageBinding("lang-zh-CN");
+        final StringBinding englishBinding = AppResource.getLanguageBinding("lang-en");
+
+        @Override
+        protected void updateItem(Locale item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (item == null || empty) {
+                setGraphic(null);
+            } else {
+                textProperty().unbind();
+                switch (item) {
+                    case Locale l when l.equals(Locale.SIMPLIFIED_CHINESE) ->
+                            textProperty().bind(simplifiedChineseBinding);
+                    case Locale l when l.equals(Locale.ENGLISH) -> textProperty().bind(englishBinding);
+                    default -> throw new IllegalStateException("暂不支持此区域: " + item);
+                }
+            }
+        }
+    }
+
     private ComboBox<Locale> createLanguageComboBox() {
         ComboBox<Locale> comboBox = new ComboBox<>(FXCollections.observableList(AppResource.SUPPORT_LANGUAGE_LIST));
         comboBox.valueProperty().subscribe(locale -> {
@@ -236,69 +259,39 @@ public class MainApp extends Application {
             }
         });
         comboBox.valueProperty().bindBidirectional(AppResource.currentLocaleProperty());
-        comboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Locale locale) {
-                String text;
-                switch (locale) {
-                    case Locale l when l.equals(Locale.SIMPLIFIED_CHINESE) ->
-                            text = AppResource.getLanguageBinding("lang-zh-CN").get();
-                    case Locale l when l.equals(Locale.ENGLISH) ->
-                            text = AppResource.getLanguageBinding("lang-en").get();
-                    default -> throw new IllegalStateException("暂不支持此区域: " + locale);
-                }
-                return text;
-            }
-
-            @Override
-            public Locale fromString(String s) {
-                Locale locale;
-                switch (s) {
-                    case String text when text.equals(AppResource.getLanguageBinding("lang-zh-CN").get()) ->
-                            locale = Locale.SIMPLIFIED_CHINESE;
-                    case String text when text.equals(AppResource.getLanguageBinding("lang-en").get()) ->
-                            locale = Locale.ENGLISH;
-                    default -> throw new IllegalStateException("暂不支持此区域: " + s);
-                }
-                return locale;
-            }
-        });
+        comboBox.setCellFactory(_ -> new LanguageCell());
+        comboBox.setButtonCell(new LanguageCell());
         return comboBox;
+    }
+
+    private static class ThemeCell extends ListCell<Theme> {
+        final StringBinding systemBinding = AppResource.getLanguageBinding("theme-system");
+        final StringBinding lightBinding = AppResource.getLanguageBinding("theme-light");
+        final StringBinding darkBinding = AppResource.getLanguageBinding("theme-dark");
+
+        @Override
+        protected void updateItem(Theme item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (item == null || empty) {
+                setGraphic(null);
+            } else {
+                textProperty().unbind();
+                switch (item) {
+                    case SYSTEM -> textProperty().bind(systemBinding);
+                    case LIGHT -> textProperty().bind(lightBinding);
+                    case DARK -> textProperty().bind(darkBinding);
+                }
+            }
+        }
     }
 
     private ComboBox<Theme> createThemeComboBox() {
         ComboBox<Theme> comboBox = new ComboBox<>(FXCollections.observableList(List.of(Theme.SYSTEM, Theme.LIGHT, Theme.DARK)));
-        comboBox.valueProperty().subscribe(theme -> {
-            if (theme != null) {
-                AppResource.setAvailableTheme(theme);
-            }
-        });
         comboBox.valueProperty().bindBidirectional(AppResource.availableThemeProperty());
-        comboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Theme theme) {
-                String text;
-                switch (theme) {
-                    case Theme t when t.equals(Theme.SYSTEM) -> text = "系统";
-                    case Theme t when t.equals(Theme.LIGHT) -> text = "明亮";
-                    case Theme t when t.equals(Theme.DARK) -> text = "暗黑";
-                    default -> throw new IllegalStateException("暂不支持: " + theme);
-                }
-                return text;
-            }
 
-            @Override
-            public Theme fromString(String s) {
-                Theme theme;
-                switch (s) {
-                    case String text when text.equals("系统") -> theme = Theme.SYSTEM;
-                    case String text when text.equals("明亮") -> theme = Theme.LIGHT;
-                    case String text when text.equals("暗黑") -> theme = Theme.LIGHT;
-                    default -> throw new IllegalStateException("暂不支持: " + s);
-                }
-                return theme;
-            }
-        });
+        comboBox.setCellFactory(_ -> new ThemeCell());
+        comboBox.setButtonCell(new ThemeCell());
         return comboBox;
     }
 
