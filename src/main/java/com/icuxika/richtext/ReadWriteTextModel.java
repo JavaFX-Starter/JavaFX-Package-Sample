@@ -4,6 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 import jfx.incubator.scene.control.richtext.StyleResolver;
 import jfx.incubator.scene.control.richtext.TextPos;
 import jfx.incubator.scene.control.richtext.model.RichParagraph;
@@ -17,7 +18,17 @@ import java.util.function.Supplier;
 
 public class ReadWriteTextModel extends StyledTextModel {
 
+    private Color textColor = Color.BLACK;
+
+    public void setTextColor(Color textColor) {
+        this.textColor = textColor;
+    }
+
     private final List<Paragraph> paragraphs = new ArrayList<>();
+
+    public ReadWriteTextModel() {
+        paragraphs.add(new Paragraph());
+    }
 
     @Override
     public boolean isWritable() {
@@ -151,7 +162,7 @@ public class ReadWriteTextModel extends StyledTextModel {
 
     @Override
     protected void setParagraphStyle(int index, StyleAttributeMap paragraphAttrs) {
-        System.out.println("setParagraphStyle");
+        paragraphs.get(index).setParagraphAttributes(paragraphAttrs);
     }
 
     @Override
@@ -161,8 +172,7 @@ public class ReadWriteTextModel extends StyledTextModel {
 
     @Override
     public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos) {
-        System.out.println("getStyleAttributeMap");
-        return null;
+        return StyleAttributeMap.builder().set(StyleAttributeMap.TEXT_COLOR, textColor).build();
     }
 
     public ReadWriteTextModel addSegment(String text) {
@@ -243,6 +253,15 @@ public class ReadWriteTextModel extends StyledTextModel {
     static class Paragraph {
         private List<StyledSegment> segments;
         private String cachedPlainText = null;
+        private StyleAttributeMap paragraphAttrs;
+
+        public StyleAttributeMap getParagraphAttributes() {
+            return paragraphAttrs;
+        }
+
+        public void setParagraphAttributes(StyleAttributeMap a) {
+            paragraphAttrs = a;
+        }
 
         public String getPlainText() {
             if (cachedPlainText != null) {
@@ -274,7 +293,7 @@ public class ReadWriteTextModel extends StyledTextModel {
             RichParagraph.Builder builder = RichParagraph.builder();
             segments().forEach(styledSegment -> {
                 if (styledSegment.getType() == StyledSegment.Type.TEXT) {
-                    builder.addSegment(styledSegment.getText());
+                    builder.addSegment(styledSegment.getText(), styledSegment.getStyleAttributeMap(null));
                 }
                 if (styledSegment.getType() == StyledSegment.Type.INLINE_NODE) {
                     builder.addInlineNode(styledSegment.getInlineNodeGenerator());
@@ -347,15 +366,15 @@ public class ReadWriteTextModel extends StyledTextModel {
         public void insertTextSegment(int offset, String text, StyleAttributeMap attrs) {
             cachedPlainText = null;
             if (segments().isEmpty()) {
-                segments().add(StyledSegment.of(text));
+                segments().add(StyledSegment.of(text, attrs));
                 return;
             }
             if (offset == 0) {
                 if (segments().getFirst().getType() == StyledSegment.Type.TEXT) {
                     String currentText = segments().getFirst().getText();
-                    segments().set(0, StyledSegment.of(text + currentText));
+                    segments().set(0, StyledSegment.of(text + currentText, attrs));
                 } else {
-                    segments().addFirst(StyledSegment.of(text));
+                    segments().addFirst(StyledSegment.of(text, attrs));
                 }
                 return;
             }
@@ -378,12 +397,12 @@ public class ReadWriteTextModel extends StyledTextModel {
                         String currentText = segment.getText();
                         int localOffset = offset - segmentStart;
                         String newText = currentText.substring(0, localOffset) + text + currentText.substring(localOffset);
-                        segments().set(i, StyledSegment.of(newText));
+                        segments().set(i, StyledSegment.of(newText, attrs));
                     } else {
                         if (offset == segmentStart) {
-                            segments().add(i, StyledSegment.of(text));
+                            segments().add(i, StyledSegment.of(text, attrs));
                         } else {
-                            segments().add(i + 1, StyledSegment.of(text));
+                            segments().add(i + 1, StyledSegment.of(text, attrs));
                         }
                     }
                     return;
@@ -396,9 +415,9 @@ public class ReadWriteTextModel extends StyledTextModel {
                 StyledSegment lastSegment = segments().getLast();
                 if (lastSegment.getType() == StyledSegment.Type.TEXT) {
                     String currentText = lastSegment.getText();
-                    segments().set(segments().size() - 1, StyledSegment.of(currentText + text));
+                    segments().set(segments().size() - 1, StyledSegment.of(currentText + text, attrs));
                 } else {
-                    segments().add(StyledSegment.of(text));
+                    segments().add(StyledSegment.of(text, attrs));
                 }
             }
         }

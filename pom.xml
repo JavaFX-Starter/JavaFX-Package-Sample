@@ -18,6 +18,8 @@
         <application.icon>${project.basedir}/src/main/resources/application.ico</application.icon>
         <application.package.stdout.encoding>-J-Dsun.stdout.encoding=UTF-8</application.package.stdout.encoding>
         <application.package.stderr.encoding>-J-Dsun.stderr.encoding=UTF-8</application.package.stderr.encoding>
+
+        <native.version>0.0.1</native.version>
     </properties>
 
     <repositories>
@@ -82,7 +84,7 @@
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-fontawesome5-pack</artifactId>
+            <artifactId>ikonli-fontawesome6-pack</artifactId>
             <version>12.4.0</version>
         </dependency>
         <dependency>
@@ -129,7 +131,7 @@
 
     <profiles>
         <profile>
-            <id>win</id>
+            <id>non-modular</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
@@ -273,6 +275,7 @@
                                         <argument>--enable-native-access=ALL-UNNAMED</argument>
                                         <argument>--add-launcher</argument>
                                         <argument>AppUpdateTool=launcher/AppUpdateTool.properties</argument>
+                                        <argument>--win-console</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -586,6 +589,7 @@
                                         <argument>--jlink-options</argument>
                                         <argument>--ignore-signing-information</argument>
                                         <argument>--verbose</argument>
+                                        <argument>--win-console</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -616,6 +620,16 @@
     </profiles>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -625,57 +639,43 @@
                     <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
-            <!-- allatori 未授权版本会使JNI的一些功能无法使用，所在仅保留配置，留做参考 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-and-filter-allatori-config</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/allatori</directory>
-                                    <includes>
-                                        <include>allatori.xml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>run-allatori</id>
+                        <id>run</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>${mainClass}</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-native</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>pwsh</executable>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <arguments>
+                                <argument>-NoProfile</argument>
+                                <argument>-ExecutionPolicy</argument>
+                                <argument>ByPass</argument>
+                                <argument>BuildNative.ps1</argument>
+                                <argument>-NativeVersion</argument>
+                                <argument>${native.version}</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xms128m</argument>
-                        <argument>-Xmx512m</argument>
-                        <argument>-jar</argument>
-                        <argument>${basedir}/allatori/allatori.jar</argument>
-                        <argument>${basedir}/target/allatori.xml</argument>
-                    </arguments>
+                    <mainClass>${mainClass}</mainClass>
                 </configuration>
             </plugin>
-            <!-- allatori -->
         </plugins>
     </build>
 </project>

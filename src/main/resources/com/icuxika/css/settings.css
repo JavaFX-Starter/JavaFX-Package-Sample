@@ -1,0 +1,22 @@
+@import "../fonts/Fonts.css";
+
+.text {
+    -fx-font-smoothing-type: gray;
+    -fx-font-family: "HarmonyOS Sans SC Bold";
+}
+
+.header-bar {
+    -fx-background-color: #F5F5F5;
+}
+
+.header-bar.dark {
+    -fx-background-color: #121212;
+}
+
+.header-bar .title-label {
+    -fx-text-fill: black;
+}
+
+.header-bar.dark .title-label {
+    -fx-text-fill: white;
+}

@@ -1,0 +1,116 @@
+@import "../fonts/Fonts.css";
+
+.text {
+    -fx-font-smoothing-type: gray;
+    -fx-font-family: "HarmonyOS Sans SC Bold";
+}
+
+.header-bar {
+    -fx-background-color: #F5F5F5;
+}
+
+.header-bar.dark {
+    -fx-background-color: #121212;
+}
+
+.header-bar .title-label {
+    -fx-text-fill: black;
+}
+
+.header-bar.dark .title-label {
+    -fx-text-fill: white;
+}
+
+.message-list-view {
+    -fx-background-color: white;
+}
+
+.message-list-view:focused {
+    -fx-background-color: white;
+}
+
+.message-list-view .list-cell {
+    -fx-background-color: transparent;
+}
+
+.message-list-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.message-list-view .scroll-bar:vertical > .thumb {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.message-list-view .scroll-bar:vertical > .increment-button,
+.message-list-view .scroll-bar:vertical > .increment-button > .increment-arrow,
+.message-list-view .scroll-bar:vertical > .decrement-button,
+.message-list-view .scroll-bar:vertical > .decrement-button > .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.rich-text-area {
+    -fx-background-color: #FFFFFF;
+    -fx-font-size: 16;
+}
+
+.rich-text-area .caret {
+    -fx-stroke: #000000;
+}
+
+.rich-text-area .caret-line {
+    -fx-stroke: #E5EBF1;
+    -fx-fill: #E5EBF1;
+}
+
+.rich-text-area .selection-highlight {
+    -fx-stroke: #ADD6FF80;
+    -fx-fill: #ADD6FF80;
+}
+
+.rich-text-area.dark {
+    -fx-background-color: #1E1E1E;
+}
+
+.rich-text-area.dark .caret {
+    -fx-stroke: #D4D4D4;
+}
+
+.rich-text-area.dark .caret-line {
+    -fx-stroke: #3A3D41;
+    -fx-fill: #3A3D41;
+}
+
+.rich-text-area.dark .selection-highlight {
+    -fx-stroke: #ADD6FF26;
+    -fx-fill: #ADD6FF26;
+}
+
+.rich-text-area .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.rich-text-area .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.rich-text-area .scroll-bar:horizontal > .thumb {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.rich-text-area .scroll-bar:vertical > .thumb {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.rich-text-area .scroll-bar:horizontal > .increment-button,
+.rich-text-area .scroll-bar:horizontal > .increment-button > .increment-arrow,
+.rich-text-area .scroll-bar:horizontal > .decrement-button,
+.rich-text-area .scroll-bar:horizontal > .decrement-button > .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.rich-text-area .scroll-bar:vertical > .increment-button,
+.rich-text-area .scroll-bar:vertical > .increment-button > .increment-arrow,
+.rich-text-area .scroll-bar:vertical > .decrement-button,
+.rich-text-area .scroll-bar:vertical > .decrement-button > .decrement-arrow {
+    -fx-background-color: transparent;
+}

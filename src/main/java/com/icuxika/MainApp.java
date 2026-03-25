@@ -1,44 +1,39 @@
 package com.icuxika;
 
+import com.icuxika.cell.LanguageCell;
+import com.icuxika.cell.ThemeCell;
 import com.icuxika.constant.Theme;
+import com.icuxika.jni.NativeFXWindow;
 import com.icuxika.lsp.LSPAgent;
-import com.icuxika.richtext.ChatInputItem;
-import com.icuxika.richtext.ChatInputTextArea;
 import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.binding.When;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Insets;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -48,7 +43,7 @@ public class MainApp extends Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
 
-    private static final String DARK_STYLE_CLASS = "dark";
+    public static final String DARK_STYLE_CLASS = "dark";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -71,25 +66,24 @@ public class MainApp extends Application {
         LSPCodeArea lspCodeArea = new LSPCodeArea(AppResource.getTheme() == Theme.LIGHT, LSPAgent.DEMO_CODE);
         Button testButton = new Button("测试");
 
-        ChatInputTextArea chatInputTextArea = new ChatInputTextArea();
-
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(8);
         vBox.getChildren().addAll(
                 label, createThemeComboBox(), createLanguageComboBox(),
                 testButton, lspCodeArea,
-                chatInputTextArea,
                 createTextFlow(true), createTextFlow(false)
         );
 
         HeaderBar headerBar = createHeaderBar(primaryStage);
 
-        var root = new BorderPane();
-        root.setTop(headerBar);
-        root.setCenter(vBox);
+        BorderPane borderPane = new BorderPane();
+        borderPane.setTop(headerBar);
+        borderPane.setCenter(vBox);
 
-        Scene scene = new Scene(root, 400, 800);
+        var root = new StackPane();
+        root.getChildren().add(borderPane);
+        Scene scene = new Scene(root, 480, 800);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/main.css")).toExternalForm());
 
         // 使 iconify, maximize, close 三个 HeaderBar 标题栏按钮响应主题变化
@@ -105,7 +99,6 @@ public class MainApp extends Application {
             }
         });
 
-        primaryStage.titleProperty().bind(AppResource.getLanguageBinding("title"));
         primaryStage.setScene(scene);
         primaryStage.initStyle(StageStyle.EXTENDED);
         primaryStage.show();
@@ -122,25 +115,7 @@ public class MainApp extends Application {
 //                    throw new RuntimeException(e);
 //                }
 //            }).start();
-
-            List<ChatInputItem> items = chatInputTextArea.getChatInputItems();
-            int index = 1;
-            for (ChatInputItem item : items) {
-                if (item instanceof ChatInputItem.Text(String text)) {
-                    System.out.println("文本: " + text);
-                    // 发送文本消息...
-                } else if (item instanceof ChatInputItem.ImageItem(javafx.scene.image.Image image)) {
-                    System.out.println("图片: " + image);
-                    // 上传图片并发送...
-                    BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-                    try {
-                        ImageIO.write(bufferedImage, "png", new File("target\\" + index + ".png"));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    index++;
-                }
-            }
+            showChatPane(primaryStage);
         });
         // 启动语言服务器
 //        lspCodeArea.startLanguageServer();
@@ -154,7 +129,60 @@ public class MainApp extends Application {
         LOGGER.error("[error]日志记录到logs/application.log中");
     }
 
-    private void toggleStyleClass(Node node, String styleClass, boolean enabled) {
+    private void showSettingsPane(Stage primaryStage) {
+        showModalPane(primaryStage, "settings", "设置");
+    }
+
+    private void showChatPane(Stage primaryStage) {
+        showModalPane(primaryStage, "chat", "聊天");
+    }
+
+    private void showModalPane(Stage primaryStage, String key, String titleLabel) {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("fxml/" + key + ".fxml"));
+        BorderPane rootContainer;
+        try {
+            rootContainer = loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        HeaderBar headerBar = new HeaderBar();
+        headerBar.getStyleClass().add("header-bar");
+
+        Label label = new Label(titleLabel);
+        label.getStyleClass().add("title-label");
+
+        headerBar.setCenter(label);
+        rootContainer.setTop(headerBar);
+        Scene scene = new Scene(rootContainer, 600, 640);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/" + key + ".css")).toExternalForm());
+
+        if (AppResource.getTheme() == Theme.DARK) {
+            scene.setFill(Color.BLACK);
+            toggleStyleClass(headerBar, DARK_STYLE_CLASS, true);
+        }
+        AppResource.themeProperty().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                if (newValue == Theme.LIGHT) {
+                    scene.setFill(Color.WHITE);
+                    toggleStyleClass(headerBar, DARK_STYLE_CLASS, false);
+                } else {
+                    scene.setFill(Color.BLACK);
+                    toggleStyleClass(headerBar, DARK_STYLE_CLASS, true);
+                }
+            }
+        });
+
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.initStyle(StageStyle.EXTENDED);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(primaryStage);
+        stage.showAndWait();
+    }
+
+    public static void toggleStyleClass(Node node, String styleClass, boolean enabled) {
         if (enabled && !node.getStyleClass().contains(styleClass)) {
             node.getStyleClass().add(styleClass);
         } else if (!enabled) {
@@ -173,21 +201,22 @@ public class MainApp extends Application {
         icon.setFitWidth(16);
         icon.setFitHeight(16);
         icon.setImage(new Image("/application.png"));
-        leading.setPrefWidth(36);
-        leading.setPadding(new Insets(0, 0, 0, 8));
-        leading.setAlignment(Pos.CENTER_LEFT);
+        leading.setPrefWidth(24);
+        leading.setAlignment(Pos.CENTER);
         leading.getChildren().addAll(icon);
 
-        var appVersionLabel = new Label(getAppVersion());
-        center.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
+        var appVersionLabel = new Label();
+        appVersionLabel.getStyleClass().add("title-label");
+        appVersionLabel.textProperty().bind(AppResource.getLanguageBinding("title").concat("(").concat(getAppVersion()).concat(")"));
         center.setAlignment(Pos.CENTER_LEFT);
         center.getChildren().add(appVersionLabel);
 
         Button themeButton = createThemeButton();
         Button pinToTopBtn = createPinToTopBtn(primaryStage);
+        Button settingsButton = createSettingsButton(primaryStage);
         trailing.setPrefWidth(36);
         trailing.setAlignment(Pos.CENTER);
-        trailing.getChildren().addAll(themeButton, pinToTopBtn);
+        trailing.getChildren().addAll(themeButton, pinToTopBtn, settingsButton);
 
         headerBar.setLeading(leading);
         headerBar.setCenter(center);
@@ -197,10 +226,10 @@ public class MainApp extends Application {
         return headerBar;
     }
 
-    private static Button createPinToTopBtn(Stage primaryStage) {
+    private Button createPinToTopBtn(Stage primaryStage) {
         Button pinToTopBtn = new Button();
         pinToTopBtn.getStyleClass().add("pin-to-top-button");
-        var icon = new FontIcon(FluentUiRegularMZ.PIN_12);
+        var icon = new FontIcon(FontAwesomeSolid.THUMBTACK);
         icon.getStyleClass().add("pin-to-top-icon");
         pinToTopBtn.setGraphic(icon);
         pinToTopBtn.setOnAction(_ -> primaryStage.setAlwaysOnTop(!primaryStage.isAlwaysOnTop()));
@@ -211,7 +240,7 @@ public class MainApp extends Application {
         return pinToTopBtn;
     }
 
-    private static Button createThemeButton() {
+    private Button createThemeButton() {
         Button themeButton = new Button();
         themeButton.getStyleClass().add("theme-button");
         var sunnyIcon = new FontIcon(FontAwesomeSolid.SUN);
@@ -229,26 +258,14 @@ public class MainApp extends Application {
         return themeButton;
     }
 
-    private static class LanguageCell extends ListCell<Locale> {
-        final StringBinding simplifiedChineseBinding = AppResource.getLanguageBinding("lang-zh-CN");
-        final StringBinding englishBinding = AppResource.getLanguageBinding("lang-en");
-
-        @Override
-        protected void updateItem(Locale item, boolean empty) {
-            super.updateItem(item, empty);
-
-            if (item == null || empty) {
-                setGraphic(null);
-            } else {
-                textProperty().unbind();
-                switch (item) {
-                    case Locale l when l.equals(Locale.SIMPLIFIED_CHINESE) ->
-                            textProperty().bind(simplifiedChineseBinding);
-                    case Locale l when l.equals(Locale.ENGLISH) -> textProperty().bind(englishBinding);
-                    default -> throw new IllegalStateException("暂不支持此区域: " + item);
-                }
-            }
-        }
+    private Button createSettingsButton(Stage primaryStage) {
+        Button settingsButton = new Button();
+        settingsButton.getStyleClass().add("settings-button");
+        var settingsIcon = new FontIcon(FontAwesomeSolid.COG);
+        settingsIcon.getStyleClass().add("settings-icon");
+        settingsButton.setGraphic(settingsIcon);
+        settingsButton.setOnAction(_ -> showSettingsPane(primaryStage));
+        return settingsButton;
     }
 
     private ComboBox<Locale> createLanguageComboBox() {
@@ -262,28 +279,6 @@ public class MainApp extends Application {
         comboBox.setCellFactory(_ -> new LanguageCell());
         comboBox.setButtonCell(new LanguageCell());
         return comboBox;
-    }
-
-    private static class ThemeCell extends ListCell<Theme> {
-        final StringBinding systemBinding = AppResource.getLanguageBinding("theme-system");
-        final StringBinding lightBinding = AppResource.getLanguageBinding("theme-light");
-        final StringBinding darkBinding = AppResource.getLanguageBinding("theme-dark");
-
-        @Override
-        protected void updateItem(Theme item, boolean empty) {
-            super.updateItem(item, empty);
-
-            if (item == null || empty) {
-                setGraphic(null);
-            } else {
-                textProperty().unbind();
-                switch (item) {
-                    case SYSTEM -> textProperty().bind(systemBinding);
-                    case LIGHT -> textProperty().bind(lightBinding);
-                    case DARK -> textProperty().bind(darkBinding);
-                }
-            }
-        }
     }
 
     private ComboBox<Theme> createThemeComboBox() {
@@ -328,6 +323,7 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
+        LOGGER.info("程序路径: {}", NativeFXWindow.getExecutablePath());
         // 启用 HeaderBar 预览功能
         System.setProperty("javafx.enablePreview", "true");
         System.setProperty("javafx.suppressPreviewWarning", "true");

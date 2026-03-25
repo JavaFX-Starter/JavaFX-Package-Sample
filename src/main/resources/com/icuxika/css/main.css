@@ -13,6 +13,14 @@
     -fx-background-color: #121212;
 }
 
+.header-bar .title-label {
+    -fx-text-fill: black;
+}
+
+.header-bar.dark .title-label {
+    -fx-text-fill: white;
+}
+
 .header-bar .theme-button {
     -fx-background-color: transparent;
 }
@@ -64,6 +72,26 @@
     -fx-icon-color: dodgerblue;
 }
 
+.header-bar .settings-button {
+    -fx-background-color: transparent;
+}
+
+.header-bar .settings-button:hover {
+    -fx-background-color: #00000015;
+}
+
+.header-bar.dark .settings-button:hover {
+    -fx-background-color: #ffffff15;
+}
+
+.header-bar .settings-button .settings-icon {
+    -fx-icon-color: #333333;
+    -fx-icon-size: 16;
+}
+
+.header-bar.dark .settings-button .settings-icon {
+    -fx-icon-color: #EAEAEA;
+}
 
 
 .combo-box .arrow-button {

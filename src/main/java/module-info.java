@@ -12,7 +12,7 @@ module sample {
     requires MaterialFX;
     requires org.slf4j;
     requires org.kordamp.ikonli.javafx;
-    requires org.kordamp.ikonli.fontawesome5;
+    requires org.kordamp.ikonli.fontawesome6;
     requires org.kordamp.ikonli.fluentui;
     requires com.google.gson;
     requires jfx.incubator.richtext;
@@ -22,6 +22,7 @@ module sample {
 
     opens com.icuxika.model to com.google.gson;
     opens com.icuxika.lsp to org.eclipse.lsp4j.jsonrpc;
+    opens com.icuxika.controller to javafx.fxml;
 
     exports com.icuxika;
 }

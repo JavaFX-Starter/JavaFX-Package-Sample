@@ -173,6 +173,79 @@ JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_runAsAdmin(
   }
 }
 
+JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getExecutablePath(
+    JNIEnv *env, jclass clazz) {
+  wchar_t exePath[MAX_PATH];
+  GetModuleFileName(nullptr, exePath, MAX_PATH);
+  const std::wstring currentPath = exePath;
+  return NativeUtil::wstr2jstr(env, exePath);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_isStartupEnable(
+    JNIEnv *env, jclass clazz, jstring windowName) {
+  HKEY hKey = nullptr;
+  LONG result = RegOpenKeyEx(
+      HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      0, KEY_READ, &hKey);
+  if (result != ERROR_SUCCESS) {
+    return false;
+  }
+
+  DWORD dwType = REG_SZ;
+  wchar_t regValue[MAX_PATH];
+  DWORD size = sizeof(regValue);
+  result = RegQueryValueEx(hKey, NativeUtil::jstr2wstr(env, windowName).data(),
+                           nullptr, &dwType, reinterpret_cast<LPBYTE>(regValue),
+                           &size);
+  RegCloseKey(hKey);
+  if (result != ERROR_SUCCESS) {
+    return false;
+  }
+
+  wchar_t exePath[MAX_PATH];
+  GetModuleFileName(nullptr, exePath, MAX_PATH);
+
+  std::wstring regPath = regValue;
+  const std::wstring currentPath = exePath;
+
+  if (!regPath.empty() && regPath[0] == L'\"') {
+    const size_t endQuote = regPath.find(L'\"', 1);
+    if (endQuote != std::wstring::npos) {
+      regPath = regPath.substr(1, endQuote - 1);
+    }
+  }
+
+  return _wcsicmp(regPath.c_str(), currentPath.c_str()) == 0;
+}
+
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_setStartup(
+    JNIEnv *env, jclass clazz, jstring windowName, jboolean enable) {
+  wchar_t path[MAX_PATH];
+  GetModuleFileName(nullptr, path, MAX_PATH);
+  HKEY hKey = nullptr;
+  LONG result = RegOpenKeyEx(
+      HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      0, KEY_WRITE, &hKey);
+  if (result != ERROR_SUCCESS) {
+    return false;
+  }
+  if (enable) {
+    const std::wstring exePath = L"\"" + std::wstring(path) + L"\"";
+    result =
+        RegSetValueEx(hKey, NativeUtil::jstr2wstr(env, windowName).data(), 0,
+                      REG_SZ, reinterpret_cast<const BYTE *>(exePath.c_str()),
+                      (exePath.size() + 1) * sizeof(wchar_t));
+  } else {
+    result =
+        RegDeleteValue(hKey, NativeUtil::jstr2wstr(env, windowName).data());
+    if (result == ERROR_FILE_NOT_FOUND) {
+      result = ERROR_SUCCESS;
+    }
+  }
+  RegCloseKey(hKey);
+  return result == ERROR_SUCCESS;
+}
+
 #ifdef __cplusplus
 }
 #endif

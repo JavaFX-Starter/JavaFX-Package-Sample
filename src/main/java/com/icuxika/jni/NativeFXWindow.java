@@ -5,10 +5,13 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 /**
@@ -18,7 +21,7 @@ public class NativeFXWindow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeFXWindow.class);
 
-    private static final String LIB_NAME = "NativeFXWindow.dll";
+    private static final String LIB_NAME = "NativeFXWindow";
 
     private long hWnd;
 
@@ -28,15 +31,40 @@ public class NativeFXWindow {
     }
 
     static {
-        try (InputStream inputStream = MainApp.class.getResourceAsStream("/native/lib/" + LIB_NAME)) {
-            if (inputStream != null) {
-                Path tempFilePath = Files.createTempFile(LIB_NAME, "");
-                Files.copy(inputStream, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
-                System.load(tempFilePath.toString());
-            }
+        try (InputStream inputStream =
+                     MainApp.class.getResourceAsStream("/application.properties")) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            String nativeVersion = properties.getProperty("native.version");
+            LOGGER.info("NativeFXWindow 版本: {}", nativeVersion);
+            String libName = LIB_NAME + "-" + nativeVersion + ".dll";
+            Path libPath = extractLibraryIfNeeded(libName);
+            LOGGER.info("JNI 动态库解压位置: {}", libPath);
+            System.load(libPath.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Path extractLibraryIfNeeded(String libName) throws IOException {
+        Path cacheDir = Path.of(System.getProperty("java.io.tmpdir"), "JavaFXPackageSample");
+        Path libPath = cacheDir.resolve(libName);
+
+        if (Files.notExists(libPath)) {
+            LOGGER.info("创建 JNI 动态库解压目录: {}", cacheDir);
+            Files.createDirectories(cacheDir);
+
+            try (InputStream inputStream = MainApp.class.getResourceAsStream("/native/lib/" + libName)) {
+
+                if (inputStream == null) {
+                    throw new FileNotFoundException("Native library not found: " + libName);
+                }
+
+                Files.copy(inputStream, libPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
+        return libPath;
     }
 
     /**
@@ -125,4 +153,10 @@ public class NativeFXWindow {
     public static native void callPrevInstance(String message, String className, String windowName);
 
     public static native void runAsAdmin(String exePath, String parameters, String workingDir, boolean waitForExit);
+
+    public static native String getExecutablePath();
+
+    public static native boolean isStartupEnable(String windowName);
+
+    public static native boolean setStartup(String windowName, boolean enable);
 }

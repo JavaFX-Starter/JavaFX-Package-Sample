@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<BorderPane fx:id="rootContainer" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.icuxika.controller.SettingsController">
+   <center>
+      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" BorderPane.alignment="TOP_CENTER">
+         <children>
+            <TitledPane animated="false" text="外观">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="579.0">
+                           <children>
+                              <Label prefHeight="19.0" prefWidth="36.0" text="主题" />
+                              <ToggleButton fx:id="systemThemeButton" mnemonicParsing="false" text="系统">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="themeToggleGroup" />
+                                 </toggleGroup>
+                              </ToggleButton>
+                              <ToggleButton fx:id="lightThemeButton" mnemonicParsing="false" text="明亮" toggleGroup="$themeToggleGroup" />
+                              <ToggleButton fx:id="darkThemeButton" mnemonicParsing="false" text="暗黑" toggleGroup="$themeToggleGroup" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="579.0">
+                           <children>
+                              <Label prefHeight="19.0" prefWidth="36.0" text="语言" />
+                              <ComboBox fx:id="languageComboBox" prefWidth="150.0" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="579.0">
+                           <children>
+                              <CheckBox fx:id="startOnBootCheckBox" mnemonicParsing="false" text="开机自启" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+            </TitledPane>
+            <TitledPane animated="false" text="代理">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </TitledPane>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

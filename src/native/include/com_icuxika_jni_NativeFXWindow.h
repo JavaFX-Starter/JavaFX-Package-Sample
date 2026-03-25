@@ -12,102 +12,120 @@ extern "C" {
  * Method:    getHWnd
  * Signature: (Ljavafx/stage/Stage;)J
  */
-JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd(JNIEnv *,
-                                                                    jclass,
-                                                                    jobject);
+JNIEXPORT jlong JNICALL Java_com_icuxika_jni_NativeFXWindow_getHWnd
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    getWindowName
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL
-Java_com_icuxika_jni_NativeFXWindow_getWindowName(JNIEnv *, jclass, jlong);
+JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getWindowName
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    getClassName
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL
-Java_com_icuxika_jni_NativeFXWindow_getClassName(JNIEnv *, jclass, jlong);
+JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getClassName
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    registerHotKey
  * Signature: (JIII)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey(
-    JNIEnv *, jclass, jlong, jint, jint, jint);
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_registerHotKey
+  (JNIEnv *, jclass, jlong, jint, jint, jint);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    unregisterHotKey
  * Signature: (JI)Z
  */
-JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey(
-    JNIEnv *, jclass, jlong, jint);
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_unregisterHotKey
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    setWindowTransparency
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL
-Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency(JNIEnv *, jclass,
-                                                          jlong);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_setWindowTransparency
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    setWindowTransparencyAlpha
  * Signature: (JI)V
  */
-JNIEXPORT void JNICALL
-Java_com_icuxika_jni_NativeFXWindow_setWindowTransparencyAlpha(JNIEnv *, jclass,
-                                                               jlong, jint);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_setWindowTransparencyAlpha
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    unsetWindowTransparency
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL
-Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency(JNIEnv *, jclass,
-                                                            jlong);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_unsetWindowTransparency
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    initialize
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize(JNIEnv *,
-                                                                      jobject,
-                                                                      jlong);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_initialize
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    isApplicationRunning
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL
-Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning(JNIEnv *, jclass,
-                                                         jstring);
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_isApplicationRunning
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    callPrevInstance
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance(
-    JNIEnv *, jclass, jstring, jstring, jstring);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_callPrevInstance
+  (JNIEnv *, jclass, jstring, jstring, jstring);
 
 /*
  * Class:     com_icuxika_jni_NativeFXWindow
  * Method:    runAsAdmin
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
  */
-JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_runAsAdmin(
-    JNIEnv *, jclass, jstring, jstring, jstring, jboolean);
+JNIEXPORT void JNICALL Java_com_icuxika_jni_NativeFXWindow_runAsAdmin
+  (JNIEnv *, jclass, jstring, jstring, jstring, jboolean);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    getExecutablePath
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_icuxika_jni_NativeFXWindow_getExecutablePath
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    isStartupEnable
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_isStartupEnable
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     com_icuxika_jni_NativeFXWindow
+ * Method:    setStartup
+ * Signature: (Ljava/lang/String;Z)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_icuxika_jni_NativeFXWindow_setStartup
+  (JNIEnv *, jclass, jstring, jboolean);
 
 #ifdef __cplusplus
 }
