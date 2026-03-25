@@ -47,7 +47,10 @@ public class ReadWriteTextModel extends StyledTextModel {
 
     @Override
     public RichParagraph getParagraph(int index) {
-        return paragraphs.get(index).toRichParagraph();
+        StyleAttributeMap currentStyle = StyleAttributeMap.builder()
+                .set(StyleAttributeMap.TEXT_COLOR, textColor)
+                .build();
+        return paragraphs.get(index).toRichParagraph(currentStyle);
     }
 
     @Override
@@ -289,11 +292,11 @@ public class ReadWriteTextModel extends StyledTextModel {
             cachedPlainText = null;
         }
 
-        public RichParagraph toRichParagraph() {
+        public RichParagraph toRichParagraph(StyleAttributeMap style) {
             RichParagraph.Builder builder = RichParagraph.builder();
             segments().forEach(styledSegment -> {
                 if (styledSegment.getType() == StyledSegment.Type.TEXT) {
-                    builder.addSegment(styledSegment.getText(), styledSegment.getStyleAttributeMap(null));
+                    builder.addSegment(styledSegment.getText(), style);
                 }
                 if (styledSegment.getType() == StyledSegment.Type.INLINE_NODE) {
                     builder.addInlineNode(styledSegment.getInlineNodeGenerator());

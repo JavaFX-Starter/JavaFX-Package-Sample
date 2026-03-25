@@ -20,3 +20,25 @@
 .header-bar.dark .title-label {
     -fx-text-fill: white;
 }
+
+.header-bar .theme-button {
+    -fx-background-color: transparent;
+}
+
+.header-bar .theme-button:hover {
+    -fx-background-color: #00000015;
+}
+
+.header-bar.dark .theme-button:hover {
+    -fx-background-color: #ffffff15;
+}
+
+.header-bar .theme-button .light-icon {
+    -fx-icon-color: #333333;
+    -fx-icon-size: 16;
+}
+
+.header-bar .theme-button .dark-icon {
+    -fx-icon-color: #EAEAEA;
+    -fx-icon-size: 16;
+}

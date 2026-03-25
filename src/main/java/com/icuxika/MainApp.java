@@ -153,6 +153,7 @@ public class MainApp extends Application {
         label.getStyleClass().add("title-label");
 
         headerBar.setCenter(label);
+        headerBar.setTrailing(createThemeButton());
         rootContainer.setTop(headerBar);
         Scene scene = new Scene(rootContainer, 600, 640);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/" + key + ".css")).toExternalForm());

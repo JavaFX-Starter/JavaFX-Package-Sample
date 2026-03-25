@@ -29,9 +29,12 @@ public class ChatInputTextArea extends RichTextArea {
             }
         });
 
-        if (AppResource.getTheme() == Theme.DARK) {
+        Theme currentTheme = AppResource.getTheme();
+        if (currentTheme == Theme.DARK) {
             MainApp.toggleStyleClass(this, MainApp.DARK_STYLE_CLASS, true);
             readWriteTextModel.setTextColor(Color.WHITE);
+        } else {
+            readWriteTextModel.setTextColor(Color.BLACK);
         }
         AppResource.themeProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
@@ -42,6 +45,7 @@ public class ChatInputTextArea extends RichTextArea {
                     MainApp.toggleStyleClass(this, MainApp.DARK_STYLE_CLASS, true);
                     readWriteTextModel.setTextColor(Color.WHITE);
                 }
+                readWriteTextModel.fireStyleChangeEvent(TextPos.ZERO, readWriteTextModel.getDocumentEnd());
             }
         });
     }
