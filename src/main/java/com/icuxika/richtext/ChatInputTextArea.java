@@ -24,8 +24,8 @@ public class ChatInputTextArea extends RichTextArea {
                 select(TextPos.ofLeading(caretPosition.index(), caretPosition.offset() + clipboard.getString().length()));
             }
             if (clipboard.hasImage()) {
-                readWriteTextModel.insertImage(caretPosition, clipboard.getImage());
-                select(TextPos.ofLeading(caretPosition.index(), caretPosition.offset() + "<image>".length()));
+                readWriteTextModel.insertImage(caretPosition, clipboard.getImage(), 64);
+                select(TextPos.ofLeading(caretPosition.index(), caretPosition.offset() + 1));
             }
         });
 
@@ -59,17 +59,18 @@ public class ChatInputTextArea extends RichTextArea {
     }
 
     public void insertNewlineAt(TextPos pos) {
-        // ReadWriteTextModel.insertLineBreak 已经实现了在任意位置分割段落
         readWriteTextModel.insertLineBreak(pos.index(), pos.offset());
 
-        // 通知控件模型已变更
-        // insertLineBreak 内部需要调用 fireChangeEvent，如果没有，在这里补发：
         int newIndex = pos.index() + 1;
         readWriteTextModel.fireChangeEvent(
                 TextPos.ofLeading(pos.index(), pos.offset()),
                 TextPos.ofLeading(newIndex, 0),
-                0, 1, 0    // 插入了 1 个段落
+                0, 1, 0
         );
+        select(TextPos.ofLeading(newIndex, 0));
     }
 
+    public void insertNewlineAtCaretPosition() {
+        insertNewlineAt(getCaretPosition());
+    }
 }

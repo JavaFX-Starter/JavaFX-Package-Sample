@@ -46,6 +46,7 @@ public class ChatController implements Initializable {
     @FXML
     private BorderPane contentContainer;
 
+    private final ListView<Message> messageListView = new ListView<>();
     private final ObservableList<Message> messageObservableList = FXCollections.observableArrayList();
 
     private final ChatInputTextArea chatInputTextArea = new ChatInputTextArea();
@@ -66,7 +67,6 @@ public class ChatController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ListView<Message> messageListView = new ListView<>();
         messageListView.getStyleClass().add("message-list-view");
         contentContainer.setCenter(messageListView);
 
@@ -329,6 +329,7 @@ public class ChatController implements Initializable {
                 index++;
             }
         }
+        messageListView.scrollTo(messageObservableList.size() - 1);
     }
 
     protected class MessageSendKeyEventHandler implements EventHandler<KeyEvent> {
@@ -350,7 +351,7 @@ public class ChatController implements Initializable {
                 boolean shift = event.isShiftDown();
                 if ((control && messageSendType == MessageSendType.CTRL_ENTER) || (!control && !shift && messageSendType == MessageSendType.ENTER)) {
                     callback.run();
-                    chatInputTextArea.getModel().replace(null, TextPos.ZERO, chatInputTextArea.getDocumentEnd(), "", false);
+                    chatInputTextArea.clear();
                 } else {
                     insertNewline();
                 }
@@ -361,19 +362,11 @@ public class ChatController implements Initializable {
             SelectionSegment sel = chatInputTextArea.getSelection();
             TextPos min = sel.getMin();
             TextPos max = sel.getMax();
-
             // 如果有选区，先删除选区内容
             if (!min.equals(max)) {
                 chatInputTextArea.removeRange(min, max);
             }
-
-            // 在当前光标处插入换行（使用删除后刷新的光标位置）
-            TextPos caret = chatInputTextArea.getCaretPosition();
-            chatInputTextArea.insertNewlineAt(caret);   // 见下方说明
-
-            // 将光标移到新段落行首
-            int newIndex = caret.index() + 1;
-            chatInputTextArea.select(TextPos.ofLeading(newIndex, 0));
+            chatInputTextArea.insertNewlineAt(min);
         }
     }
 

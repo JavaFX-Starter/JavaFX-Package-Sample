@@ -18,17 +18,18 @@ import java.util.function.Supplier;
 
 public class ReadWriteTextModel extends StyledTextModel {
 
+    // -------------------------------------------------------------------------
+    // 字段与构造
+
     private Color textColor = Color.BLACK;
-
-    public void setTextColor(Color textColor) {
-        this.textColor = textColor;
-    }
-
     private final List<Paragraph> paragraphs = new ArrayList<>();
 
     public ReadWriteTextModel() {
         paragraphs.add(new Paragraph());
     }
+
+    // -------------------------------------------------------------------------
+    // StyledTextModel 查询接口
 
     @Override
     public boolean isWritable() {
@@ -47,93 +48,29 @@ public class ReadWriteTextModel extends StyledTextModel {
 
     @Override
     public RichParagraph getParagraph(int index) {
-        StyleAttributeMap currentStyle = StyleAttributeMap.builder()
-                .set(StyleAttributeMap.TEXT_COLOR, textColor)
-                .build();
-        return paragraphs.get(index).toRichParagraph(currentStyle);
+        return paragraphs.get(index).toRichParagraph(currentStyle());
     }
+
+    @Override
+    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos) {
+        return currentStyle();
+    }
+
+    // -------------------------------------------------------------------------
+    // StyledTextModel 变更接口
 
     @Override
     protected void removeRange(TextPos start, TextPos end) {
         if (start.index() == end.index()) {
-            // 删除操作发生在一行内
-            Paragraph p = paragraphs.get(start.index());
-            String text = p.getPlainText();
-            if (!text.isEmpty()) {
-                p.removeRangeInline(start, end);
-            } else {
-                paragraphs.remove(start.index());
-            }
-            return;
-        }
-        Paragraph startParagraph = paragraphs.get(start.index());
-        Paragraph endParagraph = paragraphs.get(end.index());
-
-        // 保存起始段落中删除点之前的内容
-        String startText = startParagraph.getPlainText();
-        if (start.offset() < startText.length()) {
-            startParagraph.removeRangeInline(start, TextPos.ofLeading(start.index(), startText.length()));
-        }
-
-        // 保存结束段落中删除点之后的内容
-        List<StyledSegment> endSegments = new ArrayList<>();
-        if (end.offset() > 0) {
-            int currentOffset = 0;
-            for (StyledSegment segment : endParagraph.segments()) {
-                int segmentLength = 0;
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    segmentLength = segment.getText().length();
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    segmentLength = "<image>".length();
-                }
-
-                int segmentStart = currentOffset;
-                int segmentEnd = currentOffset + segmentLength;
-
-                if (segmentStart >= end.offset()) {
-                    endSegments.add(segment);
-                } else if (segmentEnd > end.offset()) {
-                    if (segment.getType() == StyledSegment.Type.TEXT) {
-                        String currentText = segment.getText();
-                        int localOffset = end.offset() - segmentStart;
-                        if (localOffset < currentText.length()) {
-                            String after = currentText.substring(localOffset);
-                            if (!after.isEmpty()) {
-                                endSegments.add(StyledSegment.of(after));
-                            }
-                        }
-                    } else {
-                        endSegments.add(segment);
-                    }
-                }
-
-                currentOffset = segmentEnd;
-            }
+            removeSingleParagraphRange(start, end);
         } else {
-            if (endParagraph.segments != null) {
-                endSegments.addAll(endParagraph.segments);
-            }
-        }
-
-        // 删除中间段落，包括结束段落
-        if (end.index() >= start.index() + 1) {
-            paragraphs.subList(start.index() + 1, end.index() + 1).clear();
-        }
-
-        // 将结束段落的剩余内容合并到起始段落
-        if (!endSegments.isEmpty()) {
-            startParagraph.addAll(endSegments);
-        }
-
-        if (paragraphs.isEmpty()) {
-            paragraphs.add(new Paragraph());
+            removeCrossParagraphRange(start, end);
         }
     }
 
     @Override
     protected int insertTextSegment(int index, int offset, String text, StyleAttributeMap attrs) {
-        Paragraph p = paragraphs.get(index);
-        p.insertTextSegment(offset, text, attrs);
+        paragraphs.get(index).insertTextSegment(offset, text, attrs);
         return text.length();
     }
 
@@ -141,21 +78,13 @@ public class ReadWriteTextModel extends StyledTextModel {
     protected void insertLineBreak(int index, int offset) {
         Paragraph p = paragraphs.get(index);
         String text = p.getPlainText();
-
-        // 段落开头
         if (offset == 0) {
             paragraphs.add(index, new Paragraph());
-            return;
-        }
-
-        // 段落结尾
-        if (offset >= text.length()) {
+        } else if (offset >= text.length()) {
             paragraphs.add(index + 1, new Paragraph());
-            return;
+        } else {
+            paragraphs.add(index + 1, p.splitAt(offset));
         }
-
-        Paragraph newParagraph = p.splitAt(offset);
-        paragraphs.add(index + 1, newParagraph);
     }
 
     @Override
@@ -173,20 +102,20 @@ public class ReadWriteTextModel extends StyledTextModel {
         System.out.println("applyStyle");
     }
 
-    @Override
-    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos) {
-        return StyleAttributeMap.builder().set(StyleAttributeMap.TEXT_COLOR, textColor).build();
+    // -------------------------------------------------------------------------
+    // 公开的内容构建 API
+
+    public void setTextColor(Color textColor) {
+        this.textColor = textColor;
     }
 
     public ReadWriteTextModel addSegment(String text) {
-        Paragraph p = lastParagraph();
-        p.addText(text);
+        lastParagraph().addText(text);
         return this;
     }
 
     public ReadWriteTextModel addNodeSegment(Supplier<Node> generator) {
-        Paragraph p = lastParagraph();
-        p.addInlineNode(generator);
+        lastParagraph().addInlineNode(generator);
         return this;
     }
 
@@ -195,68 +124,144 @@ public class ReadWriteTextModel extends StyledTextModel {
         return this;
     }
 
-    private Paragraph lastParagraph() {
-        int sz = paragraphs.size();
-        if (sz == 0) {
-            Paragraph p = new Paragraph();
-            paragraphs.add(p);
-            return p;
-        }
-        return paragraphs.get(sz - 1);
-    }
-
+    /**
+     * 在指定位置插入文字并通知控件刷新。
+     */
     public void insertText(TextPos pos, String text) {
         insertTextSegment(pos.index(), pos.offset(), text, StyleAttributeMap.EMPTY);
-        fireChangeEvent(TextPos.ofLeading(pos.index(), pos.offset()), TextPos.ofLeading(pos.index(), pos.offset() + text.length()), text.length(), 0, 0);
+        fireChangeEvent(
+                TextPos.ofLeading(pos.index(), pos.offset()),
+                TextPos.ofLeading(pos.index(), pos.offset() + text.length()),
+                text.length(), 0, 0
+        );
     }
 
-    public void insertImage(TextPos pos, Image image) {
-        Paragraph p = paragraphs.get(pos.index());
-        int plainTextLength = p.getPlainText().length();
-        p.insertNodeSegment(pos.offset(), () -> {
-            ImageView imageView = new ImageView();
-            imageView.setImage(image);
-            imageView.setPreserveRatio(true);
-            imageView.setFitHeight(64);
-            return imageView;
+    /**
+     * 在指定位置插入内联节点，节点的具体构建由调用方通过 nodeSupplier 提供，模型不感知展示细节。
+     * 插入后逻辑长度为 {@link Paragraph#INLINE_NODE_LOGICAL_LENGTH}。
+     */
+    public void insertInlineNode(TextPos pos, Supplier<Node> nodeSupplier) {
+        paragraphs.get(pos.index()).insertNodeSegment(pos.offset(), nodeSupplier);
+        fireChangeEvent(
+                TextPos.ofLeading(pos.index(), pos.offset()),
+                TextPos.ofLeading(pos.index(), pos.offset() + Paragraph.INLINE_NODE_LOGICAL_LENGTH),
+                Paragraph.INLINE_NODE_LOGICAL_LENGTH, 0, 0
+        );
+    }
+
+    /**
+     * 便捷方法：插入图片，由调用方指定渲染高度。
+     */
+    public void insertImage(TextPos pos, Image image, double fitHeight) {
+        insertInlineNode(pos, () -> {
+            ImageView iv = new ImageView(image);
+            iv.setPreserveRatio(true);
+            iv.setFitHeight(fitHeight);
+            return iv;
         });
-        fireChangeEvent(TextPos.ofLeading(pos.index(), 0), TextPos.ofLeading(pos.index(), plainTextLength + "<image>".length()), plainTextLength + "<image>".length(), 0, 0);
     }
 
+    /**
+     * 收集当前编辑器的所有内容，按段落顺序返回文字和图片的混合列表。
+     * 相邻的文字 item 会被合并；段落之间以 "\n" 连接。
+     */
     public List<ChatInputItem> getChatInputItems() {
         List<ChatInputItem> items = new ArrayList<>();
         for (int i = 0; i < paragraphs.size(); i++) {
-            Paragraph p = paragraphs.get(i);
-            for (StyledSegment segment : p.segments()) {
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    String text = segment.getText();
-                    if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String text1)) {
-                        items.set(items.size() - 1, new ChatInputItem.Text(text1 + text));
-                    } else {
-                        items.add(new ChatInputItem.Text(text));
-                    }
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    Node node = segment.getInlineNodeGenerator().get();
-                    if (node instanceof ImageView imageView) {
-                        items.add(new ChatInputItem.ImageItem(imageView.getImage()));
-                    }
-                }
-            }
+            paragraphs.get(i).collectItems(items);
             if (i < paragraphs.size() - 1) {
-                if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String text)) {
-                    items.set(items.size() - 1, new ChatInputItem.Text(text + "\n"));
-                } else {
-                    items.add(new ChatInputItem.Text("\n"));
-                }
+                appendNewline(items);
             }
         }
         return items;
     }
 
+    // -------------------------------------------------------------------------
+    // removeRange 私有拆分
+
+    private void removeSingleParagraphRange(TextPos start, TextPos end) {
+        Paragraph p = paragraphs.get(start.index());
+        if (!p.getPlainText().isEmpty()) {
+            p.removeRangeInline(start, end);
+        } else {
+            // 段落本身已是空段，用户主动删除空行
+            paragraphs.remove(start.index());
+        }
+    }
+
+    private void removeCrossParagraphRange(TextPos start, TextPos end) {
+        Paragraph startParagraph = paragraphs.get(start.index());
+        Paragraph endParagraph = paragraphs.get(end.index());
+
+        // 1. 裁剪起始段：保留 [0, start.offset()) 的内容
+        startParagraph.truncateFrom(start.offset());
+
+        // 2. 收集结束段：保留 [end.offset(), 末尾) 的内容
+        List<StyledSegment> tail = endParagraph.collectTailFrom(end.offset());
+
+        // 3. 删除中间段落（含结束段落）
+        paragraphs.subList(start.index() + 1, end.index() + 1).clear();
+
+        // 4. 将结束段的剩余内容追加到起始段
+        if (!tail.isEmpty()) {
+            startParagraph.addAll(tail);
+        }
+
+        if (paragraphs.isEmpty()) {
+            paragraphs.add(new Paragraph());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // 私有工具方法
+
+    private StyleAttributeMap currentStyle() {
+        return StyleAttributeMap.builder()
+                .set(StyleAttributeMap.TEXT_COLOR, textColor)
+                .build();
+    }
+
+    private Paragraph lastParagraph() {
+        if (paragraphs.isEmpty()) {
+            Paragraph p = new Paragraph();
+            paragraphs.add(p);
+            return p;
+        }
+        return paragraphs.getLast();
+    }
+
+    private static void appendNewline(List<ChatInputItem> items) {
+        if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String prev)) {
+            items.set(items.size() - 1, new ChatInputItem.Text(prev + "\n"));
+        } else {
+            items.add(new ChatInputItem.Text("\n"));
+        }
+    }
+
+    // =========================================================================
+    // Paragraph — 段落内容与操作
+    // =========================================================================
+
     static class Paragraph {
+
+        /**
+         * 所有内联节点在逻辑 offset 空间中统一占 1 个单位，与 RichTextArea 的 hit-test 行为对齐。
+         * fireChangeEvent 和外部所有涉及节点长度的计算都应引用此常量，而不是硬编码 1。
+         */
+        static final int INLINE_NODE_LOGICAL_LENGTH = 1;
+
+        /**
+         * Unicode Object Replacement Character，用于在 getPlainText() 中作为内联节点的占位符。
+         * 其 UTF-16 长度恰好为 1，与 INLINE_NODE_LOGICAL_LENGTH 严格对应。
+         */
+        private static final char INLINE_NODE_PLACEHOLDER = '\uFFFC';
+
         private List<StyledSegment> segments;
         private String cachedPlainText = null;
         private StyleAttributeMap paragraphAttrs;
+
+        // -------------------------------------------------------------------------
+        // 属性访问
 
         public StyleAttributeMap getParagraphAttributes() {
             return paragraphAttrs;
@@ -266,10 +271,14 @@ public class ReadWriteTextModel extends StyledTextModel {
             paragraphAttrs = a;
         }
 
+        /**
+         * 返回给控件使用的逻辑字符串。
+         * TEXT segment 直接追加文本；INLINE_NODE 追加单字符占位符。
+         * 字符串的 length() 与各 segment 的 logicalLength() 累加值严格一致，
+         * 保证控件 hit-test 得到的 offset 可以直接用于模型的增删操作。
+         */
         public String getPlainText() {
-            if (cachedPlainText != null) {
-                return cachedPlainText;
-            }
+            if (cachedPlainText != null) return cachedPlainText;
             if (segments == null) {
                 cachedPlainText = "";
                 return "";
@@ -278,39 +287,28 @@ public class ReadWriteTextModel extends StyledTextModel {
             for (StyledSegment seg : segments) {
                 if (seg.getType() == StyledSegment.Type.TEXT) {
                     sb.append(seg.getText());
-                }
-                if (seg.getType() == StyledSegment.Type.INLINE_NODE) {
-                    sb.append("<image>");
+                } else if (seg.getType() == StyledSegment.Type.INLINE_NODE) {
+                    sb.append(INLINE_NODE_PLACEHOLDER);
                 }
             }
             cachedPlainText = sb.toString();
             return cachedPlainText;
         }
 
-        public void addAll(List<StyledSegment> segments) {
-            segments().addAll(segments);
-            cachedPlainText = null;
-        }
-
         public RichParagraph toRichParagraph(StyleAttributeMap style) {
             RichParagraph.Builder builder = RichParagraph.builder();
-            segments().forEach(styledSegment -> {
-                if (styledSegment.getType() == StyledSegment.Type.TEXT) {
-                    builder.addSegment(styledSegment.getText(), style);
+            for (StyledSegment seg : segments()) {
+                if (seg.getType() == StyledSegment.Type.TEXT) {
+                    builder.addSegment(seg.getText(), style);
+                } else if (seg.getType() == StyledSegment.Type.INLINE_NODE) {
+                    builder.addInlineNode(seg.getInlineNodeGenerator());
                 }
-                if (styledSegment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    builder.addInlineNode(styledSegment.getInlineNodeGenerator());
-                }
-            });
+            }
             return builder.build();
         }
 
-        private List<StyledSegment> segments() {
-            if (segments == null) {
-                segments = new ArrayList<>(8);
-            }
-            return segments;
-        }
+        // -------------------------------------------------------------------------
+        // 内容追加
 
         void addText(String text) {
             segments().add(StyledSegment.of(text));
@@ -322,225 +320,246 @@ public class ReadWriteTextModel extends StyledTextModel {
             cachedPlainText = null;
         }
 
-        public void removeRangeInline(TextPos start, TextPos end) {
-            // 空行先不考虑
-            List<StyledSegment> newSegments = new ArrayList<>();
-            int offset = 0;
-            for (StyledSegment segment : segments()) {
-                int segmentLength = 0;
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    segmentLength = segment.getText().length();
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    segmentLength = "<image>".length();
-                }
-
-                int segmentStart = offset;
-                int segmentEnd = offset + segmentLength;
-
-                if (segmentEnd <= start.offset()) {
-                    // segment 完全在删除范围之前
-                    newSegments.add(segment);
-                } else if (segmentStart >= end.offset()) {
-                    // segment 完全在删除范围之后
-                    newSegments.add(segment);
+        /**
+         * 将外部 segments 追加到本段末尾。
+         * 相邻无样式 TEXT segment 自动合并，避免跨段删除后列表持续碎片化。
+         */
+        void addAll(List<StyledSegment> incoming) {
+            if (incoming.isEmpty()) return;
+            List<StyledSegment> current = segments();
+            for (StyledSegment seg : incoming) {
+                if (seg.getType() == StyledSegment.Type.TEXT
+                        && !current.isEmpty()
+                        && current.getLast().getType() == StyledSegment.Type.TEXT) {
+                    StyledSegment last = current.getLast();
+                    current.set(current.size() - 1, StyledSegment.of(last.getText() + seg.getText()));
                 } else {
-                    if (segment.getType() == StyledSegment.Type.TEXT) {
-                        String text = segment.getText();
-                        int deleteStart = Math.max(0, start.offset() - segmentStart);
-                        int deleteEnd = Math.min(text.length(), end.offset() - segmentStart);
-
-                        if (deleteStart > 0) {
-                            String before = text.substring(0, deleteStart);
-                            newSegments.add(StyledSegment.of(before));
-                        }
-
-                        if (deleteEnd < text.length()) {
-                            String after = text.substring(deleteEnd);
-                            newSegments.add(StyledSegment.of(after));
-                        }
-                    }
+                    current.add(seg);
                 }
-                offset = segmentEnd;
             }
-            segments = newSegments;
             cachedPlainText = null;
         }
 
-        public void insertTextSegment(int offset, String text, StyleAttributeMap attrs) {
-            cachedPlainText = null;
-            if (segments().isEmpty()) {
-                segments().add(StyledSegment.of(text, attrs));
-                return;
-            }
-            if (offset == 0) {
-                if (segments().getFirst().getType() == StyledSegment.Type.TEXT) {
-                    String currentText = segments().getFirst().getText();
-                    segments().set(0, StyledSegment.of(text + currentText, attrs));
-                } else {
-                    segments().addFirst(StyledSegment.of(text, attrs));
-                }
-                return;
-            }
+        // -------------------------------------------------------------------------
+        // 插入操作
 
+        void insertTextSegment(int offset, String text, StyleAttributeMap attrs) {
+            cachedPlainText = null;
+            if (segments().isEmpty() || offset == 0) {
+                segments().addFirst(StyledSegment.of(text, attrs));
+                return;
+            }
             int currentOffset = 0;
             for (int i = 0; i < segments().size(); i++) {
-                StyledSegment segment = segments().get(i);
-                int segmentLength = 0;
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    segmentLength = segment.getText().length();
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    segmentLength = "<image>".length();
-                }
-
-                int segmentStart = currentOffset;
-                int segmentEnd = currentOffset + segmentLength;
-
-                if (offset >= segmentStart && offset <= segmentEnd) {
-                    if (segment.getType() == StyledSegment.Type.TEXT) {
-                        String currentText = segment.getText();
-                        int localOffset = offset - segmentStart;
-                        String newText = currentText.substring(0, localOffset) + text + currentText.substring(localOffset);
-                        segments().set(i, StyledSegment.of(newText, attrs));
+                StyledSegment seg = segments().get(i);
+                int segEnd = currentOffset + logicalLength(seg);
+                if (offset >= currentOffset && offset <= segEnd) {
+                    if (seg.getType() == StyledSegment.Type.TEXT) {
+                        int local = offset - currentOffset;
+                        String merged = seg.getText().substring(0, local) + text + seg.getText().substring(local);
+                        segments().set(i, StyledSegment.of(merged, attrs));
                     } else {
-                        if (offset == segmentStart) {
-                            segments().add(i, StyledSegment.of(text, attrs));
-                        } else {
-                            segments().add(i + 1, StyledSegment.of(text, attrs));
-                        }
+                        segments().add(offset == currentOffset ? i : i + 1, StyledSegment.of(text, attrs));
                     }
                     return;
                 }
-
-                currentOffset = segmentEnd;
+                currentOffset = segEnd;
             }
-
-            if (offset >= currentOffset) {
-                StyledSegment lastSegment = segments().getLast();
-                if (lastSegment.getType() == StyledSegment.Type.TEXT) {
-                    String currentText = lastSegment.getText();
-                    segments().set(segments().size() - 1, StyledSegment.of(currentText + text, attrs));
-                } else {
-                    segments().add(StyledSegment.of(text, attrs));
-                }
-            }
+            // offset 超出末尾，直接追加，不与最后一段合并以保留各自样式
+            segments().add(StyledSegment.of(text, attrs));
         }
 
-        public void insertNodeSegment(int offset, Supplier<Node> generator) {
+        void insertNodeSegment(int offset, Supplier<Node> generator) {
             cachedPlainText = null;
-            if (segments().isEmpty()) {
-                segments().add(StyledSegment.ofInlineNode(generator));
-                return;
-            }
-
-            if (offset == 0) {
+            if (segments().isEmpty() || offset == 0) {
                 segments().addFirst(StyledSegment.ofInlineNode(generator));
                 return;
             }
-
             int currentOffset = 0;
             for (int i = 0; i < segments().size(); i++) {
-                StyledSegment segment = segments().get(i);
-                int segmentLength = 0;
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    segmentLength = segment.getText().length();
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    segmentLength = "<image>".length();
-                }
-
-                int segmentStart = currentOffset;
-                int segmentEnd = currentOffset + segmentLength;
-
-                if (offset >= segmentStart && offset <= segmentEnd) {
-                    if (segment.getType() == StyledSegment.Type.TEXT) {
-                        String currentText = segment.getText();
-                        int localOffset = offset - segmentStart;
-
-                        if (localOffset == 0) {
+                StyledSegment seg = segments().get(i);
+                int segEnd = currentOffset + logicalLength(seg);
+                if (offset >= currentOffset && offset <= segEnd) {
+                    if (seg.getType() == StyledSegment.Type.TEXT) {
+                        int local = offset - currentOffset;
+                        if (local == 0) {
                             segments().add(i, StyledSegment.ofInlineNode(generator));
-                        } else if (localOffset == currentText.length()) {
+                        } else if (local == seg.getText().length()) {
                             segments().add(i + 1, StyledSegment.ofInlineNode(generator));
                         } else {
-                            String before = currentText.substring(0, localOffset);
-                            String after = currentText.substring(localOffset);
-                            segments().set(i, StyledSegment.of(before));
+                            // 在文字中间插入节点，将文字段一分为二
+                            segments().set(i, StyledSegment.of(seg.getText().substring(0, local)));
                             segments().add(i + 1, StyledSegment.ofInlineNode(generator));
-                            segments().add(i + 2, StyledSegment.of(after));
+                            segments().add(i + 2, StyledSegment.of(seg.getText().substring(local)));
                         }
                     } else {
-                        if (offset == segmentStart) {
-                            segments().add(i, StyledSegment.ofInlineNode(generator));
-                        } else {
-                            segments().add(i + 1, StyledSegment.ofInlineNode(generator));
-                        }
+                        segments().add(offset == currentOffset ? i : i + 1, StyledSegment.ofInlineNode(generator));
                     }
                     return;
                 }
-
-                currentOffset = segmentEnd;
+                currentOffset = segEnd;
             }
+            segments().add(StyledSegment.ofInlineNode(generator));
+        }
 
-            if (offset >= currentOffset) {
-                segments().add(StyledSegment.ofInlineNode(generator));
+        // -------------------------------------------------------------------------
+        // 删除与分割操作
+
+        void removeRangeInline(TextPos start, TextPos end) {
+            List<StyledSegment> result = new ArrayList<>();
+            int offset = 0;
+            for (StyledSegment seg : segments()) {
+                int segEnd = offset + logicalLength(seg);
+                if (segEnd <= start.offset()) {
+                    result.add(seg);
+                } else if (offset >= end.offset()) {
+                    result.add(seg);
+                } else if (seg.getType() == StyledSegment.Type.TEXT) {
+                    int delStart = Math.max(0, start.offset() - offset);
+                    int delEnd = Math.min(seg.getText().length(), end.offset() - offset);
+                    if (delStart > 0) result.add(StyledSegment.of(seg.getText().substring(0, delStart)));
+                    if (delEnd < seg.getText().length()) result.add(StyledSegment.of(seg.getText().substring(delEnd)));
+                }
+                // INLINE_NODE 落在删除范围内：直接丢弃
+                offset = segEnd;
+            }
+            segments = result;
+            cachedPlainText = null;
+        }
+
+        /**
+         * 清除从 offset（含）到末尾的全部内容。
+         */
+        void truncateFrom(int offset) {
+            if (offset == 0) {
+                segments = null;
+                cachedPlainText = null;
+                return;
+            }
+            String plain = getPlainText();
+            if (offset < plain.length()) {
+                removeRangeInline(
+                        TextPos.ofLeading(0, offset),
+                        TextPos.ofLeading(0, plain.length())
+                );
             }
         }
 
-        public Paragraph splitAt(int offset) {
-            Paragraph paragraph = new Paragraph();
-
-            List<StyledSegment> currentSegments = new ArrayList<>();
-            List<StyledSegment> newSegments = new ArrayList<>();
-
-            int currentOffset = 0;
-            boolean splitDone = false;
-            for (StyledSegment segment : segments()) {
-                int segmentLength = 0;
-                if (segment.getType() == StyledSegment.Type.TEXT) {
-                    segmentLength = segment.getText().length();
-                } else if (segment.getType() == StyledSegment.Type.INLINE_NODE) {
-                    segmentLength = "<image>".length();
-                }
-
-                int segmentStart = currentOffset;
-                int segmentEnd = currentOffset + segmentLength;
-
-                if (splitDone) {
-                    newSegments.add(segment);
-                } else if (segmentEnd <= offset) {
-                    currentSegments.add(segment);
-                } else if (segmentStart >= offset) {
-                    newSegments.add(segment);
-                    splitDone = true;
-                } else {
-                    if (segment.getType() == StyledSegment.Type.TEXT) {
-                        String currentText = segment.getText();
-                        int localOffset = offset - segmentStart;
-                        String before = currentText.substring(0, localOffset);
-                        String after = currentText.substring(localOffset);
-
-                        if (!before.isEmpty()) {
-                            currentSegments.add(StyledSegment.of(before));
-                        }
-
-                        if (!after.isEmpty()) {
-                            newSegments.add(StyledSegment.of(after));
-                        }
-                    } else {
-                        if (offset == segmentStart) {
-                            newSegments.add(segment);
-                        } else {
-                            currentSegments.add(segment);
-                        }
-                    }
-                    splitDone = true;
-                }
-
-                currentOffset = segmentEnd;
+        /**
+         * 收集从 offset（含）到末尾的 segments，用于跨段删除后保留尾部内容。
+         * 不修改当前段落自身的内容。
+         */
+        List<StyledSegment> collectTailFrom(int offset) {
+            List<StyledSegment> tail = new ArrayList<>();
+            if (offset == 0) {
+                if (segments != null) tail.addAll(segments);
+                return tail;
             }
+            int currentOffset = 0;
+            for (StyledSegment seg : segments()) {
+                int segEnd = currentOffset + logicalLength(seg);
+                if (currentOffset >= offset) {
+                    tail.add(seg);
+                } else if (segEnd > offset) {
+                    if (seg.getType() == StyledSegment.Type.TEXT) {
+                        String after = seg.getText().substring(offset - currentOffset);
+                        if (!after.isEmpty()) tail.add(StyledSegment.of(after));
+                    } else {
+                        // INLINE_NODE 跨越边界：整体保留
+                        tail.add(seg);
+                    }
+                }
+                currentOffset = segEnd;
+            }
+            return tail;
+        }
 
-            this.segments = currentSegments;
-            paragraph.segments = newSegments.isEmpty() ? null : newSegments;
+        /**
+         * 从 offset 处将段落一分为二，返回后半部分作为新段落，当前段落保留前半部分。
+         */
+        Paragraph splitAt(int offset) {
+            Paragraph next = new Paragraph();
+            List<StyledSegment> before = new ArrayList<>();
+            List<StyledSegment> after = new ArrayList<>();
+            int currentOffset = 0;
+            boolean split = false;
+            for (StyledSegment seg : segments()) {
+                int segEnd = currentOffset + logicalLength(seg);
+                if (split) {
+                    after.add(seg);
+                } else if (segEnd <= offset) {
+                    before.add(seg);
+                } else if (currentOffset >= offset) {
+                    after.add(seg);
+                    split = true;
+                } else if (seg.getType() == StyledSegment.Type.TEXT) {
+                    int local = offset - currentOffset;
+                    String b = seg.getText().substring(0, local);
+                    String a = seg.getText().substring(local);
+                    if (!b.isEmpty()) before.add(StyledSegment.of(b));
+                    if (!a.isEmpty()) after.add(StyledSegment.of(a));
+                    split = true;
+                } else {
+                    // INLINE_NODE 不可分割，按边界决定归属
+                    (offset == currentOffset ? after : before).add(seg);
+                    split = true;
+                }
+                currentOffset = segEnd;
+            }
+            this.segments = before;
+            next.segments = after.isEmpty() ? null : after;
             cachedPlainText = null;
-            return paragraph;
+            return next;
+        }
+
+        // -------------------------------------------------------------------------
+        // ChatInputItem 收集
+
+        /**
+         * 将本段落内容追加到 items，相邻文字 item 自动合并。
+         */
+        void collectItems(List<ChatInputItem> items) {
+            for (StyledSegment seg : segments()) {
+                if (seg.getType() == StyledSegment.Type.TEXT) {
+                    appendText(items, seg.getText());
+                } else if (seg.getType() == StyledSegment.Type.INLINE_NODE) {
+                    // generator 每次调用都创建新节点，Image 由闭包持有，开销可接受。
+                    // 若后续节点类型增多，应改为插入时单独存储 metadata，而非通过实例化反查。
+                    Node node = seg.getInlineNodeGenerator().get();
+                    if (node instanceof ImageView iv) {
+                        items.add(new ChatInputItem.ImageItem(iv.getImage()));
+                    }
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // 私有工具
+
+        /**
+         * 返回 segment 在逻辑 offset 空间中占用的长度，是段落内所有位置计算的唯一入口。
+         * 新增节点类型时必须在此处显式添加 case，否则运行时立即报错。
+         */
+        private static int logicalLength(StyledSegment segment) {
+            return switch (segment.getType()) {
+                case TEXT -> segment.getText().length();
+                case INLINE_NODE -> INLINE_NODE_LOGICAL_LENGTH;
+                default -> throw new IllegalStateException(
+                        "未处理的 StyledSegment 类型: " + segment.getType());
+            };
+        }
+
+        private static void appendText(List<ChatInputItem> items, String text) {
+            if (!items.isEmpty() && items.getLast() instanceof ChatInputItem.Text(String prev)) {
+                items.set(items.size() - 1, new ChatInputItem.Text(prev + text));
+            } else {
+                items.add(new ChatInputItem.Text(text));
+            }
+        }
+
+        private List<StyledSegment> segments() {
+            if (segments == null) segments = new ArrayList<>(8);
+            return segments;
         }
     }
 }
