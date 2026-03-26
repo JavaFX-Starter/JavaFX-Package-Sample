@@ -43,12 +43,16 @@
     -fx-icon-size: 16;
 }
 
-.message-list-view {
-    -fx-background-color: white;
+.modal-root .message-list-view {
+    -fx-background-color: #F5F7FA;
+}
+
+.modal-root.dark .message-list-view {
+    -fx-background-color: #0D1117;
 }
 
 .message-list-view:focused {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
 }
 
 .message-list-view .list-cell {
@@ -59,8 +63,12 @@
     -fx-background-color: transparent;
 }
 
-.message-list-view .scroll-bar:vertical > .thumb {
-    -fx-background-color: rgba(0, 0, 0, 0.1);
+.modal-root .message-list-view .scroll-bar:vertical > .thumb {
+    -fx-background-color: #C1C7D0;
+}
+
+.modal-root.dark .message-list-view .scroll-bar:vertical > .thumb {
+    -fx-background-color: #30363D;
 }
 
 .message-list-view .scroll-bar:vertical > .increment-button,
@@ -69,6 +77,56 @@
 .message-list-view .scroll-bar:vertical > .decrement-button > .decrement-arrow {
     -fx-background-color: transparent;
 }
+
+.modal-root .chat-bubble {
+    -fx-background-radius: 16;
+    -fx-padding: 8;
+}
+
+.modal-root .left-chat-bubble {
+    -fx-background-color: #E9EEF5;
+}
+
+.modal-root.dark .left-chat-bubble {
+    -fx-background-color: #21262D;
+}
+
+.modal-root .right-chat-bubble {
+    -fx-background-color: #2F80ED;
+}
+
+.modal-root.dark .right-chat-bubble {
+    -fx-background-color: #2383E2;
+}
+
+.modal-root .left-msg-decorate {
+    -fx-background-color: #E9EEF5;
+}
+
+.modal-root.dark .left-msg-decorate {
+    -fx-background-color: #21262D;
+}
+
+.modal-root .right-msg-decorate {
+    -fx-background-color: #2F80ED;
+}
+
+.modal-root.dark .right-msg-decorate {
+    -fx-background-color: #2383E2;
+}
+
+.modal-root .chat-text {
+    -fx-text-fill: #1F2328;
+}
+
+.modal-root.dark .chat-text {
+    -fx-text-fill: #E6EDF3;
+}
+
+.modal-root .right-chat-bubble .chat-text {
+    -fx-text-fill: white;
+}
+
 
 .rich-text-area {
     -fx-background-color: #FFFFFF;
@@ -116,11 +174,19 @@
 }
 
 .rich-text-area .scroll-bar:horizontal > .thumb {
-    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-background-color: #C1C7D0;
+}
+
+.rich-text-area.dark .scroll-bar:horizontal > .thumb {
+    -fx-background-color: #30363D;
 }
 
 .rich-text-area .scroll-bar:vertical > .thumb {
-    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-background-color: #C1C7D0;
+}
+
+.rich-text-area.dark .scroll-bar:vertical > .thumb {
+    -fx-background-color: #30363D;
 }
 
 .rich-text-area .scroll-bar:horizontal > .increment-button,
@@ -135,4 +201,12 @@
 .rich-text-area .scroll-bar:vertical > .decrement-button,
 .rich-text-area .scroll-bar:vertical > .decrement-button > .decrement-arrow {
     -fx-background-color: transparent;
+}
+
+.modal-root .send-button-container {
+    -fx-background-color: #F5F5F5;
+}
+
+.modal-root.dark .send-button-container {
+    -fx-background-color: #121212;
 }

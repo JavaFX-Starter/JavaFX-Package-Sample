@@ -21,4 +21,6 @@ public class SystemConstant {
      * 更新索引文件名称
      */
     public static final String UPDATE_INDEX_FILE = "update-index.json";
+
+    public static final String DARK_STYLE_CLASS = "dark";
 }

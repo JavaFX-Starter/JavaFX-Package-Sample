@@ -1,6 +1,7 @@
 package com.icuxika;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -31,6 +32,14 @@ public class FXUtil {
             countDownLatch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void toggleStyleClass(Node node, String styleClass, boolean enabled) {
+        if (enabled && !node.getStyleClass().contains(styleClass)) {
+            node.getStyleClass().add(styleClass);
+        } else if (!enabled) {
+            node.getStyleClass().remove(styleClass);
         }
     }
 }

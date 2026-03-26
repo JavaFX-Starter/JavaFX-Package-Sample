@@ -16,7 +16,6 @@ import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -39,11 +38,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.icuxika.FXUtil.toggleStyleClass;
+import static com.icuxika.constant.SystemConstant.DARK_STYLE_CLASS;
+
 public class MainApp extends Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
-
-    public static final String DARK_STYLE_CLASS = "dark";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -143,6 +143,7 @@ public class MainApp extends Application {
         BorderPane rootContainer;
         try {
             rootContainer = loader.load();
+            rootContainer.getStyleClass().add("modal-root");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -161,15 +162,18 @@ public class MainApp extends Application {
         if (AppResource.getTheme() == Theme.DARK) {
             scene.setFill(Color.BLACK);
             toggleStyleClass(headerBar, DARK_STYLE_CLASS, true);
+            toggleStyleClass(rootContainer, DARK_STYLE_CLASS, true);
         }
         AppResource.themeProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 if (newValue == Theme.LIGHT) {
                     scene.setFill(Color.WHITE);
                     toggleStyleClass(headerBar, DARK_STYLE_CLASS, false);
+                    toggleStyleClass(rootContainer, DARK_STYLE_CLASS, false);
                 } else {
                     scene.setFill(Color.BLACK);
                     toggleStyleClass(headerBar, DARK_STYLE_CLASS, true);
+                    toggleStyleClass(rootContainer, DARK_STYLE_CLASS, true);
                 }
             }
         });
@@ -183,13 +187,6 @@ public class MainApp extends Application {
         stage.showAndWait();
     }
 
-    public static void toggleStyleClass(Node node, String styleClass, boolean enabled) {
-        if (enabled && !node.getStyleClass().contains(styleClass)) {
-            node.getStyleClass().add(styleClass);
-        } else if (!enabled) {
-            node.getStyleClass().remove(styleClass);
-        }
-    }
 
     private HeaderBar createHeaderBar(Stage primaryStage) {
         HeaderBar headerBar = new HeaderBar();

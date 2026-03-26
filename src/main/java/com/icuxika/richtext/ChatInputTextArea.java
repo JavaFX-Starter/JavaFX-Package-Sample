@@ -1,7 +1,6 @@
 package com.icuxika.richtext;
 
 import com.icuxika.AppResource;
-import com.icuxika.MainApp;
 import com.icuxika.constant.Theme;
 import javafx.scene.input.Clipboard;
 import javafx.scene.paint.Color;
@@ -9,6 +8,9 @@ import jfx.incubator.scene.control.richtext.RichTextArea;
 import jfx.incubator.scene.control.richtext.TextPos;
 
 import java.util.List;
+
+import static com.icuxika.FXUtil.toggleStyleClass;
+import static com.icuxika.constant.SystemConstant.DARK_STYLE_CLASS;
 
 public class ChatInputTextArea extends RichTextArea {
 
@@ -31,7 +33,7 @@ public class ChatInputTextArea extends RichTextArea {
 
         Theme currentTheme = AppResource.getTheme();
         if (currentTheme == Theme.DARK) {
-            MainApp.toggleStyleClass(this, MainApp.DARK_STYLE_CLASS, true);
+            toggleStyleClass(this, DARK_STYLE_CLASS, true);
             readWriteTextModel.setTextColor(Color.WHITE);
         } else {
             readWriteTextModel.setTextColor(Color.BLACK);
@@ -39,10 +41,10 @@ public class ChatInputTextArea extends RichTextArea {
         AppResource.themeProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 if (newValue == Theme.LIGHT) {
-                    MainApp.toggleStyleClass(this, MainApp.DARK_STYLE_CLASS, false);
+                    toggleStyleClass(this, DARK_STYLE_CLASS, false);
                     readWriteTextModel.setTextColor(Color.BLACK);
                 } else {
-                    MainApp.toggleStyleClass(this, MainApp.DARK_STYLE_CLASS, true);
+                    toggleStyleClass(this, DARK_STYLE_CLASS, true);
                     readWriteTextModel.setTextColor(Color.WHITE);
                 }
                 readWriteTextModel.fireStyleChangeEvent(TextPos.ZERO, readWriteTextModel.getDocumentEnd());

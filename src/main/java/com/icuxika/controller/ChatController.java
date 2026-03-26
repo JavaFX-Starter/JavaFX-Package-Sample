@@ -87,11 +87,13 @@ public class ChatController implements Initializable {
 
                     private TextFlow createText() {
                         TextFlow textFlow = new TextFlow();
-                        textFlow.setPadding(new Insets(8));
-                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
+//                        textFlow.setPadding(new Insets(8));
+//                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
+                        textFlow.getStyleClass().add("chat-bubble");
                         Label label = new Label();
                         label.textProperty().bind(textProperty);
-                        label.setTextFill(Color.WHITE);
+//                        label.setTextFill(Color.WHITE);
+                        label.getStyleClass().add("chat-text");
                         label.setFont(Font.font(16));
                         label.setMaxWidth(240);
                         label.setWrapText(true);
@@ -102,6 +104,7 @@ public class ChatController implements Initializable {
                     private AnchorPane getLeftTextNode() {
                         if (leftTextNode == null) {
                             TextFlow text = createText();
+                            text.getStyleClass().add("left-chat-bubble");
                             leftTextNode = new AnchorPane();
                             AnchorPane.setLeftAnchor(text, 24.0);
                             AnchorPane.setTopAnchor(text, 0.0);
@@ -115,6 +118,7 @@ public class ChatController implements Initializable {
                     private AnchorPane getRightTextNode() {
                         if (rightTextNode == null) {
                             TextFlow text = createText();
+                            text.getStyleClass().add("right-chat-bubble");
                             rightTextNode = new AnchorPane();
                             AnchorPane.setRightAnchor(text, 24.0);
                             AnchorPane.setTopAnchor(text, 0.0);
@@ -127,8 +131,9 @@ public class ChatController implements Initializable {
 
                     private TextFlow createImage() {
                         TextFlow textFlow = new TextFlow();
-                        textFlow.setPadding(new Insets(8));
-                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
+//                        textFlow.setPadding(new Insets(8));
+//                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
+                        textFlow.getStyleClass().add("chat-bubble");
                         ImageView imageView = new ImageView();
                         imageView.imageProperty().bind(imageProperty);
                         imageView.fitWidthProperty().bind(fitWidthProperty);
@@ -141,6 +146,7 @@ public class ChatController implements Initializable {
                     private AnchorPane getLeftImageNode() {
                         if (leftImageNode == null) {
                             TextFlow image = createImage();
+                            image.getStyleClass().add("left-chat-bubble");
                             leftImageNode = new AnchorPane();
                             AnchorPane.setLeftAnchor(image, 24.0);
                             AnchorPane.setTopAnchor(image, 0.0);
@@ -154,6 +160,7 @@ public class ChatController implements Initializable {
                     private AnchorPane getRightImageNode() {
                         if (rightImageNode == null) {
                             TextFlow image = createImage();
+                            image.getStyleClass().add("right-chat-bubble");
                             rightImageNode = new AnchorPane();
                             AnchorPane.setRightAnchor(image, 24.0);
                             AnchorPane.setTopAnchor(image, 0.0);
@@ -167,6 +174,7 @@ public class ChatController implements Initializable {
                     private TextFlow getLeftMsgDecorateTextFlow() {
                         if (leftMsgDecorateTextFlow == null) {
                             leftMsgDecorateTextFlow = createTextFlow("M-0,0c0,565.161 458.839,1024 1024,1024l-0,-716.8c-408.482,0 -785.067,-137.652 -1024,-307.2Z", 24);
+                            leftMsgDecorateTextFlow.getStyleClass().add("left-msg-decorate");
                         }
                         return leftMsgDecorateTextFlow;
                     }
@@ -174,6 +182,7 @@ public class ChatController implements Initializable {
                     private TextFlow getRightMsgDecorateTextFlow() {
                         if (rightMsgDecorateTextFlow == null) {
                             rightMsgDecorateTextFlow = createTextFlow("M0,307.2l0,716.8c565.161,0 1024,-458.839 1024,-1024c-238.933,169.548 -615.518,307.2 -1024,307.2Z", 24);
+                            rightMsgDecorateTextFlow.getStyleClass().add("right-msg-decorate");
                         }
                         return rightMsgDecorateTextFlow;
                     }
@@ -259,6 +268,7 @@ public class ChatController implements Initializable {
         sendMsgButtonContainer.getChildren().addAll(sendMsgButton, splitLabel, msgSendTypeButton);
 
         HBox bottom = new HBox();
+        bottom.getStyleClass().add("send-button-container");
         bottom.setPadding(new Insets(4, 4, 4, 0));
         bottom.setAlignment(Pos.CENTER_RIGHT);
         bottom.getChildren().add(sendMsgButtonContainer);
@@ -409,7 +419,7 @@ public class ChatController implements Initializable {
         SVGPath svgPath = new SVGPath();
         svgPath.setContent(svgContent);
         textFlow.setShape(svgPath);
-        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+//        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
         textFlow.setMinWidth(size);
         textFlow.setMinHeight(size);
         textFlow.setMaxWidth(size);
