@@ -1,46 +1,15 @@
-@import "../fonts/Fonts.css";
+@import "base.css";
 
-.text {
-    -fx-font-smoothing-type: gray;
-    -fx-font-family: "HarmonyOS Sans SC Bold";
+:root {
+    chat-bubble-left: #E9EEF5;
+    chat-bubble-right: #2F80ED;
+    chat-text-left: #1F2328;
 }
 
-.header-bar {
-    -fx-background-color: #F5F5F5;
-}
-
-.header-bar.dark {
-    -fx-background-color: #121212;
-}
-
-.header-bar .title-label {
-    -fx-text-fill: black;
-}
-
-.header-bar.dark .title-label {
-    -fx-text-fill: white;
-}
-
-.header-bar .theme-button {
-    -fx-background-color: transparent;
-}
-
-.header-bar .theme-button:hover {
-    -fx-background-color: #00000015;
-}
-
-.header-bar.dark .theme-button:hover {
-    -fx-background-color: #ffffff15;
-}
-
-.header-bar .theme-button .light-icon {
-    -fx-icon-color: #333333;
-    -fx-icon-size: 16;
-}
-
-.header-bar .theme-button .dark-icon {
-    -fx-icon-color: #EAEAEA;
-    -fx-icon-size: 16;
+:root.dark {
+    chat-bubble-left: #21262D;
+    chat-bubble-right: #2383E2;
+    chat-text-left: #E6EDF3
 }
 
 .modal-root .message-list-view {
@@ -84,123 +53,162 @@
 }
 
 .modal-root .left-chat-bubble {
-    -fx-background-color: #E9EEF5;
-}
-
-.modal-root.dark .left-chat-bubble {
-    -fx-background-color: #21262D;
+    -fx-background-color: chat-bubble-left;
 }
 
 .modal-root .right-chat-bubble {
-    -fx-background-color: #2F80ED;
-}
-
-.modal-root.dark .right-chat-bubble {
-    -fx-background-color: #2383E2;
+    -fx-background-color: chat-bubble-right;
 }
 
 .modal-root .left-msg-decorate {
-    -fx-background-color: #E9EEF5;
-}
-
-.modal-root.dark .left-msg-decorate {
-    -fx-background-color: #21262D;
+    -fx-background-color: chat-bubble-left;
 }
 
 .modal-root .right-msg-decorate {
-    -fx-background-color: #2F80ED;
-}
-
-.modal-root.dark .right-msg-decorate {
-    -fx-background-color: #2383E2;
+    -fx-background-color: chat-bubble-right;
 }
 
 .modal-root .chat-text {
-    -fx-text-fill: #1F2328;
-}
-
-.modal-root.dark .chat-text {
-    -fx-text-fill: #E6EDF3;
+    -fx-text-fill: chat-text-left;
 }
 
 .modal-root .right-chat-bubble .chat-text {
     -fx-text-fill: white;
 }
 
-
-.rich-text-area {
-    -fx-background-color: #FFFFFF;
-    -fx-font-size: 16;
+.modal-root .selectable-label {
+    -fx-content-padding: 8;
+    -fx-background-radius: 16;
 }
 
-.rich-text-area .caret {
-    -fx-stroke: #000000;
+.modal-root .selectable-label.left-chat-bubble {
+    -fx-selectable-label-text-color: chat-text-left;
 }
 
-.rich-text-area .caret-line {
-    -fx-stroke: #E5EBF1;
-    -fx-fill: #E5EBF1;
+.modal-root .selectable-label.right-chat-bubble {
+    -fx-selectable-label-text-color: white;
 }
 
-.rich-text-area .selection-highlight {
+.modal-root .selectable-label .selection-highlight {
     -fx-stroke: #ADD6FF80;
     -fx-fill: #ADD6FF80;
 }
 
-.rich-text-area.dark {
+.modal-root .selectable-label .context-menu {
+    -fx-background-insets: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #ebebeb;
+}
+
+.modal-root .selectable-label .context-menu > * > .menu-item {
+    -fx-padding: 4 8 4 16;
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0 4 0 4;
+}
+
+.modal-root .selectable-label .context-menu > * > .menu-item:hover {
+    -fx-background-color: #ebebeb;
+}
+
+.modal-root .selectable-label .context-menu .label {
+    -fx-text-fill: black;
+}
+
+.chat-input-text-area {
+    -fx-background-color: #FFFFFF;
+    -fx-font-size: 14;
+}
+
+.chat-input-text-area .caret {
+    -fx-stroke: #000000;
+}
+
+.chat-input-text-area .caret-line {
+    -fx-stroke: #E5EBF1;
+    -fx-fill: #E5EBF1;
+}
+
+.chat-input-text-area .selection-highlight {
+    -fx-stroke: #ADD6FF80;
+    -fx-fill: #ADD6FF80;
+}
+
+.chat-input-text-area.dark {
     -fx-background-color: #1E1E1E;
 }
 
-.rich-text-area.dark .caret {
+.chat-input-text-area.dark .caret {
     -fx-stroke: #D4D4D4;
 }
 
-.rich-text-area.dark .caret-line {
+.chat-input-text-area.dark .caret-line {
     -fx-stroke: #3A3D41;
     -fx-fill: #3A3D41;
 }
 
-.rich-text-area.dark .selection-highlight {
+.chat-input-text-area.dark .selection-highlight {
     -fx-stroke: #ADD6FF26;
     -fx-fill: #ADD6FF26;
 }
 
-.rich-text-area .scroll-bar:horizontal {
+.chat-input-text-area .scroll-bar:horizontal {
     -fx-background-color: transparent;
 }
 
-.rich-text-area .scroll-bar:vertical {
+.chat-input-text-area .scroll-bar:vertical {
     -fx-background-color: transparent;
 }
 
-.rich-text-area .scroll-bar:horizontal > .thumb {
+.chat-input-text-area .scroll-bar:horizontal > .thumb {
     -fx-background-color: #C1C7D0;
 }
 
-.rich-text-area.dark .scroll-bar:horizontal > .thumb {
+.chat-input-text-area.dark .scroll-bar:horizontal > .thumb {
     -fx-background-color: #30363D;
 }
 
-.rich-text-area .scroll-bar:vertical > .thumb {
+.chat-input-text-area .scroll-bar:vertical > .thumb {
     -fx-background-color: #C1C7D0;
 }
 
-.rich-text-area.dark .scroll-bar:vertical > .thumb {
+.chat-input-text-area.dark .scroll-bar:vertical > .thumb {
     -fx-background-color: #30363D;
 }
 
-.rich-text-area .scroll-bar:horizontal > .increment-button,
-.rich-text-area .scroll-bar:horizontal > .increment-button > .increment-arrow,
-.rich-text-area .scroll-bar:horizontal > .decrement-button,
-.rich-text-area .scroll-bar:horizontal > .decrement-button > .decrement-arrow {
+.chat-input-text-area .scroll-bar:horizontal > .increment-button,
+.chat-input-text-area .scroll-bar:horizontal > .increment-button > .increment-arrow,
+.chat-input-text-area .scroll-bar:horizontal > .decrement-button,
+.chat-input-text-area .scroll-bar:horizontal > .decrement-button > .decrement-arrow {
     -fx-background-color: transparent;
 }
 
-.rich-text-area .scroll-bar:vertical > .increment-button,
-.rich-text-area .scroll-bar:vertical > .increment-button > .increment-arrow,
-.rich-text-area .scroll-bar:vertical > .decrement-button,
-.rich-text-area .scroll-bar:vertical > .decrement-button > .decrement-arrow {
+.chat-input-text-area .scroll-bar:vertical > .increment-button,
+.chat-input-text-area .scroll-bar:vertical > .increment-button > .increment-arrow,
+.chat-input-text-area .scroll-bar:vertical > .decrement-button,
+.chat-input-text-area .scroll-bar:vertical > .decrement-button > .decrement-arrow {
     -fx-background-color: transparent;
+}
+
+.modal-root .chat-input-text-area .context-menu {
+    -fx-background-insets: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #ebebeb;
+}
+
+.modal-root .chat-input-text-area .context-menu > * > .menu-item {
+    -fx-padding: 4 8 4 16;
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0 4 0 4;
+}
+
+.modal-root .chat-input-text-area .context-menu > * > .menu-item:hover {
+    -fx-background-color: #ebebeb;
+}
+
+.modal-root .chat-input-text-area .context-menu .label {
+    -fx-text-fill: black;
 }
 
 .modal-root .send-button-container {

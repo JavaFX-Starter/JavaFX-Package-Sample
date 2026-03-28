@@ -2,7 +2,11 @@ package com.icuxika.richtext;
 
 import com.icuxika.AppResource;
 import com.icuxika.constant.Theme;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import jfx.incubator.scene.control.richtext.RichTextArea;
 import jfx.incubator.scene.control.richtext.TextPos;
@@ -16,7 +20,9 @@ public class ChatInputTextArea extends RichTextArea {
 
     private final ReadWriteTextModel readWriteTextModel = new ReadWriteTextModel();
 
+    private final ContextMenu contextMenu = new ContextMenu();
     public ChatInputTextArea() {
+        getStyleClass().add("chat-input-text-area");
         setModel(readWriteTextModel);
         getInputMap().registerFunction(RichTextArea.Tag.PASTE, () -> {
             TextPos caretPosition = getCaretPosition();
@@ -49,6 +55,35 @@ public class ChatInputTextArea extends RichTextArea {
                 }
                 readWriteTextModel.fireStyleChangeEvent(TextPos.ZERO, readWriteTextModel.getDocumentEnd());
             }
+        });
+
+        MenuItem copyMenuItem = new MenuItem("复制");
+        copyMenuItem.setOnAction(_ -> copy());
+        MenuItem pasteMenuItem = new MenuItem("粘贴");
+        pasteMenuItem.setOnAction(_ -> paste());
+        contextMenu.getItems().addAll(copyMenuItem, pasteMenuItem);
+
+        addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (contextMenu.isShowing()) {
+                contextMenu.hide();
+            }
+            var selection = getSelection();
+            if (selection == null) {
+                selectAll();
+            } else {
+                TextPos min = selection.getMin();
+                TextPos max = selection.getMax();
+
+                TextPos textPos = getTextPosition(event.getScreenX(), event.getScreenY());
+                if (textPos.compareTo(min) < 0 || textPos.compareTo(max) > 0) {
+                    selectAll();
+                }
+            }
+
+        });
+        getInputMap().addHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
+            event.consume();
+            contextMenu.show(ChatInputTextArea.this, event.getScreenX(), event.getScreenY());
         });
     }
 

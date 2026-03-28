@@ -2,6 +2,7 @@ package com.icuxika.controller;
 
 import com.icuxika.richtext.ChatInputItem;
 import com.icuxika.richtext.ChatInputTextArea;
+import com.icuxika.richtext.SelectableLabel;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,7 +22,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.text.Font;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 import jfx.incubator.scene.control.richtext.SelectionSegment;
@@ -76,8 +76,8 @@ public class ChatController implements Initializable {
             public ListCell<Message> call(ListView<Message> param) {
                 return new ListCell<>() {
                     private final StringProperty textProperty = new SimpleStringProperty();
-                    private AnchorPane leftTextNode;
-                    private AnchorPane rightTextNode;
+                    private AnchorPane leftSelectableTextNode;
+                    private AnchorPane rightSelectableTextNode;
                     private final ObjectProperty<Image> imageProperty = new SimpleObjectProperty<>();
                     private final DoubleProperty fitWidthProperty = new SimpleDoubleProperty();
                     private AnchorPane leftImageNode;
@@ -85,54 +85,42 @@ public class ChatController implements Initializable {
                     private TextFlow leftMsgDecorateTextFlow;
                     private TextFlow rightMsgDecorateTextFlow;
 
-                    private TextFlow createText() {
-                        TextFlow textFlow = new TextFlow();
-//                        textFlow.setPadding(new Insets(8));
-//                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
-                        textFlow.getStyleClass().add("chat-bubble");
-                        Label label = new Label();
-                        label.textProperty().bind(textProperty);
-//                        label.setTextFill(Color.WHITE);
-                        label.getStyleClass().add("chat-text");
-                        label.setFont(Font.font(16));
-                        label.setMaxWidth(240);
-                        label.setWrapText(true);
-                        textFlow.getChildren().add(label);
-                        return textFlow;
+                    private SelectableLabel createSelectableText() {
+                        SelectableLabel selectableLabel = new SelectableLabel();
+                        selectableLabel.textProperty().bind(textProperty);
+                        return selectableLabel;
                     }
 
-                    private AnchorPane getLeftTextNode() {
-                        if (leftTextNode == null) {
-                            TextFlow text = createText();
-                            text.getStyleClass().add("left-chat-bubble");
-                            leftTextNode = new AnchorPane();
-                            AnchorPane.setLeftAnchor(text, 24.0);
-                            AnchorPane.setTopAnchor(text, 0.0);
+                    private AnchorPane getLeftSelectableTextNode() {
+                        if (leftSelectableTextNode == null) {
+                            SelectableLabel selectableLabel = createSelectableText();
+                            selectableLabel.getStyleClass().add("left-chat-bubble");
+                            leftSelectableTextNode = new AnchorPane();
+                            AnchorPane.setLeftAnchor(selectableLabel, 24.0);
+                            AnchorPane.setTopAnchor(selectableLabel, 0.0);
                             AnchorPane.setLeftAnchor(getLeftMsgDecorateTextFlow(), 4.0);
                             AnchorPane.setTopAnchor(getLeftMsgDecorateTextFlow(), 2.0);
-                            leftTextNode.getChildren().addAll(text, getLeftMsgDecorateTextFlow());
+                            leftSelectableTextNode.getChildren().addAll(selectableLabel, getLeftMsgDecorateTextFlow());
                         }
-                        return leftTextNode;
+                        return leftSelectableTextNode;
                     }
 
-                    private AnchorPane getRightTextNode() {
-                        if (rightTextNode == null) {
-                            TextFlow text = createText();
-                            text.getStyleClass().add("right-chat-bubble");
-                            rightTextNode = new AnchorPane();
-                            AnchorPane.setRightAnchor(text, 24.0);
-                            AnchorPane.setTopAnchor(text, 0.0);
+                    private AnchorPane getRightSelectableTextNode() {
+                        if (rightMsgDecorateTextFlow == null) {
+                            SelectableLabel selectableLabel = createSelectableText();
+                            selectableLabel.getStyleClass().add("right-chat-bubble");
+                            rightSelectableTextNode = new AnchorPane();
+                            AnchorPane.setRightAnchor(selectableLabel, 24.0);
+                            AnchorPane.setTopAnchor(selectableLabel, 0.0);
                             AnchorPane.setRightAnchor(getRightMsgDecorateTextFlow(), 4.0);
                             AnchorPane.setTopAnchor(getRightMsgDecorateTextFlow(), 2.0);
-                            rightTextNode.getChildren().addAll(text, getRightMsgDecorateTextFlow());
+                            rightSelectableTextNode.getChildren().addAll(selectableLabel, getRightMsgDecorateTextFlow());
                         }
-                        return rightTextNode;
+                        return rightSelectableTextNode;
                     }
 
                     private TextFlow createImage() {
                         TextFlow textFlow = new TextFlow();
-//                        textFlow.setPadding(new Insets(8));
-//                        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, new CornerRadii(16), Insets.EMPTY)));
                         textFlow.getStyleClass().add("chat-bubble");
                         ImageView imageView = new ImageView();
                         imageView.imageProperty().bind(imageProperty);
@@ -196,13 +184,13 @@ public class ChatController implements Initializable {
                         } else {
                             setText(null);
                             switch (item.type) {
-                                case TEXT -> {
+                                case SELECTABLE_TEXT -> {
                                     textProperty.unbind();
                                     textProperty.bind(item.msgProperty());
-                                    if (item.left) {
-                                        setGraphic(getLeftTextNode());
+                                    if (item.getLeft()) {
+                                        setGraphic(getLeftSelectableTextNode());
                                     } else {
-                                        setGraphic(getRightTextNode());
+                                        setGraphic(getRightSelectableTextNode());
                                     }
                                 }
                                 case IMAGE -> {
@@ -219,7 +207,7 @@ public class ChatController implements Initializable {
                                             @Override
                                             public void changed(ObservableValue<? extends Exception> observable, Exception oldValue, Exception newValue) {
                                                 if (newValue != null) {
-                                                    newValue.printStackTrace();
+                                                    LOGGER.error(newValue.getMessage());
                                                 }
                                             }
                                         });
@@ -419,7 +407,6 @@ public class ChatController implements Initializable {
         SVGPath svgPath = new SVGPath();
         svgPath.setContent(svgContent);
         textFlow.setShape(svgPath);
-//        textFlow.setBackground(new Background(new BackgroundFill(Color.DODGERBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
         textFlow.setMinWidth(size);
         textFlow.setMinHeight(size);
         textFlow.setMaxWidth(size);
@@ -429,9 +416,10 @@ public class ChatController implements Initializable {
 
     private enum MessageType {
 
-        TEXT,
+        SELECTABLE_TEXT,
 
-        IMAGE
+        IMAGE,
+
     }
 
     private static class Message {
@@ -445,7 +433,7 @@ public class ChatController implements Initializable {
             this.left = left;
         }
 
-        private MessageType type = MessageType.TEXT;
+        private MessageType type = MessageType.SELECTABLE_TEXT;
 
         public MessageType getType() {
             return type;

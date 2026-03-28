@@ -1,0 +1,46 @@
+@import "../fonts/Fonts.css";
+
+:root {
+    header-background: #F5F5F5;
+    header-title: black;
+}
+
+:root.dark {
+    header-background: #121212;
+    header-title: white;
+}
+
+.text {
+    -fx-font-smoothing-type: gray;
+    -fx-font-family: "HarmonyOS Sans SC Bold";
+}
+
+.header-bar {
+    -fx-background-color: header-background;
+}
+
+.header-bar .title-label {
+    -fx-text-fill: header-title;
+}
+
+.header-bar .theme-button {
+    -fx-background-color: transparent;
+}
+
+.header-bar .theme-button:hover {
+    -fx-background-color: #00000015;
+}
+
+.header-bar.dark .theme-button:hover {
+    -fx-background-color: #ffffff15;
+}
+
+.header-bar .theme-button .light-icon {
+    -fx-icon-color: #333333;
+    -fx-icon-size: 16;
+}
+
+.header-bar .theme-button .dark-icon {
+    -fx-icon-color: #EAEAEA;
+    -fx-icon-size: 16;
+}
