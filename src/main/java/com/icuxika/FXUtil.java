@@ -2,6 +2,8 @@ package com.icuxika;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.text.TextFlow;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -41,5 +43,17 @@ public class FXUtil {
         } else if (!enabled) {
             node.getStyleClass().remove(styleClass);
         }
+    }
+
+    public static TextFlow createTextFlow(String svgContent, double size) {
+        TextFlow textFlow = new TextFlow();
+        SVGPath svgPath = new SVGPath();
+        svgPath.setContent(svgContent);
+        textFlow.setShape(svgPath);
+        textFlow.setMinWidth(size);
+        textFlow.setMinHeight(size);
+        textFlow.setMaxWidth(size);
+        textFlow.setMaxHeight(size);
+        return textFlow;
     }
 }

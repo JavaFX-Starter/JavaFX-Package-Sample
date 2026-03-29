@@ -14,6 +14,7 @@
 
 .modal-root .message-list-view {
     -fx-background-color: #F5F7FA;
+    -fx-padding: 0;
 }
 
 .modal-root.dark .message-list-view {
@@ -26,6 +27,7 @@
 
 .message-list-view .list-cell {
     -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
 .message-list-view .scroll-bar:vertical {
@@ -113,6 +115,16 @@
 
 .modal-root .selectable-label .context-menu .label {
     -fx-text-fill: black;
+}
+
+.modal-root .chat-bubble .progress-bar .track {
+    -fx-background-color: transparent;
+    -fx-background-insets: 8 0 8 0;
+}
+
+.modal-root .chat-bubble .progress-bar .bar {
+    -fx-background-color: dodgerblue;
+    -fx-background-insets: 8 0 8 0;
 }
 
 .chat-input-text-area {
@@ -217,4 +229,25 @@
 
 .modal-root.dark .send-button-container {
     -fx-background-color: #121212;
+}
+
+.modal-root .send-button-container .context-menu {
+    -fx-background-insets: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #ebebeb;
+}
+
+.modal-root .send-button-container .context-menu > * > .menu-item {
+    -fx-padding: 4 8 4 16;
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0 4 0 4;
+}
+
+.modal-root .send-button-container .context-menu > * > .menu-item:hover {
+    -fx-background-color: #ebebeb;
+}
+
+.modal-root .send-button-container .context-menu .label {
+    -fx-text-fill: black;
 }
