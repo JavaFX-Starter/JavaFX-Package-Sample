@@ -115,7 +115,8 @@ public class MainApp extends Application {
 //                    throw new RuntimeException(e);
 //                }
 //            }).start();
-            showChatPane(primaryStage);
+//            showChatPane(primaryStage);
+            showMapPane(primaryStage);
         });
         // 启动语言服务器
 //        lspCodeArea.startLanguageServer();
@@ -137,6 +138,10 @@ public class MainApp extends Application {
         showModalPane(primaryStage, "chat", "聊天");
     }
 
+    private void showMapPane(Stage primaryStage) {
+        showModalPane(primaryStage, "map", "地图");
+    }
+
     private void showModalPane(Stage primaryStage, String key, String titleLabel) {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("fxml/" + key + ".fxml"));
@@ -149,12 +154,19 @@ public class MainApp extends Application {
         }
         HeaderBar headerBar = new HeaderBar();
         headerBar.getStyleClass().add("header-bar");
+        var leading = new HBox();
+        var center = new HBox();
 
         Label label = new Label(titleLabel);
         label.getStyleClass().add("title-label");
+        center.setAlignment(Pos.CENTER);
+        center.getChildren().add(label);
 
-        headerBar.setCenter(label);
+        headerBar.setLeading(leading);
+        headerBar.setCenter(center);
         headerBar.setTrailing(createThemeButton());
+        HeaderBar.setDragType(leading, HeaderDragType.DRAGGABLE_SUBTREE);
+        HeaderBar.setDragType(center, HeaderDragType.DRAGGABLE_SUBTREE);
         rootContainer.setTop(headerBar);
         Scene scene = new Scene(rootContainer, 600, 640);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("css/" + key + ".css")).toExternalForm());
@@ -180,7 +192,7 @@ public class MainApp extends Application {
 
         Stage stage = new Stage();
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setResizable(true);
         stage.initStyle(StageStyle.EXTENDED);
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(primaryStage);

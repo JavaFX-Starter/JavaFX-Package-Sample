@@ -19,10 +19,11 @@ module sample {
     requires org.eclipse.tm4e.core;
     requires org.eclipse.lsp4j;
     requires org.eclipse.lsp4j.jsonrpc;
+    requires java.net.http;
 
     opens com.icuxika.model to com.google.gson;
     opens com.icuxika.lsp to org.eclipse.lsp4j.jsonrpc;
-    opens com.icuxika.controller to javafx.fxml;
+    opens com.icuxika.controller to javafx.fxml, com.google.gson;
 
     exports com.icuxika;
 }

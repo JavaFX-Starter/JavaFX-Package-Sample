@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane fx:id="rootContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.icuxika.controller.MapController">
+    <center>
+        <StackPane fx:id="contentContainer" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+                <BorderPane fx:id="contentPane" prefHeight="200.0" prefWidth="200.0">
+                    <center>
+                        <StackPane fx:id="canvasContainer" minHeight="0.0" minWidth="0.0" prefHeight="150.0"
+                                   prefWidth="200.0" BorderPane.alignment="CENTER">
+                            <children>
+                                <Canvas fx:id="mapCanvas" height="200.0" width="200.0"/>
+                            </children>
+                        </StackPane>
+                    </center>
+                    <bottom>
+                        <VBox BorderPane.alignment="CENTER">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Label fx:id="zoomLabel" text="Label"/>
+                                        <Label fx:id="lonLatLabel" text="Label"/>
+                                        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label fx:id="fpsLabel" text="Label"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT">
+                                    <children>
+                                        <Label fx:id="logLabel" text="Label"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </bottom>
+                    <top>
+                        <HBox alignment="CENTER_LEFT" spacing="8.0" BorderPane.alignment="CENTER">
+                            <children>
+                                <Button fx:id="clearCacheButton" mnemonicParsing="false" text="Button"/>
+                                <Button fx:id="navToCurrentLocationButton" mnemonicParsing="false" text="Button"/>
+                            </children>
+                        </HBox>
+                    </top>
+                </BorderPane>
+                <StackPane fx:id="loadingPane" prefHeight="150.0" prefWidth="200.0">
+                    <children>
+                        <ProgressIndicator/>
+                    </children>
+                </StackPane>
+            </children>
+        </StackPane>
+    </center>
+</BorderPane>
