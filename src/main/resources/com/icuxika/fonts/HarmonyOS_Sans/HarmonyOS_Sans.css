@@ -34,6 +34,13 @@
 }
 
 @font-face {
+    font-family: "HarmonyOS Sans Semibold";
+    font-style: normal;
+    font-weight: normal;
+    src: url("HarmonyOS_Sans_Semibold.ttf") format("truetype");
+}
+
+@font-face {
     font-family: "HarmonyOS Sans Thin";
     font-style: normal;
     font-weight: normal;
