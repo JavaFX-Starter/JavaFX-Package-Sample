@@ -1,6 +1,11 @@
 package com.icuxika.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.icuxika.model.map.Feature;
+import com.icuxika.model.map.GeoJson;
+import com.icuxika.model.map.Geometry;
+import com.icuxika.model.map.GeometryDeserializer;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.*;
@@ -28,10 +33,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
@@ -66,47 +68,15 @@ public class MapController implements Initializable {
 
     // 只有地图状态发生变化时才重新绘制，避免每帧无意义地调用 draw()
     private volatile boolean dirty = false;
-
     // 瓦片本地缓存
     private final Path CACHE_DIR = Path.of(System.getProperty("user.home"), ".cache", "test");
     // 瓦片内存图片缓存
     private final Map<String, Image> cache = new ConcurrentHashMap<>();
     // 正在下载中的瓦片 key 集合，防止对同一瓦片重复发起请求
     private final Set<String> pending = ConcurrentHashMap.newKeySet();
+    // 显示加载页面
+    private final BooleanProperty loading = new SimpleBooleanProperty(false);
 
-    private final AnimationTimer timer = new AnimationTimer() {
-        private static final int SAMPLE_SIZE = 60;
-        private final long[] frameTimes = new long[SAMPLE_SIZE];
-        private int index = 0;
-        private boolean filled = false;
-
-        @Override
-        public void handle(long now) {
-            // 若有脏标记则重绘，绘制后清除标记
-            if (dirty) {
-                dirty = false;
-                draw();
-            }
-
-            // 把当前帧时间写入当前槽位
-            frameTimes[index] = now;
-            // 计算"下一个槽位"，即最老帧的位置
-            int oldIndex = (index + 1) % SAMPLE_SIZE;
-            if (filled) {
-                // 最新帧 - 最老帧 = 59帧跨越的总时间
-                long spanNs = now - frameTimes[oldIndex];
-                // 59帧 / 总秒数 = 每秒帧数
-                double fps = (SAMPLE_SIZE - 1) * 1_000_000_000.0 / spanNs;
-                fpsLabel.setText(String.format("FPS: %.1f", fps));
-            }
-            // index 前进一格（覆盖刚才的 oldIndex 位置）
-            index = oldIndex;
-            // 绕回到 0 说明转了一圈，缓冲区已满
-            if (index == 0) {
-                filled = true;
-            }
-        }
-    };
 
     // 标准 Web 地图瓦片尺寸（像素）
     private static final int TILE_SIZE = 256;
@@ -119,18 +89,33 @@ public class MapController implements Initializable {
     private boolean initialized = false;
 
     private final HttpClient httpClient = buildHttpClient();
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().registerTypeAdapter(Geometry.class, new GeometryDeserializer()).create();
 
+    // 缩放等级
     private final IntegerProperty zoom = new SimpleIntegerProperty(1);
-    private final BooleanProperty loading = new SimpleBooleanProperty(false);
-
     private Integer getZoom() {
         return zoom.get();
     }
-
     private void setZoom(int value) {
         zoom.set(value);
     }
+
+    private final List<List<List<double[]>>> countryBorders = new ArrayList<>();
+    private final Map<Feature, List<List<double[]>>> provinceBorders = new HashMap<>();
+
+    // 修改缓存结构，同时缓存像素坐标和包围盒
+    private record ProvinceRingCache(List<double[]> pixels, double minX, double minY, double maxX, double maxY) {
+        boolean isVisible(double originX, double originY, double w, double h) {
+            return (maxX - originX) >= 0 && (minX - originX) <= w
+                    && (maxY - originY) >= 0 && (minY - originY) <= h;
+        }
+    }
+
+    // zoom → feature → List<RingCache>
+    private final Map<Integer, Map<Feature, List<ProvinceRingCache>>> provincePixelCache = new ConcurrentHashMap<>();
+    // 标记哪些 zoom 正在后台计算中，避免重复提交
+    private final Set<Integer> zoomProvinceComputing = ConcurrentHashMap.newKeySet();
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -210,8 +195,50 @@ public class MapController implements Initializable {
             }
         });
 
+        // zoom 变化时清空缓存
+        zoom.addListener((_, _, newValue) -> {
+            // 如果省份数据已加载，立即开始预计算新 zoom
+            if (!provinceBorders.isEmpty()) {
+                computeProvincePixelCacheAsync(newValue.intValue());
+            }
+        });
         startAnimationTimer();
+        Thread.ofVirtual().start(this::loadProvinceBorders);
     }
+
+    private final AnimationTimer timer = new AnimationTimer() {
+        private static final int SAMPLE_SIZE = 60;
+        private final long[] frameTimes = new long[SAMPLE_SIZE];
+        private int index = 0;
+        private boolean filled = false;
+
+        @Override
+        public void handle(long now) {
+            // 若有脏标记则重绘，绘制后清除标记
+            if (dirty) {
+                dirty = false;
+                draw();
+            }
+
+            // 把当前帧时间写入当前槽位
+            frameTimes[index] = now;
+            // 计算"下一个槽位"，即最老帧的位置
+            int oldIndex = (index + 1) % SAMPLE_SIZE;
+            if (filled) {
+                // 最新帧 - 最老帧 = 59帧跨越的总时间
+                long spanNs = now - frameTimes[oldIndex];
+                // 59帧 / 总秒数 = 每秒帧数
+                double fps = (SAMPLE_SIZE - 1) * 1_000_000_000.0 / spanNs;
+                fpsLabel.setText(String.format("FPS: %.1f", fps));
+            }
+            // index 前进一格（覆盖刚才的 oldIndex 位置）
+            index = oldIndex;
+            // 绕回到 0 说明转了一圈，缓冲区已满
+            if (index == 0) {
+                filled = true;
+            }
+        }
+    };
 
     private void startAnimationTimer() {
         rootContainer.sceneProperty().addListener((_, oldScene, newScene) -> {
@@ -282,6 +309,181 @@ public class MapController implements Initializable {
                 }
             }
         }
+
+        if (getZoom() >= 4) {
+            drawProvinceBorders1(gc, originX, originY);
+        }
+    }
+
+    private void drawCountryBorders(GraphicsContext gc, double originX, double originY) {
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(1.0);
+        gc.setGlobalAlpha(0.8);
+        for (List<List<double[]>> country : countryBorders) {
+            for (List<double[]> ring : country) {
+                if (ring.isEmpty()) continue;
+
+                gc.beginPath();
+                boolean first = true;
+                for (double[] lonLat : ring) {
+                    // 经纬度 → 地图像素坐标 → 屏幕坐标
+                    double[] px = lonLatToPixel(getZoom(), lonLat[0], lonLat[1]);
+                    double screenX = px[0] - originX;
+                    double screenY = px[1] - originY;
+                    if (first) {
+                        gc.moveTo(screenX, screenY);
+                        first = false;
+                    } else {
+                        gc.lineTo(screenX, screenY);
+                    }
+                }
+                gc.closePath();
+                gc.stroke();
+            }
+        }
+        gc.setGlobalAlpha(1.0);
+    }
+
+    private static final Color[] PROVINCE_COLORS = {
+            Color.web("#6baed6", 0.15),   // 蓝
+            Color.web("#74c476", 0.15),   // 绿
+            Color.web("#fd8d3c", 0.15),   // 橙
+            Color.web("#9e9ac8", 0.15),   // 紫
+            Color.web("#f768a1", 0.15),   // 粉
+            Color.web("#41b6c4", 0.15),   // 青
+            Color.web("#fe9929", 0.15),   // 黄橙
+            Color.web("#addd8e", 0.15),   // 浅绿
+    };
+
+    private void computeProvincePixelCacheAsync(int zoom) {
+        // 已有缓存，无需重算
+        if (provincePixelCache.containsKey(zoom)) return;
+        // 正在计算中，无需重复提交
+        if (!zoomProvinceComputing.add(zoom)) return;
+        Thread.ofVirtual().start(() -> {
+            LOGGER.info("正在计算zoom={}的省份边界数据", zoom);
+            Map<Feature, List<ProvinceRingCache>> result = new LinkedHashMap<>();
+            provinceBorders.forEach((feature, rings) -> {
+                List<ProvinceRingCache> provinceRingCaches = new ArrayList<>();
+                for (List<double[]> ring : rings) {
+                    double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+                    double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+                    List<double[]> pixels = new ArrayList<>(ring.size());
+                    for (double[] lonLat : ring) {
+                        double[] px = lonLatToPixel(zoom, lonLat[0], lonLat[1]);
+                        pixels.add(px);
+                        minX = Math.min(minX, px[0]);
+                        minY = Math.min(minY, px[1]);
+                        maxX = Math.max(maxX, px[0]);
+                        maxY = Math.max(maxY, px[1]);
+                    }
+                    provinceRingCaches.add(new ProvinceRingCache(pixels, minX, minY, maxX, maxY));
+                }
+                result.put(feature, provinceRingCaches);
+            });
+            provincePixelCache.put(zoom, result);
+            zoomProvinceComputing.remove(zoom);
+            dirty = true;
+        });
+    }
+
+    private void drawProvinceBorders(GraphicsContext gc, double originX, double originY) {
+        int[] index = {0};
+        provinceBorders.forEach((feature, lists) -> {
+            Color color = PROVINCE_COLORS[index[0] % PROVINCE_COLORS.length];
+
+            for (List<double[]> ring : lists) {
+                if (ring.isEmpty()) continue;
+
+                gc.beginPath();
+                boolean first = true;
+                for (double[] lonLat : ring) {
+                    // 经纬度 → 地图像素坐标 → 屏幕坐标
+                    double[] px = lonLatToPixel(getZoom(), lonLat[0], lonLat[1]);
+                    double screenX = px[0] - originX;
+                    double screenY = px[1] - originY;
+                    if (first) {
+                        gc.moveTo(screenX, screenY);
+                        first = false;
+                    } else {
+                        gc.lineTo(screenX, screenY);
+                    }
+                }
+                gc.closePath();
+
+                // 半透明填充
+                gc.setFill(color);
+                gc.fill();
+
+                // 白色光晕打底
+                gc.setStroke(Color.WHITE);
+                gc.setLineWidth(3.0);
+                gc.setGlobalAlpha(0.9);
+                gc.stroke();
+
+                // 同色系深色描边覆盖在光晕上
+                // 不改变色相, 不改变饱和度, 亮度×0.6=变暗, 透明度×2=更不透明
+                gc.setStroke(color.deriveColor(0, 1, 0.6, 2.0));
+                gc.setLineWidth(1.5);
+                gc.setGlobalAlpha(1.0);
+                gc.stroke();
+            }
+            index[0]++;
+        });
+    }
+
+    private void drawProvinceBorders1(GraphicsContext gc, double originX, double originY) {
+        Map<Feature, List<ProvinceRingCache>> pixelBorders = provincePixelCache.get(getZoom());
+        if (pixelBorders == null) {
+            // 缓存未就绪，触发后台计算，本帧跳过（不卡渲染线程）
+            computeProvincePixelCacheAsync(getZoom());
+            return;
+        }
+
+        double w = mapCanvas.getWidth();
+        double h = mapCanvas.getHeight();
+        int[] index = {0};
+        pixelBorders.forEach((feature, ringCaches) -> {
+            Color color = PROVINCE_COLORS[index[0] % PROVINCE_COLORS.length];
+
+            for (ProvinceRingCache provinceRingCache : ringCaches) {
+                // 包围盒裁剪，直接用缓存值，无需遍历点
+                if (!provinceRingCache.isVisible(originX, originY, w, h)) continue;
+
+                gc.beginPath();
+                boolean first = true;
+                for (double[] px : provinceRingCache.pixels) {
+                    // 经纬度 → 地图像素坐标 → 屏幕坐标
+                    double screenX = px[0] - originX;
+                    double screenY = px[1] - originY;
+                    if (first) {
+                        gc.moveTo(screenX, screenY);
+                        first = false;
+                    } else {
+                        gc.lineTo(screenX, screenY);
+                    }
+                }
+                gc.closePath();
+
+                // 半透明填充
+                gc.setFill(color);
+                gc.fill();
+
+                // 白色光晕打底
+                gc.setStroke(Color.WHITE);
+                gc.setLineWidth(3.0);
+                gc.setGlobalAlpha(0.9);
+                gc.stroke();
+
+                // 同色系深色描边覆盖在光晕上
+                // 不改变色相, 不改变饱和度, 亮度×0.6=变暗, 透明度×2=更不透明
+                gc.setStroke(color.deriveColor(0, 1, 0.6, 2.0));
+                gc.setLineWidth(1.5);
+                gc.setGlobalAlpha(1.0);
+                gc.stroke();
+            }
+            index[0]++;
+        });
     }
 
     private void fetchTileImage(int z, int x, int y) {
@@ -329,6 +531,76 @@ public class MapController implements Initializable {
             pending.remove(key);
             Platform.runLater(() -> logLabel.setText(""));
         }
+    }
+
+    private void loadCountryBorders() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://geo.datav.aliyun.com/areas_v3/bound/100000.json"))
+                .GET()
+                .build();
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            String json = response.body();
+            GeoJson geoJson = gson.fromJson(json, GeoJson.class);
+            geoJson.getFeatures().forEach(feature -> {
+                List<List<double[]>> rings = new ArrayList<>();
+                // MultiPolygon: coordinates = List<polygon> 一个国家/省份可能由多块不连续的陆地组成，比如中国大陆 + 海南岛 + 台湾岛 = 3个 polygon
+                //   polygon = List<ring> index=0 是外环（轮廓），index=1,2...是内环（孔洞），比如一个湖心岛：外环是岛屿轮廓，内环是湖的边界（挖空）
+                //     ring = List<point> 点集合，[lon, lat]
+                //       point = List<Double> [lon, lat]
+                for (List<List<List<Double>>> polygon : feature.getGeometry().getCoordinates()) {
+                    // 只取外环（index=0），内环是孔洞，绘制边界不需要
+                    List<List<Double>> outerRing = polygon.getFirst();
+                    List<double[]> points = new ArrayList<>();
+                    for (List<Double> point : outerRing) {
+                        points.add(new double[]{point.get(0), point.get(1)});
+                    }
+                    rings.add(points);
+                }
+                countryBorders.add(rings);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadProvinceBorders() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json"))
+                .GET()
+                .build();
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            String json = response.body();
+            GeoJson geoJson = gson.fromJson(json, GeoJson.class);
+            geoJson.getFeatures().forEach(feature -> {
+                List<List<double[]>> rings = new ArrayList<>();
+                // MultiPolygon: coordinates = List<polygon> 一个国家/省份可能由多块不连续的陆地组成，比如中国大陆 + 海南岛 + 台湾岛 = 3个 polygon
+                //   polygon = List<ring> index=0 是外环（轮廓），index=1,2...是内环（孔洞），比如一个湖心岛：外环是岛屿轮廓，内环是湖的边界（挖空）
+                //     ring = List<point> 点集合，[lon, lat]
+                //       point = List<Double> [lon, lat]
+                for (List<List<List<Double>>> polygon : feature.getGeometry().getCoordinates()) {
+                    // 只取外环（index=0），内环是孔洞，绘制边界不需要
+                    List<List<Double>> outerRing = polygon.getFirst();
+                    List<double[]> points = new ArrayList<>();
+                    for (List<Double> point : outerRing) {
+                        points.add(new double[]{point.get(0), point.get(1)});
+                    }
+                    rings.add(points);
+                }
+                provinceBorders.put(feature, rings);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+        computeProvincePixelCacheAsync(getZoom());
+        dirty = true;
     }
 
     private HttpClient buildHttpClient() {

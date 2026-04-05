@@ -22,6 +22,7 @@ module sample {
     requires java.net.http;
 
     opens com.icuxika.model to com.google.gson;
+    opens com.icuxika.model.map to com.google.gson;
     opens com.icuxika.lsp to org.eclipse.lsp4j.jsonrpc;
     opens com.icuxika.controller to javafx.fxml, com.google.gson;
 
