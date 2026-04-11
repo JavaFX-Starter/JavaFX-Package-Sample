@@ -2,10 +2,9 @@ package com.icuxika;
 
 import com.icuxika.cell.LanguageCell;
 import com.icuxika.cell.ThemeCell;
+import com.icuxika.constant.SubWindow;
 import com.icuxika.constant.Theme;
 import com.icuxika.jni.NativeFXWindow;
-import com.icuxika.lsp.LSPAgent;
-import com.icuxika.richtext.LSPCodeArea;
 import com.icuxika.richtext.TextFlowSyntaxDecorator;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -63,15 +63,12 @@ public class MainApp extends Application {
         Label label = new Label();
         label.textProperty().bind(AppResource.currentLocaleProperty().asString().concat(": ").concat(AppResource.getLanguageBinding("title")));
 
-        LSPCodeArea lspCodeArea = new LSPCodeArea(AppResource.getTheme() == Theme.LIGHT, LSPAgent.DEMO_CODE);
-        Button testButton = new Button("测试");
-
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
         vBox.setSpacing(8);
         vBox.getChildren().addAll(
                 label, createThemeComboBox(), createLanguageComboBox(),
-                testButton, lspCodeArea,
+                createSubWindowPane(primaryStage),
                 createTextFlow(true), createTextFlow(false)
         );
 
@@ -103,31 +100,22 @@ public class MainApp extends Application {
         primaryStage.initStyle(StageStyle.EXTENDED);
         primaryStage.show();
 
-        testButton.setOnAction(event -> {
-//            lspCodeArea.applyChange(new DiagnosticMessage(
-//                    8, 25, 5, 26, "Syntax error, insert \";\" to complete BlockStatements"
-//            ));
-//            new Thread(() -> {
-//                try {
-//                    Thread.sleep(2000);
-//                    FXUtil.runInFX(lspCodeArea::clearLastChange);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }).start();
-//            showChatPane(primaryStage);
-            showMapPane(primaryStage);
-        });
-        // 启动语言服务器
-//        lspCodeArea.startLanguageServer();
-        // 程序退出时停止语言服务器
-//        primaryStage.setOnCloseRequest(_ -> lspCodeArea.stopLanguageServer());
-
         LOGGER.trace("[trace]日志控制台输出");
         LOGGER.debug("[debug]日志控制台输出");
         LOGGER.info("[info]日志记录到logs/application.log中");
         LOGGER.warn("[warn]日志记录到logs/application.log中");
         LOGGER.error("[error]日志记录到logs/application.log中");
+    }
+
+    private FlowPane createSubWindowPane(Stage primaryStage) {
+        FlowPane flowPane = new FlowPane();
+        flowPane.setHgap(8);
+        EnumSet.allOf(SubWindow.class).forEach(subWindow -> {
+            Button button = new Button(subWindow.getValue());
+            button.setOnAction(_ -> showModalPane(primaryStage, subWindow.getValue(), subWindow.getValue()));
+            flowPane.getChildren().add(button);
+        });
+        return flowPane;
     }
 
     private void showSettingsPane(Stage primaryStage) {
@@ -140,6 +128,10 @@ public class MainApp extends Application {
 
     private void showMapPane(Stage primaryStage) {
         showModalPane(primaryStage, "map", "地图");
+    }
+
+    private void showCodeEditor(Stage primaryStage) {
+        showModalPane(primaryStage, "code-editor", "代码编辑器");
     }
 
     private void showModalPane(Stage primaryStage, String key, String titleLabel) {

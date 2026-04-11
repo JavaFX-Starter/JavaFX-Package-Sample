@@ -2,10 +2,13 @@ package com.icuxika;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Window;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 
 public class FXUtil {
 
@@ -55,5 +58,17 @@ public class FXUtil {
         textFlow.setMaxWidth(size);
         textFlow.setMaxHeight(size);
         return textFlow;
+    }
+
+    public static void createWindowCreatedHook(Node node, BiConsumer<Scene, Window> consumer) {
+        node.sceneProperty().addListener((_, oldScene, newScene) -> {
+            if (oldScene == null && newScene != null) {
+                newScene.windowProperty().addListener((_, oldWindow, newWindow) -> {
+                    if (oldWindow == null && newWindow != null) {
+                        consumer.accept(newScene, newWindow);
+                    }
+                });
+            }
+        });
     }
 }

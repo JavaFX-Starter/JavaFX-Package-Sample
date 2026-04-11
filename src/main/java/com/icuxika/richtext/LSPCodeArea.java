@@ -109,7 +109,9 @@ public class LSPCodeArea extends CodeArea {
     }
 
     public void stopLanguageServer() {
-        lspAgent.shutdown();
+        if (lspAgent != null) {
+            lspAgent.shutdown();
+        }
     }
 
     /**
