@@ -2,6 +2,7 @@ package com.icuxika.cell;
 
 import com.icuxika.model.ChatMessage;
 import com.icuxika.richtext.SelectableLabel;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
@@ -18,6 +19,15 @@ import javafx.scene.text.TextFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 import static com.icuxika.FXUtil.createTextFlow;
 
 public class ChatMessageCell extends ListCell<ChatMessage> {
@@ -29,6 +39,10 @@ public class ChatMessageCell extends ListCell<ChatMessage> {
     private AnchorPane rightSelectableTextNode;
     private final ObjectProperty<Image> imageProperty = new SimpleObjectProperty<>();
     private final DoubleProperty fitWidthProperty = new SimpleDoubleProperty();
+    private final DoubleProperty imageProgressProperty = new SimpleDoubleProperty();
+    private final BooleanProperty imageProgressVisibleProperty = new SimpleBooleanProperty(true);
+    private final StringProperty imageErrorTextProperty = new SimpleStringProperty("");
+    private final BooleanProperty imageErrorVisibleProperty = new SimpleBooleanProperty(false);
     private AnchorPane leftImageNode;
     private AnchorPane rightImageNode;
     private TextFlow leftMsgDecorateTextFlow;
@@ -82,37 +96,15 @@ public class ChatMessageCell extends ListCell<ChatMessage> {
 
     private TextFlow createImage() {
         ProgressBar progressBar = new ProgressBar();
+        progressBar.progressProperty().bind(imageProgressProperty);
+        progressBar.visibleProperty().bind(imageProgressVisibleProperty);
 
         TextFlow error = new TextFlow();
         Text text = new Text();
+        text.textProperty().bind(imageErrorTextProperty);
         text.setFill(Color.RED);
         error.getChildren().add(text);
-        error.setVisible(false);
-
-        imageProperty.addListener((_, _, newValue) -> {
-            if (newValue != null) {
-
-                progressBar.progressProperty().unbind();
-                progressBar.progressProperty().bind(newValue.progressProperty());
-                progressBar.setVisible(true);
-
-                newValue.progressProperty().addListener((_, _, progress) -> {
-                    if ((double) progress == 1.0) {
-                        progressBar.setVisible(false);
-
-                        if (imageProperty.get().getWidth() > 240) {
-                            fitWidthProperty.set(240);
-                        }
-                    }
-                });
-                newValue.exceptionProperty().addListener((_, _, exception) -> {
-                    if (exception != null) {
-                        error.setVisible(true);
-                        text.setText("图片加载出错: " + exception.getMessage());
-                    }
-                });
-            }
-        });
+        error.visibleProperty().bind(imageErrorVisibleProperty);
 
         TextFlow textFlow = new TextFlow();
         textFlow.getStyleClass().add("chat-bubble");
@@ -214,8 +206,55 @@ public class ChatMessageCell extends ListCell<ChatMessage> {
                         setGraphic(getRightImageNode());
                     }
                     if (imageProperty.get() == null || !imageProperty.get().getUrl().equals(item.getImageUrl())) {
-                        Image image = new Image(item.getImageUrl(), true);
-                        imageProperty.set(image);
+                        Thread.ofVirtual().start(() -> {
+                            try (HttpClient httpClient = HttpClient.newBuilder().build()) {
+                                HttpRequest request = HttpRequest.newBuilder()
+                                        .uri(URI.create(item.getImageUrl()))
+                                        .GET()
+                                        .build();
+                                try {
+                                    HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                                    var contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1);
+                                    System.out.println(item.getImageUrl() + ": " + contentLength);
+                                    try (
+                                            InputStream is = response.body();
+                                            ByteArrayOutputStream os = new ByteArrayOutputStream();
+                                    ) {
+                                        byte[] data = new byte[8192];
+                                        long workDone = 0;
+                                        int n;
+                                        while ((n = is.read(data)) != -1) {
+                                            os.write(data, 0, n);
+                                            workDone += n;
+                                            if (contentLength > 0) {
+                                                System.out.println("progress: " + workDone + " / " + contentLength);
+                                                long finalWorkDone = workDone;
+                                                Platform.runLater(() -> imageProgressProperty.set((double) finalWorkDone / contentLength));
+                                            }
+                                        }
+                                        Image image = new Image(new ByteArrayInputStream(os.toByteArray()));
+                                        if (image.isError()) {
+                                            Platform.runLater(() -> {
+                                                imageProgressVisibleProperty.set(false);
+                                                imageErrorVisibleProperty.set(true);
+                                                imageErrorTextProperty.set("图片加载出错: " + image.getException().getMessage());
+                                            });
+                                        } else {
+                                            Platform.runLater(() -> imageProgressVisibleProperty.set(false));
+                                        }
+                                        Platform.runLater(() -> {
+                                            if (image.getWidth() > 240) {
+                                                fitWidthProperty.set(240);
+                                                imageProperty.set(image);
+                                            }
+                                        });
+                                    }
+
+                                } catch (IOException | InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
                     }
                 }
             }
