@@ -2,6 +2,7 @@ package com.icuxika.cell;
 
 import com.icuxika.model.ChatMessage;
 import com.icuxika.richtext.SelectableLabel;
+import com.icuxika.util.ImageUtil;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -13,6 +14,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -202,21 +204,43 @@ public class ChatMessageCell extends ListCell<ChatMessage> {
                         setGraphic(rightImageNode);
                     }
                     if (item.imageProperty().get() == null) {
+                        Platform.runLater(() -> {
+                            item.imageProgressVisibleProperty().set(true);
+                            item.imageErrorVisibleProperty().set(false);
+                        });
                         HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create(item.getImageUrl()))
                                 .GET()
                                 .build();
                         pendingImageLoadTask = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
                                 .thenAcceptAsync(inputStreamHttpResponse -> {
-                                    System.out.println(Thread.currentThread().toString());
                                     var contentLength = inputStreamHttpResponse.headers().firstValueAsLong("Content-Length").orElse(-1);
-                                    System.out.println(item.getImageUrl() + ": " + contentLength);
                                     try (
                                             InputStream is = inputStreamHttpResponse.body();
                                             ByteArrayOutputStream os = new ByteArrayOutputStream();
                                     ) {
+                                        byte[] headerBuffer = new byte[1024 * 16];
+                                        int headerRead = 0;
+                                        while (headerRead < headerBuffer.length) {
+                                            int read = is.read(headerBuffer, headerRead, headerBuffer.length - headerRead);
+                                            if (read == -1) {
+                                                break;
+                                            }
+                                            headerRead += read;
+                                        }
+                                        ImageUtil.Dimension dimension = ImageUtil.readImageSize(headerBuffer, headerRead);
+                                        System.out.println("分析图片头部数据: " + request.uri() + ", size: " + dimension);
+                                        if (dimension != null) {
+                                            Image emptyImage = new WritableImage(dimension.width(), dimension.height());
+                                            Platform.runLater(() -> {
+                                                item.imageProperty().set(emptyImage);
+                                                item.fitWidthProperty().set(Math.min(dimension.width(), 240));
+                                            });
+                                        }
+
+                                        os.write(headerBuffer, 0, headerRead);
                                         byte[] data = new byte[8192];
-                                        long workDone = 0;
+                                        long workDone = headerRead;
                                         int n;
                                         long lastUpdate = 0;
                                         while ((n = is.read(data)) != -1) {
@@ -224,7 +248,6 @@ public class ChatMessageCell extends ListCell<ChatMessage> {
                                             workDone += n;
                                             if (contentLength > 0) {
                                                 if (System.currentTimeMillis() - lastUpdate > 50) {
-                                                    System.out.println("progress: " + workDone + " / " + contentLength);
                                                     long finalWorkDone = workDone;
                                                     Platform.runLater(() -> item.imageProgressProperty().set((double) finalWorkDone / contentLength));
                                                     lastUpdate = System.currentTimeMillis();
