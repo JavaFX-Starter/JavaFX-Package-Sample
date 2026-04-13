@@ -1,5 +1,6 @@
 package com.icuxika;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -8,6 +9,7 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Window;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiConsumer;
 
 public class FXUtil {
@@ -70,5 +72,18 @@ public class FXUtil {
                 });
             }
         });
+    }
+
+    public static void awaitPulse() {
+        Thread current = Thread.currentThread();
+        AnimationTimer animationTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                stop();
+                LockSupport.unpark(current);
+            }
+        };
+        animationTimer.start();
+        LockSupport.park();
     }
 }

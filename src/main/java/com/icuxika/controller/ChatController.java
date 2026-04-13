@@ -1,11 +1,14 @@
 package com.icuxika.controller;
 
+import com.icuxika.AppResource;
+import com.icuxika.FXUtil;
 import com.icuxika.cell.ChatMessageCell;
 import com.icuxika.constant.MessageSendType;
 import com.icuxika.constant.MessageType;
 import com.icuxika.model.ChatMessage;
 import com.icuxika.richtext.ChatInputItem;
 import com.icuxika.richtext.ChatInputTextArea;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -31,11 +34,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ChatController implements Initializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatController.class);
@@ -147,6 +154,20 @@ public class ChatController implements Initializable {
         imageMsg3.setType(MessageType.IMAGE);
         imageMsg3.setImageUrl("https://i.pixiv.re/img-master/img/2026/03/11/00/02/18/142151329_p0_master1200.jpg");
         chatMessageObservableList.add(imageMsg3);
+
+        Thread.ofVirtual().start(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(AppResource.class.getResourceAsStream("/chat_mock.txt"))))) {
+                reader.lines().forEach(line -> {
+                    ChatMessage m = new ChatMessage();
+                    m.setLeft(ThreadLocalRandom.current().nextBoolean());
+                    m.setMsg(line);
+                    FXUtil.awaitPulse();
+                    Platform.runLater(() -> chatMessageObservableList.add(m));
+                });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void sendMessage() {

@@ -1,8 +1,8 @@
 package com.icuxika.model;
 
 import com.icuxika.constant.MessageType;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
+import javafx.scene.image.Image;
 
 public class ChatMessage {
     private String avatar = "https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg";
@@ -53,5 +53,41 @@ public class ChatMessage {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    private final ObjectProperty<Image> image = new SimpleObjectProperty<>();
+
+    public ObjectProperty<Image> imageProperty() {
+        return image;
+    }
+
+    private final DoubleProperty fitWidth = new SimpleDoubleProperty();
+
+    public DoubleProperty fitWidthProperty() {
+        return fitWidth;
+    }
+
+    private final DoubleProperty imageProgress = new SimpleDoubleProperty();
+
+    public DoubleProperty imageProgressProperty() {
+        return imageProgress;
+    }
+
+    private final BooleanProperty imageProgressVisible = new SimpleBooleanProperty(true);
+
+    public BooleanProperty imageProgressVisibleProperty() {
+        return imageProgressVisible;
+    }
+
+    private final StringProperty imageErrorText = new SimpleStringProperty("");
+
+    public StringProperty imageErrorTextProperty() {
+        return imageErrorText;
+    }
+
+    private final BooleanProperty imageErrorVisible = new SimpleBooleanProperty(false);
+
+    public BooleanProperty imageErrorVisibleProperty() {
+        return imageErrorVisible;
     }
 }
